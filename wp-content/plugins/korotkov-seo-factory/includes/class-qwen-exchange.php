@@ -30,7 +30,7 @@ final class KSEF_Qwen_Exchange {
         $serp_table = $wpdb->prefix . 'ksef_serp_results';
         $rows = $wpdb->get_results(
             "SELECT id, source_phrase, region FROM {$keywords_table}
-             WHERE researched_at IS NOT NULL ORDER BY researched_at DESC, id DESC LIMIT " . self::MAX_ROWS
+             ORDER BY researched_at DESC, id DESC LIMIT " . self::MAX_ROWS
         );
 
         nocache_headers();
