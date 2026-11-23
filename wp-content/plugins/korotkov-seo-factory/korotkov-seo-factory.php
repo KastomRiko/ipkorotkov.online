@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.2.0');
+define('KSEF_VERSION', '0.3.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
 define('KSEF_OPTION', 'ksef_settings');
