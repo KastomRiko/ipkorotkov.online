@@ -19,38 +19,84 @@ final class KSEF_Queue {
 
         $keywords = $wpdb->prefix . 'ksef_keywords';
         $jobs = $wpdb->prefix . 'ksef_jobs';
+        // Сериализуем все операции добавления через один MySQL lock: SELECT-проверка
+        // и последующая вставка больше не могут одновременно пройти в двух PHP workers.
+        $lock = KSEF_Lock::acquire('queue_enqueue', 0);
+        if (is_wp_error($lock)) return $lock;
+
         $added = 0;
-        foreach ($phrases as $phrase) {
-            $normalized = function_exists('mb_strtolower') ? mb_strtolower($phrase) : strtolower($phrase);
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM {$keywords} WHERE normalized_phrase = %s LIMIT 1",
-                $normalized
-            ));
-            if ($exists) continue;
+        $failed = 0;
+        try {
+            foreach ($phrases as $phrase) {
+                $normalized = function_exists('mb_strtolower') ? mb_strtolower($phrase) : strtolower($phrase);
+                $exists = $wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM {$keywords} WHERE normalized_phrase = %s LIMIT 1",
+                    $normalized
+                ));
+                if ($exists) continue;
 
-            $now = current_time('mysql', true);
-            $ok = $wpdb->insert($keywords, array(
-                'source_phrase' => $phrase,
-                'normalized_phrase' => $normalized,
-                'region' => 'Россия',
-                'created_at' => $now,
-            ), array('%s','%s','%s','%s'));
-            if (!$ok) continue;
-            $keyword_id = (int) $wpdb->insert_id;
+                // Ключевая фраза и её задание создаются как одна транзакция.
+                if ($wpdb->query('START TRANSACTION') === false) {
+                    $failed++;
+                    continue;
+                }
 
-            $payload = wp_json_encode(array('keyword_id' => $keyword_id, 'page' => 0));
-            $wpdb->insert($jobs, array(
-                'job_type' => 'serp_search',
-                'status' => 'new',
-                'payload' => $payload,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ), array('%s','%s','%s','%s','%s'));
-            $job_id = (int) $wpdb->insert_id;
-            $wpdb->update($keywords, array('job_id' => $job_id), array('id' => $keyword_id), array('%d'), array('%d'));
-            $added++;
+                $now = current_time('mysql', true);
+                $keyword_ok = $wpdb->insert($keywords, array(
+                    'source_phrase' => $phrase,
+                    'normalized_phrase' => $normalized,
+                    'region' => 'Россия',
+                    'created_at' => $now,
+                ), array('%s','%s','%s','%s'));
+
+                if ($keyword_ok !== 1 || (int) $wpdb->insert_id < 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $keyword_id = (int) $wpdb->insert_id;
+
+                $payload = wp_json_encode(array('keyword_id' => $keyword_id, 'page' => 0));
+                $job_ok = $wpdb->insert($jobs, array(
+                    'job_type' => 'serp_search',
+                    'status' => 'new',
+                    'payload' => $payload,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ), array('%s','%s','%s','%s','%s'));
+
+                if ($job_ok !== 1 || (int) $wpdb->insert_id < 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $job_id = (int) $wpdb->insert_id;
+
+                $linked = $wpdb->update(
+                    $keywords,
+                    array('job_id' => $job_id),
+                    array('id' => $keyword_id),
+                    array('%d'),
+                    array('%d')
+                );
+                if ($linked !== 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+
+                if ($wpdb->query('COMMIT') === false) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $added++;
+            }
+        } finally {
+            KSEF_Lock::release($lock);
         }
-        return array('added' => $added, 'received' => count($phrases));
+
+        return array('added' => $added, 'received' => count($phrases), 'failed' => $failed);
     }
 
     /** Коды ошибок, при которых задание возвращается в очередь без расхода попытки. */
