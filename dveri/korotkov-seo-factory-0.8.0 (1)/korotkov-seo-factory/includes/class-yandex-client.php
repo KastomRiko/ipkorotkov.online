@@ -81,11 +81,6 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_billing_not_verified', 'Платные запросы Wordstat заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
         }
 
-        $budget = KSEF_Util::check_budget();
-        if (is_wp_error($budget)) {
-            return $budget;
-        }
-
         $limit = isset($this->settings['daily_wordstat_limit']) ? absint($this->settings['daily_wordstat_limit']) : 20;
         $interval = isset($this->settings['wordstat_interval']) ? max(5, absint($this->settings['wordstat_interval'])) : 5;
 
@@ -94,6 +89,7 @@ final class KSEF_Yandex_Client {
             return $reservation;
         }
 
+        try {
         // folderId — поле тела запроса; для сервисного аккаунта необязателен.
         $body_payload = $payload;
         if ($folder_id) {
@@ -113,12 +109,10 @@ final class KSEF_Yandex_Client {
         ));
 
         if (is_wp_error($response)) {
-            $this->release_failed_reservation('wordstat');
             Korotkov_SEO_Factory::write_log('error', 'api_transport_error', 'Ошибка соединения с Yandex Wordstat API.', array('method' => $method, 'error' => $response->get_error_code()));
             return new WP_Error('ksef_api_transport', 'Не удалось связаться с Yandex API.');
         }
 
-        delete_transient('ksef_wordstat_request_lock');
         $status = (int) wp_remote_retrieve_response_code($response);
         $body = (string) wp_remote_retrieve_body($response);
 
@@ -144,6 +138,9 @@ final class KSEF_Yandex_Client {
         Korotkov_SEO_Factory::write_log('info', 'api_request_ok', 'Успешный запрос Wordstat API.', array('method' => $method, 'http_status' => $status));
 
         return $decoded;
+        } finally {
+            KSEF_Lock::release($reservation);
+        }
     }
 
     private function reserve_request($service, $daily_limit, $interval) {
@@ -154,32 +151,33 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_daily_limit_disabled', 'Запросы Wordstat отключены дневным лимитом 0.');
         }
 
-        $lock_name = 'ksef_' . $service . '_request_lock';
-        if (get_transient($lock_name)) {
-            return new WP_Error('ksef_request_busy', 'Предыдущий запрос ещё выполняется. Повторите позже.');
+        $lock = KSEF_Lock::acquire($service . '_api_request', 0);
+        if (is_wp_error($lock)) {
+            return new WP_Error('ksef_request_busy', 'Другой запрос Wordstat уже выполняется. Повторите позже.');
+        }
+
+        $budget = KSEF_Util::check_budget();
+        if (is_wp_error($budget)) {
+            KSEF_Lock::release($lock);
+            return $budget;
         }
 
         $usage = $this->get_daily_usage($service);
         if ($usage >= $daily_limit) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_daily_limit', 'Достигнут внутренний дневной лимит Wordstat.');
         }
 
         $last = (int) get_option('ksef_' . $service . '_last_request', 0);
         $wait = $interval - (time() - $last);
         if ($wait > 0) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_rate_limited', 'Соблюдается пауза между запросами. Повторите позже.');
         }
 
-        set_transient($lock_name, 1, 60);
         update_option('ksef_' . $service . '_last_request', time(), false);
         $this->increment_daily_usage($service);
-
-        return true;
-    }
-
-    private function release_failed_reservation($service) {
-        $this->decrement_daily_usage($service);
-        delete_transient('ksef_' . $service . '_request_lock');
+        return $lock;
     }
 
     private function get_daily_usage($service) {
