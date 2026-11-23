@@ -234,7 +234,7 @@ final class Korotkov_SEO_Factory {
             'billing_checked_at' => 0,
             'billing_grant_consumed' => '',
             'billing_grant_credit' => '',
-            'billing_expense' => '',
+            'billing_credit' => '',
             'billing_grant_end_utc' => '',
             'automation_enabled' => 0,
             'folder_id' => '',
@@ -315,7 +315,7 @@ final class Korotkov_SEO_Factory {
         $clean['budget_stop'] = 3800;
         // Ручная сверка всех финансовых показателей. Галочка обновляет timestamp только
         // если заполнены все поля; обычное сохранение настроек не продлевает срок.
-        $billing_fields = array('billing_reported_cost', 'billing_grant_consumed', 'billing_grant_credit', 'billing_expense');
+        $billing_fields = array('billing_reported_cost', 'billing_grant_consumed', 'billing_grant_credit', 'billing_credit');
         if (!empty($input['billing_refresh_confirm'])) {
             $valid = true;
             foreach ($billing_fields as $field) {
@@ -419,10 +419,10 @@ final class Korotkov_SEO_Factory {
                             <p><label>Billing cost (до кредитов), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_reported_cost]" value="<?php echo esc_attr($settings['billing_reported_cost'] ?? ''); ?>"></label></p>
                             <p><label>Grant consumedAmount из записи гранта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_consumed]" value="<?php echo esc_attr($settings['billing_grant_consumed'] ?? ''); ?>"></label></p>
                             <p><label>monetary_grant_credit из Billing, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_credit]" value="<?php echo esc_attr($settings['billing_grant_credit'] ?? ''); ?>"></label></p>
-                            <p><label>expense из Billing API/отчёта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_expense]" value="<?php echo esc_attr($settings['billing_expense'] ?? ''); ?>"></label></p>
+                            <p><label>expense из Billing API/отчёта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_credit]" value="<?php echo esc_attr($settings['billing_expense'] ?? ''); ?>"></label></p>
                             <p><label>Окончание гранта (точное время UTC, формат 2027-01-19T21:59:59Z)<br><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_end_utc]" value="<?php echo esc_attr($settings['billing_grant_end_utc'] ?? ''); ?>" placeholder="2027-01-19T21:59:59Z"></label></p>
                             <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что сверил все пять значений с актуальными данными Billing и гранта</label>
-                            <p class="description">Грант 4 000 ₽. Остаток рассчитывается консервативно: 4 000 ₽ минус большее из consumedAmount и monetary_grant_credit. Эти два значения должны совпадать с допуском 0,05 ₽; при расхождении запросы блокируются. Любой expense больше 0 ₽ блокирует платные запросы. Сверка действует 24 часа. Время окончания вводится строго в UTC. Не вводите предполагаемые значения: берите их из свежих данных. Автоматического Billing API здесь нет.</p>
+                            <p class="description">Грант 4 000 ₽. Остаток рассчитывается консервативно: 4 000 ₽ минус большее из consumedAmount и monetary_grant_credit. Эти два значения должны совпадать с допуском 0,05 ₽; при расхождении запросы блокируются. expense рассчитывается как cost − credit; любое значение больше 0 ₽ блокирует платные запросы. Сверка действует 24 часа. Время окончания вводится строго в UTC. Не вводите предполагаемые значения: берите их из свежих данных. Автоматического Billing API здесь нет.</p>
                             <p class="description"><strong>Порог остановки: 3 800 ₽. Резерв: 200 ₽.</strong> Дополнительно к фактическому потреблению учитывается резерв локальных запросов после сверки.</p>
                             <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
