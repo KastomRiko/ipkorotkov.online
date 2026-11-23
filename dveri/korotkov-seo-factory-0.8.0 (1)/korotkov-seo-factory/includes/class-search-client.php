@@ -234,7 +234,7 @@ final class KSEF_Search_Client {
         if (get_transient('ksef_api_circuit_open')) {
             return new WP_Error('ksef_search_circuit_open', 'Все запросы к Яндексу временно остановлены.');
         }
-        $lock = KSEF_Lock::acquire('search_api_request', 0);
+        $lock = KSEF_Lock::acquire('paid_api_budget', 0);
         if (is_wp_error($lock)) {
             return new WP_Error('ksef_search_busy', 'Другой запрос Search API уже выполняется.');
         }
