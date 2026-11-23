@@ -224,13 +224,11 @@ final class KSEF_Publisher {
         if (is_wp_error($post_id)) return $post_id;
         if (!$post_id) return new WP_Error('ksef_insert_failed', 'WordPress не создал страницу.');
 
-        update_post_meta($post_id, '_ksef_cluster_id', (int) $row->cluster_id);
-        update_post_meta($post_id, '_ksef_page_row_id', (int) $row->id);
-        update_post_meta($post_id, '_ksef_meta_title', wp_slash($meta_title));
-        update_post_meta($post_id, '_ksef_meta_description', wp_slash($meta_desc));
-        $faq_items = KSEF_Util::parse_faq($faq);
-        if ($faq_items) update_post_meta($post_id, '_ksef_faq', wp_slash(wp_json_encode($faq_items, JSON_UNESCAPED_UNICODE)));
-        self::write_compat_meta($post_id, $meta_title, $meta_desc);
+        $meta_result = self::write_managed_meta($post_id, $row, $data);
+        if (is_wp_error($meta_result)) {
+            Korotkov_SEO_Factory::write_log('critical', 'page_meta_write_failed', 'Страница создана, но обязательные метаполя не прошли проверку чтением. Повторный запуск попробует восстановить метаданные по служебной связи.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'error' => $meta_result->get_error_message()));
+            return new WP_Error('ksef_page_meta_write_failed', 'Страница создана (ID ' . (int) $post_id . '), но обязательные метаданные записались не полностью. Повторите действие для восстановления; дубль создаваться не должен.');
+        }
 
         // WordPress мог скорректировать slug (зарезервированные имена и т.п.) — сохраняем фактический.
         $actual_slug = get_post_field('post_name', $post_id);
@@ -259,6 +257,35 @@ final class KSEF_Publisher {
         }
         Korotkov_SEO_Factory::write_log('info', 'page_created', 'Создана страница WordPress.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'status' => $final));
         return (int) $post_id;
+    }
+
+    /**
+     * Записывает принадлежащие плагину метаданные и проверяет результат чтением.
+     * Повторный вызов безопасен: значения перезаписываются теми же данными.
+     */
+    private static function write_managed_meta($post_id, $row, $data) {
+        $values = array(
+            '_ksef_cluster_id' => (string) (int) $row->cluster_id,
+            '_ksef_page_row_id' => (string) (int) $row->id,
+            '_ksef_meta_title' => (string) ($data['meta_title'] ?? ''),
+            '_ksef_meta_description' => (string) ($data['meta_description'] ?? ''),
+        );
+
+        $faq = (string) ($data['faq_html'] ?? '');
+        $faq_items = KSEF_Util::parse_faq($faq);
+        if ($faq_items) {
+            $values['_ksef_faq'] = wp_json_encode($faq_items, JSON_UNESCAPED_UNICODE);
+        }
+
+        foreach ($values as $key => $value) {
+            update_post_meta($post_id, $key, wp_slash($value));
+            $stored = get_post_meta($post_id, $key, true);
+            if ((string) $stored !== (string) $value) {
+                return new WP_Error('ksef_meta_verification_failed', 'Не удалось подтвердить метаполе ' . $key . '.');
+            }
+        }
+
+        return true;
     }
 
     /**
