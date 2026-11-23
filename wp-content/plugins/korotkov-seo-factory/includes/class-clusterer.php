@@ -107,11 +107,14 @@ final class KSEF_Clusterer {
         $now = current_time('mysql', true);
         $cluster_count = 0;
         $page_count = 0;
+        $used_cluster_ids = array();
         foreach ($groups as $member_ids) {
             $member_ids = array_map('absint', $member_ids);
             $label = self::choose_label($member_ids, $phrases);
             $cluster_id = self::find_existing_cluster($member_ids, $keywords_table, $clusters_table);
+            if ($cluster_id && isset($used_cluster_ids[$cluster_id])) $cluster_id = 0;
             if ($cluster_id) {
+                $used_cluster_ids[$cluster_id] = true;
                 $wpdb->update($clusters_table, array(
                     'label' => $label,
                     'status' => 'clustered',
