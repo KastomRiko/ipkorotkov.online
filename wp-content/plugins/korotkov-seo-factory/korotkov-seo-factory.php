@@ -16,6 +16,7 @@ if (!defined('ABSPATH')) {
 define('KSEF_VERSION', '0.3.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
+require_once __DIR__ . '/includes/class-queue.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -32,6 +33,9 @@ final class Korotkov_SEO_Factory {
         add_action('admin_menu', array($this, 'admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('ksef_daily_tick', array($this, 'daily_tick'));
+        add_action('ksef_queue_tick', array('KSEF_Queue', 'process_one'));
+        add_filter('cron_schedules', array($this, 'cron_schedules'));
+        add_action('admin_post_ksef_enqueue_phrases', array($this, 'handle_enqueue_phrases'));
     }
 
     public static function activate() {
@@ -157,6 +161,10 @@ final class Korotkov_SEO_Factory {
             add_option(KSEF_OPTION, self::default_settings(), '', false);
         }
 
+        if (!wp_next_scheduled('ksef_queue_tick')) {
+            wp_schedule_event(time() + 600, 'ksef_five_minutes', 'ksef_queue_tick');
+        }
+
         if (!wp_next_scheduled('ksef_daily_tick')) {
             wp_schedule_event(time() + 300, 'daily', 'ksef_daily_tick');
         }
@@ -166,6 +174,7 @@ final class Korotkov_SEO_Factory {
 
     public static function deactivate() {
         wp_clear_scheduled_hook('ksef_daily_tick');
+        wp_clear_scheduled_hook('ksef_queue_tick');
     }
 
     public static function default_settings() {
@@ -196,6 +205,29 @@ final class Korotkov_SEO_Factory {
             ),
             array('%s', '%s', '%s', '%s', '%s')
         );
+    }
+
+    public function cron_schedules($schedules) {
+        if (!isset($schedules['ksef_five_minutes'])) {
+            $schedules['ksef_five_minutes'] = array('interval' => 300, 'display' => 'Korotkov SEO Factory: каждые 5 минут');
+        }
+        return $schedules;
+    }
+
+    public function handle_enqueue_phrases() {
+        if (!current_user_can('manage_options')) wp_die('Недостаточно прав.');
+        check_admin_referer('ksef_enqueue_phrases');
+        $text = isset($_POST['ksef_phrases']) ? wp_unslash($_POST['ksef_phrases']) : '';
+        $result = KSEF_Queue::enqueue_phrases($text);
+        if (is_wp_error($result)) {
+            self::write_log('warning', 'queue_enqueue_failed', $result->get_error_message());
+            $redirect = add_query_arg('ksef_queue_result', 'error', admin_url('admin.php?page=korotkov-seo-factory'));
+        } else {
+            self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
+            $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
+        }
+        wp_safe_redirect($redirect);
+        exit;
     }
 
     public function register_settings() {
@@ -246,6 +278,8 @@ final class Korotkov_SEO_Factory {
         global $wpdb;
         $logs_table = $wpdb->prefix . 'ksef_logs';
         $last_logs = $wpdb->get_results("SELECT level, event, message, created_at FROM {$logs_table} ORDER BY id DESC LIMIT 8");
+        $jobs_table = $wpdb->prefix . 'ksef_jobs';
+        $queue_counts = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$jobs_table} WHERE job_type = 'serp_search' GROUP BY status");
         ?>
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
@@ -289,12 +323,24 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
-                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?> disabled> Включить после завершения и проверки API-модуля</label><p class="description">Переключатель пока заблокирован: подключение API ещё не реализовано.</p></td>
+                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении обрабатывается не более одного задания за 5 минут. Wordstat и публикация этим переключателем не запускаются.</p></td>
                     </tr>
                 </table>
                 <?php submit_button('Сохранить настройки'); ?>
             </form>
             <hr>
+            <h2>Очередь исследования</h2>
+            <p>Поставь до 30 фраз в одну партию. Разделители: новая строка, запятая или точка с запятой. Повторные фразы не добавляются.</p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="ksef_enqueue_phrases">
+                <?php wp_nonce_field('ksef_enqueue_phrases'); ?>
+                <textarea name="ksef_phrases" rows="6" class="large-text" placeholder="настройка VPS для VPN&#10;администрирование Windows Server&#10;настройка терминального сервера"></textarea>
+                <?php submit_button('Добавить фразы в очередь', 'secondary', 'submit', false); ?>
+            </form>
+            <?php if (isset($_GET['ksef_queue_result'])) : ?>
+                <div class="notice notice-info inline"><p><?php echo esc_html($_GET['ksef_queue_result'] === 'added' ? 'Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) : 'Не удалось добавить фразы. Проверь журнал.'); ?></p></div>
+            <?php endif; ?>
+            <p><strong>Состояние очереди:</strong> <?php if ($queue_counts) : foreach ($queue_counts as $count) : echo esc_html($count->status . ': ' . $count->total . ' · '); endforeach; else : ?>пока пуста<?php endif; ?></p>
             <h2>Search API</h2>
             <p>Синхронный поиск по России (регион Яндекса 225), XML-ответ, кэш 7 дней. Внутренний предел — 100 запросов в сутки, интервал — не менее 2 секунд. Поисковый клиент пока вызывается только из кода очереди; автоматические запросы не запускаются.</p>
             <h2>Последние события</h2>
@@ -312,7 +358,7 @@ final class Korotkov_SEO_Factory {
     }
 
     public function daily_tick() {
-        self::write_log('info', 'daily_tick', 'Планировщик сработал. API-запросы не выполнялись: модуль исследования ещё не подключён.');
+        self::write_log('info', 'daily_tick', 'Ежедневный планировщик сработал. Очередь Search API обрабатывается отдельным событием каждые 5 минут.');
     }
 }
 
