@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.3.0
+ * Version: 0.4.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.3.0');
+define('KSEF_VERSION', '0.4.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
 require_once __DIR__ . '/includes/class-queue.php';
@@ -323,7 +323,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
-                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении обрабатывается не более одного задания за 5 минут. Wordstat и публикация этим переключателем не запускаются.</p></td>
+                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении обрабатывается не более одного задания за 5 минут. Для реальных платных запросов дополнительно требуется KSEF_BILLING_VERIFIED=true в wp-config.php после проверки тарифа и покрытия бонусами. Wordstat и публикация этим переключателем не запускаются.</p></td>
                     </tr>
                 </table>
                 <?php submit_button('Сохранить настройки'); ?>
