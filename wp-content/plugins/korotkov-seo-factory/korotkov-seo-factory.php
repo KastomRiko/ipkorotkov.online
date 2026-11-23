@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.1.0');
+define('KSEF_VERSION', '0.2.0');
+require_once __DIR__ . '/includes/class-yandex-client.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -111,6 +112,27 @@ final class Korotkov_SEO_Factory {
             KEY cluster_id (cluster_id),
             KEY wp_page_id (wp_page_id),
             KEY status (status)
+        ) {$charset};";
+
+        $sql[] = "CREATE TABLE {$prefix}api_usage (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            service varchar(32) NOT NULL,
+            method varchar(64) NOT NULL,
+            request_count int(10) unsigned NOT NULL DEFAULT 1,
+            estimated_cost decimal(12,6) NOT NULL DEFAULT 0,
+            created_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            KEY service (service),
+            KEY created_at (created_at)
+        ) {$charset};";
+
+        $sql[] = "CREATE TABLE {$prefix}cache (
+            cache_key char(64) NOT NULL,
+            response_json longtext NOT NULL,
+            created_at datetime NOT NULL,
+            expires_at datetime NOT NULL,
+            PRIMARY KEY  (cache_key),
+            KEY expires_at (expires_at)
         ) {$charset};";
 
         $sql[] = "CREATE TABLE {$prefix}logs (
@@ -227,7 +249,7 @@ final class Korotkov_SEO_Factory {
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
-            <div class="notice notice-warning inline"><p><strong>Режим безопасной подготовки.</strong> В этой базовой версии внешние запросы к Яндексу, импорт Qwen и публикация страниц ещё не выполняются. Автоматизация не отправляет запросы и не расходует бонусный баланс.</p></div>
+            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Клиент Wordstat добавлен, но сам по себе не запускается. Запросы выполняются только при вызове метода из очереди; автоматический запуск и публикация пока отключены.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
                 <h2>Исследование и ограничения</h2>
@@ -238,7 +260,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Внутренний лимит Wordstat в сутки</th>
-                        <td><input type="number" min="0" max="20" name="<?php echo esc_attr(KSEF_OPTION); ?>[daily_wordstat_limit]" value="<?php echo esc_attr($settings['daily_wordstat_limit']); ?>"> <p class="description">Не более 20 обращений в сутки суммарно по всем методам. Это наш предохранитель, не квота Яндекса.</p></td>
+                        <td><input type="number" min="0" max="20" name="<?php echo esc_attr(KSEF_OPTION); ?>[daily_wordstat_limit]" value="<?php echo esc_attr($settings['daily_wordstat_limit']); ?>"> <p class="description">Не более 20 обращений в сутки суммарно по всем методам. Это наш внутренний предохранитель, а не квота Яндекса.</p></td>
                     </tr>
                     <tr>
                         <th scope="row">Интервал Wordstat, секунд</th>
@@ -258,11 +280,11 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Folder ID Yandex Cloud</th>
-                        <td><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[folder_id]" value="<?php echo esc_attr($settings['folder_id']); ?>" autocomplete="off"></td>
+                        <td><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[folder_id]" value="<?php echo esc_attr($settings['folder_id']); ?>" autocomplete="off"><p class="description">Можно задать константой KSEF_YANDEX_FOLDER_ID в wp-config.php.</p></td>
                     </tr>
                     <tr>
                         <th scope="row">API-ключ сервисного аккаунта</th>
-                        <td><input type="password" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[api_key]" value="" autocomplete="new-password"><p class="description">Оставьте пустым, чтобы сохранить ранее введённый ключ. Ключ не выводится на экран.</p></td>
+                        <td><code>KSEF_YANDEX_API_KEY</code> в wp-config.php<p class="description">Ключ читается только из константы wp-config.php и не сохраняется в настройках WordPress. Не вставляйте его в чат или GitHub.</p></td>
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
