@@ -134,10 +134,12 @@ final class KSEF_Clusterer {
                 array_merge(array($cluster_id), $member_ids)
             ));
 
-            $representative_id = min($member_ids);
+            $member_placeholders = implode(',', array_fill(0, count($member_ids), '%d'));
             $qwen = $wpdb->get_row($wpdb->prepare(
-                "SELECT payload FROM {$imports_table} WHERE keyword_id = %d ORDER BY id DESC LIMIT 1",
-                $representative_id
+                "SELECT payload FROM {$imports_table}
+                 WHERE keyword_id IN ({$member_placeholders})
+                 ORDER BY id DESC LIMIT 1",
+                $member_ids
             ));
             $qwen_data = $qwen ? json_decode($qwen->payload, true) : array();
             $page_title = !empty($qwen_data['recommended_title']) ? sanitize_text_field($qwen_data['recommended_title']) : $label;
