@@ -4,3 +4,12 @@ wp-content/uploads/
 wp-content/cache/
 wp-content/upgrade/
 .DS_Store
+# Конфиденциальные файлы
+wp-config.php
+*.sql
+
+# Временные и кэш-файлы
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+.DS_Store
