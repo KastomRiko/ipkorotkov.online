@@ -13,10 +13,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.4.0');
+define('KSEF_VERSION', '0.5.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
 require_once __DIR__ . '/includes/class-queue.php';
+require_once __DIR__ . '/includes/class-qwen-exchange.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -36,6 +37,7 @@ final class Korotkov_SEO_Factory {
         add_action('ksef_queue_tick', array('KSEF_Queue', 'process_one'));
         add_filter('cron_schedules', array($this, 'cron_schedules'));
         add_action('admin_post_ksef_enqueue_phrases', array($this, 'handle_enqueue_phrases'));
+        KSEF_Qwen_Exchange::register_hooks();
     }
 
     public static function activate() {
@@ -116,6 +118,18 @@ final class Korotkov_SEO_Factory {
             PRIMARY KEY  (id),
             KEY cluster_id (cluster_id),
             KEY wp_page_id (wp_page_id),
+            KEY status (status)
+        ) {$charset};";
+
+        $sql[] = "CREATE TABLE {$prefix}qwen_imports (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            keyword_id bigint(20) unsigned NOT NULL DEFAULT 0,
+            payload longtext NOT NULL,
+            status varchar(24) NOT NULL DEFAULT 'draft_review',
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            KEY keyword_id (keyword_id),
             KEY status (status)
         ) {$charset};";
 
@@ -341,6 +355,25 @@ final class Korotkov_SEO_Factory {
                 <div class="notice notice-info inline"><p><?php echo esc_html($_GET['ksef_queue_result'] === 'added' ? 'Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) : 'Не удалось добавить фразы. Проверь журнал.'); ?></p></div>
             <?php endif; ?>
             <p><strong>Состояние очереди:</strong> <?php if ($queue_counts) : foreach ($queue_counts as $count) : echo esc_html($count->status . ': ' . $count->total . ' · '); endforeach; else : ?>пока пуста<?php endif; ?></p>
+            <hr>
+            <h2>Ручной обмен с Qwen</h2>
+            <p>Экспортирует до 30 исследованных фраз вместе с данными органической выдачи. Открой CSV в Qwen, попроси заполнить пустые поля и импортируй результат обратно. Qwen API и автоматизация браузера не используются.</p>
+            <p><strong>Порядок работы:</strong> экспорт CSV → обработка в chat.qwen.ai → сохранение результата в CSV с теми же заголовками и порядком столбцов → импорт.</p>
+            <p><a class="button button-secondary" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=ksef_qwen_export'), 'ksef_qwen_export')); ?>">Экспортировать задания для Qwen</a></p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="ksef_qwen_import">
+                <?php wp_nonce_field('ksef_qwen_import'); ?>
+                <input type="file" name="ksef_qwen_csv" accept=".csv,text/csv" required>
+                <?php submit_button('Импортировать CSV из Qwen', 'secondary', 'submit', false); ?>
+                <p class="description">Лимит файла — 1 МБ, до 30 строк. Обязательные поля: рекомендуемый заголовок, H1, meta title, meta description и краткое вступление. Импорт не создаёт и не публикует страницы.</p>
+            </form>
+            <?php
+            $qwen_notice = get_transient('ksef_qwen_notice_' . get_current_user_id());
+            if ($qwen_notice) :
+                delete_transient('ksef_qwen_notice_' . get_current_user_id());
+            ?>
+                <div class="notice notice-<?php echo esc_attr($qwen_notice['status'] === 'error' ? 'error' : 'success'); ?> inline"><p><?php echo esc_html($qwen_notice['message']); ?></p></div>
+            <?php endif; ?>
             <h2>Search API</h2>
             <p>Синхронный поиск по России (регион Яндекса 225), XML-ответ, кэш 7 дней. Внутренний предел — 100 запросов в сутки, интервал — не менее 2 секунд. Поисковый клиент пока вызывается только из кода очереди; автоматические запросы не запускаются.</p>
             <h2>Последние события</h2>
