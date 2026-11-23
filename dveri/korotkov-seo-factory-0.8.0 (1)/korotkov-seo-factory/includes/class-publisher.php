@@ -128,6 +128,22 @@ final class KSEF_Publisher {
         $pages = $wpdb->prefix . 'ksef_pages';
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", $page_id));
         if (!$row) return new WP_Error('ksef_page_missing', 'Карточка страницы не найдена.');
+        // Восстановление после сбоя БД: WP-страница могла создаться, а связь в ksef_pages — не сохраниться.
+        if ((int) $row->wp_page_id <= 0) {
+            $orphan_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT p.ID FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                 WHERE pm.meta_key = '_ksef_page_row_id' AND pm.meta_value = %s
+                   AND p.post_type = 'page' AND p.post_status NOT IN ('trash','auto-draft')
+                 ORDER BY p.ID DESC LIMIT 1",
+                (string) $row->id
+            ));
+            if ($orphan_id) {
+                $recovered = self::reconcile_page_link($row, (int) $orphan_id);
+                if (is_wp_error($recovered)) return $recovered;
+                return (int) $orphan_id;
+            }
+        }
         if ((int) $row->wp_page_id > 0 || in_array($row->status, array('draft_created', 'published'), true)) {
             return new WP_Error('ksef_page_exists', 'Для этой карточки страница уже создана; перезапись запрещена.');
         }
@@ -223,7 +239,7 @@ final class KSEF_Publisher {
         if ($actual_slug) $slug = $actual_slug;
         $now = current_time('mysql', true);
         $final = get_post_status($post_id);
-        $wpdb->update($pages, array(
+        $linked = $wpdb->update($pages, array(
             'wp_page_id' => (int) $post_id,
             'page_slug' => $slug,
             'page_url' => $final === 'publish' ? get_permalink($post_id) : '',
@@ -231,13 +247,54 @@ final class KSEF_Publisher {
             'published_at' => $final === 'publish' ? $now : null,
             'updated_at' => $now,
         ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
-        $wpdb->update($wpdb->prefix . 'ksef_clusters', array('status' => $final === 'publish' ? 'published' : 'draft_created', 'updated_at' => $now), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($linked === false) {
+            Korotkov_SEO_Factory::write_log('critical', 'page_link_failed', 'Страница WordPress создана, но связь с карточкой не сохранена. Повторный запуск выполнит восстановление по метаполю.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+            return new WP_Error('ksef_page_link_failed', 'Страница создана (ID ' . (int) $post_id . '), но связь с карточкой не записалась. Повторите действие: плагин восстановит связь и не создаст дубль.');
+        }
+        $cluster_updated = $wpdb->update($wpdb->prefix . 'ksef_clusters', array('status' => $final === 'publish' ? 'published' : 'draft_created', 'updated_at' => $now), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($cluster_updated === false) {
+            Korotkov_SEO_Factory::write_log('error', 'cluster_status_update_failed', 'Страница привязана, но статус кластера не обновлён.', array('cluster_id' => (int) $row->cluster_id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+        }
 
         if (!$manual) {
             update_option('ksef_created_' . gmdate('Ymd'), self::created_today() + 1, false);
         }
         Korotkov_SEO_Factory::write_log('info', 'page_created', 'Создана страница WordPress.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'status' => $final));
         return (int) $post_id;
+    }
+
+    /**
+     * Идемпотентно восстанавливает связь существующей WP-страницы с карточкой SEO Factory.
+     */
+    private static function reconcile_page_link($row, $post_id) {
+        global $wpdb;
+        $post = get_post($post_id);
+        if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post_id, '_ksef_page_row_id', true) !== (int) $row->id) {
+            return new WP_Error('ksef_orphan_mismatch', 'Найдена страница, но её метаданные не подтверждают связь с этой карточкой.');
+        }
+        $status = get_post_status($post_id);
+        $now = current_time('mysql', true);
+        $updated = $wpdb->update($wpdb->prefix . 'ksef_pages', array(
+            'wp_page_id' => (int) $post_id,
+            'page_slug' => $post->post_name,
+            'page_url' => $status === 'publish' ? get_permalink($post_id) : '',
+            'status' => $status === 'publish' ? 'published' : 'draft_created',
+            'published_at' => $status === 'publish' ? $now : null,
+            'updated_at' => $now,
+        ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
+        if ($updated === false) {
+            Korotkov_SEO_Factory::write_log('critical', 'page_link_recovery_failed', 'Не удалось восстановить связь WP-страницы с карточкой SEO Factory.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+            return new WP_Error('ksef_page_link_recovery_failed', 'Страница найдена, но восстановление связи завершилось ошибкой БД. Повторите попытку позже.');
+        }
+        $cluster_updated = $wpdb->update($wpdb->prefix . 'ksef_clusters', array(
+            'status' => $status === 'publish' ? 'published' : 'draft_created',
+            'updated_at' => $now,
+        ), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($cluster_updated === false) {
+            Korotkov_SEO_Factory::write_log('error', 'cluster_status_recovery_failed', 'Связь страницы восстановлена, но статус кластера не обновлён.', array('cluster_id' => (int) $row->cluster_id, 'db_error' => $wpdb->last_error));
+        }
+        Korotkov_SEO_Factory::write_log('warning', 'page_link_recovered', 'Восстановлена связь ранее созданной страницы без создания дубля.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id));
+        return true;
     }
 
     /** Публикует ранее созданный черновик. Проверяет, что это именно наша страница. */
