@@ -62,3 +62,43 @@ Text Domain: korotkov-dark
 .kd-nav>ul .sub-menu a{display:block;padding:8px 10px;white-space:nowrap}
 @media(max-width:900px){.kd-nav>ul{gap:14px}.kd-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.kd-nav>ul{display:flex;flex-direction:column;align-items:flex-start;gap:16px;width:100%}.kd-nav>ul>li{width:100%}.kd-nav>ul .sub-menu{position:static;display:block;margin:7px 0 0 12px;padding:4px 0 4px 10px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}.kd-nav>ul .sub-menu a{white-space:normal}.kd-service-grid{grid-template-columns:1fr}}
+
+
+/* Final visual refinement: calm solid CTA buttons and frameless callouts */
+.kd-headcta,
+.kd-button,
+.kd-content .wp-block-button__link,
+.kd-search button {
+  background: #2386c8;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+  text-shadow: none;
+}
+.kd-headcta:hover,
+.kd-button:hover,
+.kd-content .wp-block-button__link:hover,
+.kd-search button:hover {
+  background: #2d9add;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  transform: translateY(-1px);
+}
+.kd-button-ghost {
+  background: #17243a;
+  color: #dce8f8 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.kd-button-ghost:hover {
+  background: #20334f;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.kd-cta-panel {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: radial-gradient(ellipse at 85% 10%,rgba(45,212,247,.08),transparent 38%),linear-gradient(120deg,#121e34,#0b1425);
+}
