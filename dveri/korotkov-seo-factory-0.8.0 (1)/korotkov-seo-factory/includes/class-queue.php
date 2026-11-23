@@ -107,7 +107,7 @@ final class KSEF_Queue {
     private static function waiting_codes() {
         return array(
             'ksef_search_busy', 'ksef_search_rate_limit', 'ksef_search_circuit_open', 'ksef_search_throttled',
-            'ksef_api_circuit_open', 'ksef_search_daily_limit', 'ksef_budget_stop', 'ksef_billing_data_missing', 'ksef_billing_data_stale', 'ksef_billing_estimate_read_failed', 'ksef_billing_reserve_failed',
+            'ksef_api_circuit_open', 'ksef_automation_disabled', 'ksef_search_daily_limit', 'ksef_budget_stop', 'ksef_billing_data_missing', 'ksef_billing_data_stale', 'ksef_billing_estimate_read_failed', 'ksef_billing_reserve_failed',
         );
     }
 
