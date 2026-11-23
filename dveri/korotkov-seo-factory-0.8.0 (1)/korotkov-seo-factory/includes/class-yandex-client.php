@@ -97,7 +97,9 @@ final class KSEF_Yandex_Client {
         }
 
         // Резервируем оценку до сетевого вызова: запрос мог тарифицироваться даже при тайм-ауте.
-        $this->record_usage($method, $estimated_cost_per_call);
+        if (!$this->record_usage($method, $estimated_cost_per_call)) {
+            return new WP_Error('ksef_billing_reserve_failed', 'Не удалось сохранить резерв стоимости запроса. Внешний запрос не отправлен.');
+        }
         $response = wp_remote_post(self::BASE_URL . $path, array(
             'timeout' => 25,
             'redirection' => 0,
@@ -194,13 +196,13 @@ final class KSEF_Yandex_Client {
     private function record_usage($method, $estimated_cost) {
         global $wpdb;
         $table = $wpdb->prefix . 'ksef_api_usage';
-        $wpdb->insert($table, array(
+        return $wpdb->insert($table, array(
             'service' => 'wordstat',
             'method' => sanitize_key($method),
             'request_count' => 1,
             'estimated_cost' => (float) $estimated_cost,
             'created_at' => current_time('mysql', true),
-        ), array('%s', '%s', '%d', '%f', '%s'));
+        ), array('%s', '%s', '%d', '%f', '%s')) !== false;
     }
 
     private function get_cache($cache_key) {
