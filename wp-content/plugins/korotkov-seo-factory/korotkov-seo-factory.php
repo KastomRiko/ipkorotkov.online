@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) {
 
 define('KSEF_VERSION', '0.2.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
+require_once __DIR__ . '/includes/class-search-client.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -294,6 +295,8 @@ final class Korotkov_SEO_Factory {
                 <?php submit_button('Сохранить настройки'); ?>
             </form>
             <hr>
+            <h2>Search API</h2>
+            <p>Синхронный поиск по России (регион Яндекса 225), XML-ответ, кэш 7 дней. Внутренний предел — 100 запросов в сутки, интервал — не менее 2 секунд. Поисковый клиент пока вызывается только из кода очереди; автоматические запросы не запускаются.</p>
             <h2>Последние события</h2>
             <?php if ($last_logs) : ?>
                 <table class="widefat striped"><thead><tr><th>Время (UTC)</th><th>Уровень</th><th>Событие</th><th>Сообщение</th></tr></thead><tbody>
