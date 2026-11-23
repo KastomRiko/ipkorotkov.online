@@ -137,6 +137,24 @@ final class KSEF_Publisher {
                 (string) $row->id
             ));
             if ($orphan_id) {
+                // При предыдущем сбое страница могла сохраниться, а часть метаданных — нет.
+                // Повторно загружаем последний готовый импорт и восстанавливаем служебные поля.
+                $recovery_import = $wpdb->get_row($wpdb->prepare(
+                    "SELECT qi.payload, qi.status FROM {$wpdb->prefix}ksef_qwen_imports qi
+                     INNER JOIN {$wpdb->prefix}ksef_keywords k ON k.id = qi.keyword_id
+                     WHERE k.cluster_id = %d ORDER BY qi.id DESC LIMIT 1",
+                    (int) $row->cluster_id
+                ));
+                if (!$recovery_import || $recovery_import->status !== 'ready_for_publish') {
+                    return new WP_Error('ksef_recovery_import_missing', 'Страница найдена, но готовый исходный материал для восстановления метаданных отсутствует.');
+                }
+                $recovery_data = json_decode($recovery_import->payload, true);
+                if (!is_array($recovery_data)) {
+                    return new WP_Error('ksef_recovery_import_corrupt', 'Исходный материал для восстановления метаданных повреждён.');
+                }
+                $meta_recovered = self::write_managed_meta((int) $orphan_id, $row, $recovery_data);
+                if (is_wp_error($meta_recovered)) return $meta_recovered;
+
                 $recovered = self::reconcile_page_link($row, (int) $orphan_id);
                 if (is_wp_error($recovered)) return $recovered;
                 return (int) $orphan_id;
