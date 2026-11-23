@@ -85,6 +85,7 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_api_transport', 'Не удалось связаться с Yandex API.');
         }
 
+        delete_transient('ksef_wordstat_request_lock');
         $status = (int) wp_remote_retrieve_response_code($response);
         $body = (string) wp_remote_retrieve_body($response);
 
