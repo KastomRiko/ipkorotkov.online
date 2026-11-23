@@ -1,0 +1,2 @@
+<?php
+return ['x-generator'=>'GlotPress/4.0.3','translation-revision-date'=>'2026-04-17 08:24:17+0000','plural-forms'=>'nplurals=3; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);','project-id-version'=>'Plugins - 42flows SEO Meta - Stable (latest release)','language'=>'ru','messages'=>['https://42flows.com'=>'https://42flows.com','42flows'=>'42flows','42flows SEO Meta'=>'42flows SEO Meta']];

@@ -1,0 +1,1 @@
+<?php get_header(); ?><main class="kd-main" id="content"><section class="kd-content"><div class="kd-wrap kd-notfound"><strong>404</strong><h1>Страница не найдена</h1><p>Возможно, адрес изменился или страница была удалена.</p><p><a class="kd-button" href="<?php echo esc_url(home_url('/')); ?>">Вернуться на главную</a></p></div></section></main><?php get_footer(); ?>
