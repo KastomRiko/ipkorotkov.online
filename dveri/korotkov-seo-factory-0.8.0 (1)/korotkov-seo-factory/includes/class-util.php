@@ -130,18 +130,19 @@ final class KSEF_Util {
 
         $consumed = isset($settings['billing_grant_consumed']) && is_numeric($settings['billing_grant_consumed']) ? (float) $settings['billing_grant_consumed'] : null;
         $grant_credit = isset($settings['billing_grant_credit']) && is_numeric($settings['billing_grant_credit']) ? (float) $settings['billing_grant_credit'] : null;
-        $expense = isset($settings['billing_expense']) && is_numeric($settings['billing_expense']) ? (float) $settings['billing_expense'] : null;
+        $total_credit = isset($settings['billing_credit']) && is_numeric($settings['billing_credit']) ? (float) $settings['billing_credit'] : null;
+        $expense = ($total_credit !== null && $spent !== null) ? ($spent - $total_credit) : null;
         $end_utc = isset($settings['billing_grant_end_utc']) ? (string) $settings['billing_grant_end_utc'] : '';
         $end_ts = $end_utc !== '' ? strtotime($end_utc) : false;
 
-        if ($consumed === null || $grant_credit === null || $expense === null || !$end_ts) {
+        if ($consumed === null || $grant_credit === null || $total_credit === null || $expense === null || !$end_ts) {
             return new WP_Error('ksef_billing_grant_data_missing', 'Платные запросы заблокированы: отсутствуют данные остатка, кредита, expense или срока гранта.');
         }
         if (time() >= $end_ts) {
             return new WP_Error('ksef_grant_expired', 'Платные запросы заблокированы: срок подарочного гранта истёк.');
         }
-        if ($expense > 0.0001) {
-            return new WP_Error('ksef_cash_expense_detected', 'Платные запросы заблокированы: Billing показывает expense больше нуля; оплата с лицевого счёта не разрешена.');
+        if ($total_credit < 0 || $total_credit > $spent + 0.01 || $expense > 0.0001) {
+            return new WP_Error('ksef_cash_expense_detected', 'Платные запросы заблокированы: расчётный expense (cost − credit) больше нуля либо кредит некорректен; оплата с лицевого счёта не разрешена.');
         }
         if (abs($consumed - $grant_credit) > 0.05) {
             return new WP_Error('ksef_grant_reconciliation_mismatch', 'Платные запросы заблокированы: consumedAmount гранта и monetary_grant_credit не совпадают. Дождитесь обновления Billing и повторите сверку.');
