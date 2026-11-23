@@ -58,6 +58,10 @@ final class KSEF_Yandex_Client {
             return $cached;
         }
 
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
+            return new WP_Error('ksef_billing_not_verified', 'Платные запросы Wordstat заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
+        }
+
         $limit = isset($this->settings['daily_wordstat_limit']) ? absint($this->settings['daily_wordstat_limit']) : 20;
         $interval = isset($this->settings['wordstat_interval']) ? max(5, absint($this->settings['wordstat_interval'])) : 5;
 
