@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.0
+ * Version: 0.8.1
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.0');
+define('KSEF_VERSION', '0.8.1');
+require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
@@ -229,6 +230,8 @@ final class Korotkov_SEO_Factory {
             'search_interval' => 2,
             'budget_total' => 4000,
             'budget_stop' => 3800,
+            'billing_actual_expense' => '',
+            'billing_checked_at' => 0,
             'automation_enabled' => 0,
             'folder_id' => '',
             'api_key' => '',
@@ -297,6 +300,14 @@ final class Korotkov_SEO_Factory {
         $clean['search_interval'] = isset($input['search_interval']) ? min(60, max(2, absint($input['search_interval']))) : 2;
         $clean['budget_total'] = 4000;
         $clean['budget_stop'] = 3800;
+        $billing_value = isset($input['billing_actual_expense']) ? trim((string) $input['billing_actual_expense']) : '';
+        if ($billing_value !== '' && is_numeric($billing_value) && (float) $billing_value >= 0) {
+            $clean['billing_actual_expense'] = number_format((float) $billing_value, 2, '.', '');
+            $clean['billing_checked_at'] = time();
+        } else {
+            $clean['billing_actual_expense'] = '';
+            $clean['billing_checked_at'] = 0;
+        }
         $clean['automation_enabled'] = !empty($input['automation_enabled']) ? 1 : 0;
         $clean['auto_create'] = !empty($input['auto_create']) ? 1 : 0;
         $clean['publish_status'] = (isset($input['publish_status']) && $input['publish_status'] === 'publish') ? 'publish' : 'draft';
@@ -364,8 +375,12 @@ final class Korotkov_SEO_Factory {
                         <td><strong>4 000 ₽</strong><p class="description">Бюджет зафиксирован. Перед включением платных запросов потребуется проверить покрытие бонусами каждого метода и фактический тариф.</p></td>
                     </tr>
                     <tr>
-                        <th scope="row">Порог остановки</th>
-                        <td><strong>3 800 ₽</strong><p class="description">Оставшиеся 200 ₽ — резерв. Порог будет применяться после подключения подтверждённого учёта расходов.</p></td>
+                        <th scope="row">Фактический расход Yandex Cloud, ₽</th>
+                        <td>
+                            <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_actual_expense]" value="<?php echo esc_attr($settings['billing_actual_expense'] ?? ''); ?>" placeholder="Сумма expense из Billing">
+                            <p class="description">Внесите значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing. При сохранении фиксируется время сверки; данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
+                            <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row">Folder ID Yandex Cloud</th>
