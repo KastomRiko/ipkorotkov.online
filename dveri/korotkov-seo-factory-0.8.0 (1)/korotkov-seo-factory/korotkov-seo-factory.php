@@ -300,13 +300,19 @@ final class Korotkov_SEO_Factory {
         $clean['search_interval'] = isset($input['search_interval']) ? min(60, max(2, absint($input['search_interval']))) : 2;
         $clean['budget_total'] = 4000;
         $clean['budget_stop'] = 3800;
+        // Не обновляем время сверки при обычном сохранении настроек: требуется явное подтверждение свежего отчёта.
         $billing_value = isset($input['billing_actual_expense']) ? trim((string) $input['billing_actual_expense']) : '';
-        if ($billing_value !== '' && is_numeric($billing_value) && (float) $billing_value >= 0) {
-            $clean['billing_actual_expense'] = number_format((float) $billing_value, 2, '.', '');
-            $clean['billing_checked_at'] = time();
+        if (!empty($input['billing_refresh_confirm'])) {
+            if ($billing_value !== '' && is_numeric($billing_value) && (float) $billing_value >= 0) {
+                $clean['billing_actual_expense'] = number_format((float) $billing_value, 2, '.', '');
+                $clean['billing_checked_at'] = time();
+            } else {
+                $clean['billing_actual_expense'] = '';
+                $clean['billing_checked_at'] = 0;
+            }
         } else {
-            $clean['billing_actual_expense'] = '';
-            $clean['billing_checked_at'] = 0;
+            $clean['billing_actual_expense'] = isset($old['billing_actual_expense']) ? $old['billing_actual_expense'] : '';
+            $clean['billing_checked_at'] = isset($old['billing_checked_at']) ? (int) $old['billing_checked_at'] : 0;
         }
         $clean['automation_enabled'] = !empty($input['automation_enabled']) ? 1 : 0;
         $clean['auto_create'] = !empty($input['auto_create']) ? 1 : 0;
@@ -378,7 +384,8 @@ final class Korotkov_SEO_Factory {
                         <th scope="row">Фактический расход Yandex Cloud, ₽</th>
                         <td>
                             <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_actual_expense]" value="<?php echo esc_attr($settings['billing_actual_expense'] ?? ''); ?>" placeholder="Сумма expense из Billing">
-                            <p class="description">Внесите значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing. При сохранении фиксируется время сверки; данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
+                            <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что проверил свежий отчёт Billing и подтверждаю указанную сумму</label>
+                            <p class="description">Внесите значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы могут быть предварительными и корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
                             <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
                     </tr>
