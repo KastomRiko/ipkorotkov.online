@@ -43,16 +43,12 @@ final class KSEF_Search_Client {
             return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
         }
 
-        $budget = KSEF_Util::check_budget();
-        if (is_wp_error($budget)) {
-            return $budget;
-        }
-
         $reservation = $this->reserve_search_slot();
         if (is_wp_error($reservation)) {
             return $reservation;
         }
 
+        try {
         $payload = array(
             'query' => array(
                 'searchType' => 'SEARCH_TYPE_RU',
@@ -83,12 +79,10 @@ final class KSEF_Search_Client {
         ));
 
         if (is_wp_error($response)) {
-            $this->release_search_slot();
             Korotkov_SEO_Factory::write_log('error', 'search_transport_error', 'Ошибка соединения с Yandex Search API.');
             return new WP_Error('ksef_search_transport', 'Не удалось связаться с Yandex Search API.');
         }
 
-        delete_transient('ksef_search_request_lock');
         $status = (int) wp_remote_retrieve_response_code($response);
         $body = (string) wp_remote_retrieve_body($response);
 
@@ -132,6 +126,9 @@ final class KSEF_Search_Client {
         $this->record_search_usage();
         Korotkov_SEO_Factory::write_log('info', 'search_request_ok', 'Успешно получена выдача Яндекса.', array('page' => $page));
         return $result;
+        } finally {
+            KSEF_Lock::release($reservation);
+        }
     }
 
     /**
@@ -237,31 +234,33 @@ final class KSEF_Search_Client {
         if (get_transient('ksef_api_circuit_open')) {
             return new WP_Error('ksef_search_circuit_open', 'Все запросы к Яндексу временно остановлены.');
         }
-        if (get_transient('ksef_search_request_lock')) {
-            return new WP_Error('ksef_search_busy', 'Предыдущий поисковый запрос ещё выполняется.');
+        $lock = KSEF_Lock::acquire('search_api_request', 0);
+        if (is_wp_error($lock)) {
+            return new WP_Error('ksef_search_busy', 'Другой запрос Search API уже выполняется.');
+        }
+
+        $budget = KSEF_Util::check_budget();
+        if (is_wp_error($budget)) {
+            KSEF_Lock::release($lock);
+            return $budget;
         }
 
         $day_key = 'ksef_search_usage_' . gmdate('Ymd');
         $used = absint(get_option($day_key, 0));
         if ($used >= self::DAILY_LIMIT) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_search_daily_limit', 'Достигнут внутренний лимит Search API — 100 запросов в сутки.');
         }
 
         $last = absint(get_option('ksef_search_last_request', 0));
         if (time() - $last < self::MIN_INTERVAL) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_search_rate_limit', 'Соблюдается двухсекундный интервал между запросами.');
         }
 
-        set_transient('ksef_search_request_lock', 1, 60);
         update_option('ksef_search_last_request', time(), false);
         update_option($day_key, $used + 1, false);
-        return true;
-    }
-
-    private function release_search_slot() {
-        delete_transient('ksef_search_request_lock');
-        $day_key = 'ksef_search_usage_' . gmdate('Ymd');
-        update_option($day_key, max(0, absint(get_option($day_key, 0)) - 1), false);
+        return $lock;
     }
 
     private function record_search_usage() {
