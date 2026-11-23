@@ -21,13 +21,13 @@
 
 // ** Database settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define( 'DB_NAME', 'u3679875_baza' );
+define( 'DB_NAME', 'database_name_here' );
 
 /** Database username */
-define( 'DB_USER', 'u3679875_admin' );
+define( 'DB_USER', 'username_here' );
 
 /** Database password */
-define( 'DB_PASSWORD', 'mjx-2ae-uYd-C2G' );
+define( 'DB_PASSWORD', 'password_here' );
 
 /** Database hostname */
 define( 'DB_HOST', 'localhost' );
@@ -35,7 +35,7 @@ define( 'DB_HOST', 'localhost' );
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
 
-/** The database collate type. Don't change this if in doubt. */
+/** Database collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
 
 /**#@+
@@ -47,18 +47,16 @@ define( 'DB_COLLATE', '' );
  * You can change these at any point in time to invalidate all existing cookies.
  * This will force all users to have to log in again.
  *
- * @since 2.6.0
- */
-define( 'AUTH_KEY',          '_<Ak9twOZPhCt,z!L cEtX} ||*LWpIdq0`302Qtl]t$d=OrkTqMKVIwI=Estb2}' );
-define( 'SECURE_AUTH_KEY',   'MNcRvSb5S. ZCu6{z|#y2zehg5_nuo@-fQy-FvP3cR=I8tg:rPif$FK]y0<24?fr' );
-define( 'LOGGED_IN_KEY',     'k:Zn1@cXt{BKt@1z~O+iycZ3:!#)PB pF#UB:ENE./>o#;vIQ$Z]yHc*axa~Zc)`' );
-define( 'NONCE_KEY',         '::dF>&{` ZcKn;IrTyqkPHoXD?~EL;~_T]zoB0)+!GT|6dGpx-{-r?g:XA9rWvmK' );
-define( 'AUTH_SALT',         '~Mm{GMixJjc3[~o%[n:{1doIgI_<e;%:J]J~*~<^9=^&^fkLg+<#16B^T:#9/QS<' );
-define( 'SECURE_AUTH_SALT',  'CyUwZ^J:-+txN`7dDYpfl+iB<Tu`jf(WI]JX_^4:{`X!iq.8g7[$>M`YVkK>e;=,' );
-define( 'LOGGED_IN_SALT',    'yD*}jLi!3Eznj/MAM)8q+g1;+Gtf*xt5N7}L4coj5D~IG8+cQBLL>CdC36Dqi_.!' );
-define( 'NONCE_SALT',        ',F^^SWFI|.4B#>P]ZOmBG3/Xk]FA*<A:g<s{,>B5]mzrlU&%hA{2J<]<JiuKK)W_' );
-define( 'WP_CACHE_KEY_SALT', 'E(M6k>p2>hr`^hcTjUA~IOrN&%^$9oO;_viFNNcpdqw>MR(pqolWXz8?rC)! O6O' );
-
+ * @since 2.6.0 */
+define( 'AUTH_KEY',         'put your unique phrase here' );
+define( 'SECURE_AUTH_KEY',  'put your unique phrase here' );
+define( 'LOGGED_IN_KEY',    'put your unique phrase here' );
+define( 'NONCE_KEY',        'put your unique phrase here' );
+define( 'AUTH_SALT',        'put your unique phrase here' );
+define( 'SECURE_AUTH_SALT', 'put your unique phrase here' );
+define( 'LOGGED_IN_SALT',   'put your unique phrase here' );
+define( 'NONCE_SALT',       'put your unique phrase here' );
+define( 'WP_CACHE_KEY_SALT','put your unique phrase here' );
 
 /**#@-*/
 
@@ -70,10 +68,10 @@ define( 'WP_CACHE_KEY_SALT', 'E(M6k>p2>hr`^hcTjUA~IOrN&%^$9oO;_viFNNcpdqw>MR(pqo
  */
 $table_prefix = 'wp_';
 
-
 /* Add any custom values between this line and the "stop editing" line. */
 
-define('FORCE_SSL_ADMIN', true); define('FORCE_SSL_LOGIN', true);
+define('FORCE_SSL_ADMIN', true);
+define('FORCE_SSL_LOGIN', true);
 
 /**
  * For developers: WordPress debugging mode.
@@ -82,8 +80,7 @@ define('FORCE_SSL_ADMIN', true); define('FORCE_SSL_LOGIN', true);
  * It is strongly recommended that plugin and theme developers use WP_DEBUG
  * in their development environments.
  *
- * For information on other constants that can be used for debugging,
- * visit the documentation.
+ * For information on other constants for debugging, visit the documentation.
  *
  * @link https://wordpress.org/support/article/debugging-in-wordpress/
  */
