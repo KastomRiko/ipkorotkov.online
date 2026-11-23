@@ -11,8 +11,8 @@ function korotkov_dark_setup(){
 add_action('after_setup_theme','korotkov_dark_setup');
 function korotkov_dark_assets(){
   wp_enqueue_style('korotkov-fonts','https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap',array(),null);
-  wp_enqueue_style('korotkov-dark-style',get_stylesheet_uri(),array('korotkov-fonts'),'1.0.1');
-  wp_enqueue_script('korotkov-dark-script',get_template_directory_uri().'/assets/theme.js',array(), '1.0.1', true);
+  wp_enqueue_style('korotkov-dark-style',get_stylesheet_uri(),array('korotkov-fonts'),'1.0.2');
+  wp_enqueue_script('korotkov-dark-script',get_template_directory_uri().'/assets/theme.js',array(), '1.0.2', true);
 }
 add_action('wp_enqueue_scripts','korotkov_dark_assets');
 function korotkov_dark_excerpt_length($length){return 28;}
