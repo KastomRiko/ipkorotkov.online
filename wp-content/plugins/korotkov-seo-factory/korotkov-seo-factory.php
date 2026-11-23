@@ -374,6 +374,35 @@ final class Korotkov_SEO_Factory {
             ?>
                 <div class="notice notice-<?php echo esc_attr($qwen_notice['status'] === 'error' ? 'error' : 'success'); ?> inline"><p><?php echo esc_html($qwen_notice['message']); ?></p></div>
             <?php endif; ?>
+            <h3>Последние импортированные материалы</h3>
+            <?php
+            $qwen_rows = $wpdb->get_results(
+                "SELECT qi.id, qi.keyword_id, qi.payload, qi.status, qi.updated_at, k.source_phrase
+                 FROM {$wpdb->prefix}ksef_qwen_imports qi
+                 LEFT JOIN {$wpdb->prefix}ksef_keywords k ON k.id = qi.keyword_id
+                 ORDER BY qi.id DESC LIMIT 10"
+            );
+            ?>
+            <?php if ($qwen_rows) : ?>
+                <table class="widefat striped">
+                    <thead><tr><th>Фраза</th><th>Рекомендуемый заголовок</th><th>H1</th><th>Статус</th><th>Обновлено (UTC)</th></tr></thead>
+                    <tbody>
+                    <?php foreach ($qwen_rows as $qwen_row) :
+                        $qwen_data = json_decode($qwen_row->payload, true);
+                    ?>
+                        <tr>
+                            <td><?php echo esc_html($qwen_row->source_phrase ? $qwen_row->source_phrase : ('ID ' . $qwen_row->keyword_id)); ?></td>
+                            <td><?php echo esc_html($qwen_data['recommended_title'] ?? ''); ?></td>
+                            <td><?php echo esc_html($qwen_data['h1'] ?? ''); ?></td>
+                            <td><?php echo esc_html($qwen_row->status); ?></td>
+                            <td><?php echo esc_html($qwen_row->updated_at); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p>Импортированных материалов пока нет.</p>
+            <?php endif; ?>
             <h2>Search API</h2>
             <p>Синхронный поиск по России (регион Яндекса 225), XML-ответ, кэш 7 дней. Внутренний предел — 100 запросов в сутки, интервал — не менее 2 секунд. Поисковый клиент пока вызывается только из кода очереди; автоматические запросы не запускаются.</p>
             <h2>Последние события</h2>
