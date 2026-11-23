@@ -151,7 +151,7 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_daily_limit_disabled', 'Запросы Wordstat отключены дневным лимитом 0.');
         }
 
-        $lock = KSEF_Lock::acquire($service . '_api_request', 0);
+        $lock = KSEF_Lock::acquire('paid_api_budget', 0);
         if (is_wp_error($lock)) {
             return new WP_Error('ksef_request_busy', 'Другой запрос Wordstat уже выполняется. Повторите позже.');
         }
