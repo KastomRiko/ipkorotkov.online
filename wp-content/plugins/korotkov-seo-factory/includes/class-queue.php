@@ -60,6 +60,7 @@ final class KSEF_Queue {
 
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
         if (empty($settings['automation_enabled'])) return;
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return;
 
         $jobs = $wpdb->prefix . 'ksef_jobs';
         $row = $wpdb->get_row("SELECT id, payload FROM {$jobs} WHERE status = 'new' AND job_type = 'serp_search' ORDER BY id ASC LIMIT 1");
