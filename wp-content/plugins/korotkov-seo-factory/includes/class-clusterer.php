@@ -147,16 +147,19 @@ final class KSEF_Clusterer {
             $qwen_data = $qwen ? json_decode($qwen->payload, true) : array();
             $page_title = !empty($qwen_data['recommended_title']) ? sanitize_text_field($qwen_data['recommended_title']) : $label;
             $page_status = !empty($qwen_data['h1']) && !empty($qwen_data['meta_title']) ? 'draft_review' : 'needs_qwen';
-            $page_exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM {$pages_table} WHERE cluster_id = %d ORDER BY id DESC LIMIT 1",
+            $page_row = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, status FROM {$pages_table} WHERE cluster_id = %d ORDER BY id DESC LIMIT 1",
                 $cluster_id
             ));
-            if ($page_exists) {
+            if ($page_row) {
+                // Never downgrade a page that has already passed the content gate.
+                $protected_statuses = array('ready_for_publish', 'blocked_review');
+                $next_status = in_array($page_row->status, $protected_statuses, true) ? $page_row->status : $page_status;
                 $wpdb->update($pages_table, array(
                     'page_title' => $page_title,
-                    'status' => $page_status,
+                    'status' => $next_status,
                     'updated_at' => $now,
-                ), array('id' => (int) $page_exists), array('%s','%s','%s'), array('%d'));
+                ), array('id' => (int) $page_row->id), array('%s','%s','%s'), array('%d'));
             } else {
                 $wpdb->insert($pages_table, array(
                     'cluster_id' => $cluster_id,
