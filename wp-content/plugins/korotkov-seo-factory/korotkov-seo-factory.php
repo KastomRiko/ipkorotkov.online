@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,11 +13,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.5.0');
+define('KSEF_VERSION', '0.6.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
 require_once __DIR__ . '/includes/class-queue.php';
 require_once __DIR__ . '/includes/class-qwen-exchange.php';
+require_once __DIR__ . '/includes/class-clusterer.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -38,6 +39,7 @@ final class Korotkov_SEO_Factory {
         add_filter('cron_schedules', array($this, 'cron_schedules'));
         add_action('admin_post_ksef_enqueue_phrases', array($this, 'handle_enqueue_phrases'));
         KSEF_Qwen_Exchange::register_hooks();
+        KSEF_Clusterer::register_hooks();
     }
 
     public static function activate() {
@@ -356,8 +358,52 @@ final class Korotkov_SEO_Factory {
             <?php endif; ?>
             <p><strong>Состояние очереди:</strong> <?php if ($queue_counts) : foreach ($queue_counts as $count) : echo esc_html($count->status . ': ' . $count->total . ' · '); endforeach; else : ?>пока пуста<?php endif; ?></p>
             <hr>
+            <h2>Кластеризация поисковых фраз</h2>
+            <p>Система сравнивает URL органической выдачи. Фразы объединяются, если совпадают минимум два URL и доля пересечения составляет не менее 20%. Для кластеризации используются только фразы с собранной выдачей; внешние API-запросы не выполняются.</p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="ksef_cluster_keywords">
+                <?php wp_nonce_field('ksef_cluster_keywords'); ?>
+                <?php submit_button('Сгруппировать исследованные фразы', 'secondary', 'submit', false); ?>
+            </form>
+            <?php
+            $cluster_notice = get_transient('ksef_cluster_notice_' . get_current_user_id());
+            if ($cluster_notice) :
+                delete_transient('ksef_cluster_notice_' . get_current_user_id());
+            ?>
+                <div class="notice notice-<?php echo esc_attr($cluster_notice['status'] === 'error' ? 'error' : 'success'); ?> inline"><p><?php echo esc_html($cluster_notice['message']); ?></p></div>
+            <?php endif; ?>
+            <?php
+            $cluster_rows = $wpdb->get_results(
+                "SELECT c.id, c.label, c.status, COUNT(DISTINCT k.id) AS keyword_count,
+                        p.page_title, p.status AS page_status
+                 FROM {$wpdb->prefix}ksef_clusters c
+                 LEFT JOIN {$wpdb->prefix}ksef_keywords k ON k.cluster_id = c.id
+                 LEFT JOIN {$wpdb->prefix}ksef_pages p ON p.cluster_id = c.id
+                 GROUP BY c.id, c.label, c.status, p.page_title, p.status
+                 ORDER BY c.id DESC LIMIT 20"
+            );
+            ?>
+            <h3>Кластеры и заготовки страниц</h3>
+            <?php if ($cluster_rows) : ?>
+                <table class="widefat striped">
+                    <thead><tr><th>Кластер</th><th>Фраз</th><th>Заголовок страницы</th><th>Статус</th></tr></thead>
+                    <tbody>
+                    <?php foreach ($cluster_rows as $cluster_row) : ?>
+                        <tr>
+                            <td><?php echo esc_html($cluster_row->label); ?> <small>#<?php echo absint($cluster_row->id); ?></small></td>
+                            <td><?php echo absint($cluster_row->keyword_count); ?></td>
+                            <td><?php echo esc_html($cluster_row->page_title); ?></td>
+                            <td><?php echo esc_html($cluster_row->page_status ? $cluster_row->page_status : $cluster_row->status); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p>Кластеры ещё не созданы.</p>
+            <?php endif; ?>
+            <hr>
             <h2>Ручной обмен с Qwen</h2>
-            <p>Экспортирует до 30 исследованных фраз вместе с данными органической выдачи. Открой CSV в Qwen, попроси заполнить пустые поля и импортируй результат обратно. Qwen API и автоматизация браузера не используются.</p>
+            <p>Экспортирует до 30 добавленных фраз вместе с данными органической выдачи, если они уже собраны. Открой CSV в Qwen, попроси заполнить пустые поля и импортируй результат обратно. Qwen API и автоматизация браузера не используются.</p>
             <p><strong>Порядок работы:</strong> экспорт CSV → обработка в chat.qwen.ai → сохранение результата в CSV с теми же заголовками и порядком столбцов → импорт.</p>
             <p><a class="button button-secondary" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=ksef_qwen_export'), 'ksef_qwen_export')); ?>">Экспортировать задания для Qwen</a></p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
