@@ -275,8 +275,17 @@ final class Korotkov_SEO_Factory {
             self::write_log('warning', 'queue_enqueue_failed', $result->get_error_message());
             $redirect = add_query_arg('ksef_queue_result', 'error', admin_url('admin.php?page=korotkov-seo-factory'));
         } else {
-            self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
-            $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
+            if (!empty($result['failed'])) {
+                self::write_log('warning', 'queue_enqueue_partial_failure', 'Не все фразы удалось атомарно добавить в очередь.', $result);
+                $redirect = add_query_arg(array(
+                    'ksef_queue_result' => 'partial',
+                    'ksef_queue_count' => absint($result['added']),
+                    'ksef_queue_failed' => absint($result['failed']),
+                ), admin_url('admin.php?page=korotkov-seo-factory'));
+            } else {
+                self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
+                $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
+            }
         }
         wp_safe_redirect($redirect);
         exit;
@@ -435,7 +444,15 @@ final class Korotkov_SEO_Factory {
                 <?php submit_button('Добавить фразы в очередь', 'secondary', 'submit', false); ?>
             </form>
             <?php if (isset($_GET['ksef_queue_result'])) : ?>
-                <div class="notice notice-info inline"><p><?php echo esc_html($_GET['ksef_queue_result'] === 'added' ? 'Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) : 'Не удалось добавить фразы. Проверь журнал.'); ?></p></div>
+                <div class="notice notice-<?php echo esc_attr($_GET['ksef_queue_result'] === 'partial' || $_GET['ksef_queue_result'] === 'error' ? 'warning' : 'info'); ?> inline"><p><?php
+                    if ($_GET['ksef_queue_result'] === 'added') {
+                        echo esc_html('Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0));
+                    } elseif ($_GET['ksef_queue_result'] === 'partial') {
+                        echo esc_html('Добавлено фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) . '. Не удалось добавить: ' . absint($_GET['ksef_queue_failed'] ?? 0) . '. Подробности — в журнале.');
+                    } else {
+                        echo esc_html('Не удалось добавить фразы. Проверь журнал.');
+                    }
+                ?></p></div>
             <?php endif; ?>
             <p><strong>Состояние очереди:</strong> <?php if ($queue_counts) : foreach ($queue_counts as $count) : echo esc_html($count->status . ': ' . $count->total . ' · '); endforeach; else : ?>пока пуста<?php endif; ?></p>
             <hr>
