@@ -230,7 +230,7 @@ final class Korotkov_SEO_Factory {
             'search_interval' => 2,
             'budget_total' => 4000,
             'budget_stop' => 3800,
-            'billing_actual_expense' => '',
+            'billing_reported_cost' => '',
             'billing_checked_at' => 0,
             'automation_enabled' => 0,
             'folder_id' => '',
@@ -301,17 +301,17 @@ final class Korotkov_SEO_Factory {
         $clean['budget_total'] = 4000;
         $clean['budget_stop'] = 3800;
         // Не обновляем время сверки при обычном сохранении настроек: требуется явное подтверждение свежего отчёта.
-        $billing_value = isset($input['billing_actual_expense']) ? trim((string) $input['billing_actual_expense']) : '';
+        $billing_value = isset($input['billing_reported_cost']) ? trim((string) $input['billing_reported_cost']) : '';
         if (!empty($input['billing_refresh_confirm'])) {
             if ($billing_value !== '' && is_numeric($billing_value) && (float) $billing_value >= 0) {
-                $clean['billing_actual_expense'] = number_format((float) $billing_value, 2, '.', '');
+                $clean['billing_reported_cost'] = number_format((float) $billing_value, 2, '.', '');
                 $clean['billing_checked_at'] = time();
             } else {
-                $clean['billing_actual_expense'] = '';
+                $clean['billing_reported_cost'] = '';
                 $clean['billing_checked_at'] = 0;
             }
         } else {
-            $clean['billing_actual_expense'] = isset($old['billing_actual_expense']) ? $old['billing_actual_expense'] : '';
+            $clean['billing_reported_cost'] = isset($old['billing_reported_cost']) ? $old['billing_reported_cost'] : '';
             $clean['billing_checked_at'] = isset($old['billing_checked_at']) ? (int) $old['billing_checked_at'] : 0;
         }
         $clean['automation_enabled'] = !empty($input['automation_enabled']) ? 1 : 0;
@@ -355,7 +355,7 @@ final class Korotkov_SEO_Factory {
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
-            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы без KSEF_BILLING_VERIFIED и свежей ручной сверки expense из Yandex Cloud Billing. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
+            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы без KSEF_BILLING_VERIFIED и свежей ручной сверки cost из Yandex Cloud Billing. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
                 <h2>Исследование и ограничения</h2>
@@ -381,13 +381,13 @@ final class Korotkov_SEO_Factory {
                         <td><strong>4 000 ₽</strong><p class="description">Бюджет зафиксирован. Перед включением платных запросов потребуется проверить покрытие бонусами каждого метода и фактический тариф.</p></td>
                     </tr>
                     <tr>
-                        <th scope="row">Фактический расход Yandex Cloud, ₽</th>
+                        <th scope="row">Стоимость ресурсов по Billing (cost), ₽</th>
                         <td>
-                            <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_actual_expense]" value="<?php echo esc_attr($settings['billing_actual_expense'] ?? ''); ?>" placeholder="Сумма expense из Billing">
+                            <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_reported_cost]" value="<?php echo esc_attr($settings['billing_reported_cost'] ?? ''); ?>" placeholder="Сумма expense из Billing">
                             <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что проверил свежий отчёт Billing и подтверждаю указанную сумму</label>
-                            <p class="description">Внесите накопленное значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing за период с начала расходов этого проекта по текущую дату. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы могут быть предварительными и корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
+                            <p class="description">Внесите накопленное значение cost (до скидок и кредитов) из отчёта Yandex Cloud Billing за период с начала расходов этого проекта по текущую дату. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Дополнительно к cost учитывается резерв оценочных затрат всех попыток API после времени сверки. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы предварительные и могут корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
                             <p class="description"><strong>Порог остановки: 3 800 ₽. Резерв: 200 ₽.</strong></p>
-                            <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
+                            <p class="description">Последняя сверка cost: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
                     </tr>
                     <tr>
