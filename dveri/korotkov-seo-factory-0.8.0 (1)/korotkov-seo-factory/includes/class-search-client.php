@@ -39,6 +39,11 @@ final class KSEF_Search_Client {
             return $cached;
         }
 
+        // Кэш доступен и при выключенной автоматизации; новые внешние запросы — нет.
+        if (empty($settings['automation_enabled'])) {
+            return new WP_Error('ksef_automation_disabled', 'Автоматические запросы Search API отключены в настройках плагина.');
+        }
+
         if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
             return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
         }
