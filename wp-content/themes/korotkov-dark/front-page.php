@@ -6,7 +6,7 @@ $service_cards = array(
   array('num'=>'03','type'=>'AUTOMATION','title'=>'Интеграции и автоматизация','desc'=>'Связка сервисов, API, CRM и Telegram-боты для сокращения ручной работы.','url'=>'/services/','accent'=>'violet')
 );
 $pages = get_pages(array('sort_column'=>'menu_order,post_title','sort_order'=>'ASC','parent'=>0,'number'=>8));
-$pages = array_filter($pages, function($p){ return !in_array($p->post_name, array('privacy-policy','blog'), true); });
+$pages = array_filter($pages, function($p){ return (int) $p->ID !== (int) get_option('page_on_front') && !in_array($p->post_name, array('privacy-policy','blog','front_page'), true); });
 ?>
 <main class="kd-main" id="content">
 <section class="kd-hero kd-hero-v2">
@@ -55,9 +55,14 @@ $pages = array_filter($pages, function($p){ return !in_array($p->post_name, arra
   <div class="kd-section-top"><div><span class="kd-eyebrow">Навигация</span><h2>Изучите <span class="kd-gradient">сайт и проекты</span></h2></div><p>Больше информации о направлениях работы, опыте и способах связи.</p></div>
   <div class="kd-grid kd-page-grid">
    <?php if($pages): foreach($pages as $p): ?>
-    <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Раздел сайта</span><h3><a href="<?php echo esc_url(get_permalink($p)); ?>"><?php echo esc_html(get_the_title($p)); ?></a></h3><p><?php echo esc_html(wp_trim_words(wp_strip_all_tags($p->post_content),20)); ?></p><a class="kd-text-link" href="<?php echo esc_url(get_permalink($p)); ?>">Открыть раздел →</a></article>
+    <?php
+      $page_title = $p->post_name === 'about' ? 'Обо мне' : get_the_title($p);
+      $page_desc = $p->post_name === 'about' ? 'Опыт, подход к работе и принципы разработки цифровых решений.' : wp_trim_words(wp_strip_all_tags($p->post_content),20);
+    ?>
+    <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Раздел сайта</span><h3><a href="<?php echo esc_url(get_permalink($p)); ?>"><?php echo esc_html($page_title); ?></a></h3><p><?php echo esc_html($page_desc); ?></p><a class="kd-text-link" href="<?php echo esc_url(get_permalink($p)); ?>">Открыть раздел →</a></article>
    <?php endforeach; else: ?>
     <article class="kd-page-tile"><h3>Разделы сайта</h3><p>Страницы появятся здесь автоматически после публикации в WordPress.</p></article>
+   <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Публикации</span><h3><a href="<?php echo esc_url(home_url('/blog/')); ?>">Блог и обновления</a></h3><p>Заметки о разработке, автоматизации, парсинге и новых проектах.</p><a class="kd-text-link" href="<?php echo esc_url(home_url('/blog/')); ?>">Читать материалы →</a></article>
    <?php endif; ?>
   </div>
  </div>
