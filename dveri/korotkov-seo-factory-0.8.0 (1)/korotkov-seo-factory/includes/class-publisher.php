@@ -298,27 +298,56 @@ final class KSEF_Publisher {
     /** Публикует ранее созданный черновик. Проверяет, что это именно наша страница. */
     public static function promote($page_id) {
         global $wpdb;
-        $pages = $wpdb->prefix . 'ksef_pages';
-        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", absint($page_id)));
-        if (!$row || $row->status !== 'draft_created' || !(int) $row->wp_page_id) {
-            return new WP_Error('ksef_not_draft', 'Карточка не является созданным черновиком.');
+        // Используем ту же блокировку, что и создание: публикация и восстановление
+        // связи не должны выполняться параллельно для разных запросов.
+        $lock = KSEF_Lock::acquire('publisher', 5);
+        if (is_wp_error($lock)) {
+            return new WP_Error('ksef_publish_busy', 'Другая операция создания или публикации страниц ещё выполняется. Повторите позже.');
         }
-        $post = get_post((int) $row->wp_page_id);
-        if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post->ID, '_ksef_page_row_id', true) !== (int) $row->id) {
-            return new WP_Error('ksef_post_mismatch', 'Страница WordPress не найдена или не связана с карточкой.');
+
+        try {
+            $pages = $wpdb->prefix . 'ksef_pages';
+            $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", absint($page_id)));
+            if (!$row || !(int) $row->wp_page_id) {
+                return new WP_Error('ksef_not_draft', 'Карточка не является созданным черновиком.');
+            }
+
+            $post = get_post((int) $row->wp_page_id);
+            if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post->ID, '_ksef_page_row_id', true) !== (int) $row->id) {
+                return new WP_Error('ksef_post_mismatch', 'Страница WordPress не найдена или не связана с карточкой.');
+            }
+
+            // Восстановление после сбоя: WP уже опубликовал страницу, но запись
+            // статуса/URL в таблице плагина могла не сохраниться.
+            if ($post->post_status === 'publish') {
+                $recovered = self::reconcile_page_link($row, (int) $post->ID);
+                if (is_wp_error($recovered)) return $recovered;
+                Korotkov_SEO_Factory::write_log('warning', 'page_publish_reconciled', 'Восстановлена связь уже опубликованной страницы с карточкой.', array('page_row' => (int) $row->id, 'post_id' => (int) $post->ID));
+                return (int) $post->ID;
+            }
+
+            if ($row->status !== 'draft_created' || $post->post_status !== 'draft') {
+                return new WP_Error('ksef_not_draft_status', 'Карточка или страница не находятся в состоянии черновика; публикация не выполнена.');
+            }
+
+            $ok = wp_update_post(array('ID' => $post->ID, 'post_status' => 'publish'), true);
+            if (is_wp_error($ok)) return $ok;
+            if (!$ok || get_post_status($post->ID) !== 'publish') {
+                return new WP_Error('ksef_publish_failed', 'WordPress не подтвердил публикацию страницы.');
+            }
+
+            // Повторяемая синхронизация вместо отдельного UPDATE: если БД временно
+            // недоступна, следующий запуск попадёт в ветку восстановления выше.
+            $synced = self::reconcile_page_link($row, (int) $post->ID);
+            if (is_wp_error($synced)) {
+                return new WP_Error('ksef_publish_sync_failed', 'Страница опубликована, но карточка не синхронизирована. Повторите действие для восстановления связи. ' . $synced->get_error_message());
+            }
+
+            Korotkov_SEO_Factory::write_log('info', 'page_published', 'Черновик опубликован и карточка синхронизирована.', array('post_id' => (int) $post->ID));
+            return (int) $post->ID;
+        } finally {
+            KSEF_Lock::release($lock);
         }
-        if ($post->post_status !== 'draft') {
-            return new WP_Error('ksef_not_draft_status', 'Страница уже не черновик; изменения вручную не затрагиваются.');
-        }
-        $ok = wp_update_post(array('ID' => $post->ID, 'post_status' => 'publish'), true);
-        if (is_wp_error($ok)) return $ok;
-        $now = current_time('mysql', true);
-        $wpdb->update($pages, array(
-            'status' => 'published', 'published_at' => $now, 'updated_at' => $now,
-            'page_url' => get_permalink($post->ID),
-        ), array('id' => (int) $row->id), array('%s', '%s', '%s', '%s'), array('%d'));
-        Korotkov_SEO_Factory::write_log('info', 'page_published', 'Черновик опубликован.', array('post_id' => (int) $post->ID));
-        return (int) $post->ID;
     }
 
     private static function write_compat_meta($post_id, $title, $desc) {
