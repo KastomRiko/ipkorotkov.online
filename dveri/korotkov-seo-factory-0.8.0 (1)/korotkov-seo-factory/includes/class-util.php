@@ -77,21 +77,39 @@ final class KSEF_Util {
     }
 
     /**
-     * Накопленные оценочные расходы (₽) по таблице api_usage.
+     * Возвращает последнюю вручную сверенную сумму expense из Yandex Cloud Billing.
+     * Данные считаются актуальными не более 24 часов; оценка API из api_usage не используется для допуска запросов.
      */
-    public static function spent_estimate() {
-        global $wpdb;
-        return (float) $wpdb->get_var("SELECT COALESCE(SUM(estimated_cost), 0) FROM {$wpdb->prefix}ksef_api_usage");
+    public static function actual_expense() {
+        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
+        if (!isset($settings['billing_actual_expense']) || $settings['billing_actual_expense'] === '') {
+            return null;
+        }
+        return (float) $settings['billing_actual_expense'];
+    }
+
+    public static function billing_checked_at() {
+        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
+        return isset($settings['billing_checked_at']) ? (int) $settings['billing_checked_at'] : 0;
     }
 
     /**
-     * WP_Error, если порог остановки бюджета достигнут; иначе true.
+     * Fail-closed: платный запрос разрешается только при наличии свежей сверки actual expense.
      */
     public static function check_budget() {
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
         $stop = isset($settings['budget_stop']) ? (float) $settings['budget_stop'] : 3800.0;
-        if (self::spent_estimate() >= $stop) {
-            return new WP_Error('ksef_budget_stop', 'Достигнут порог остановки бюджета; платные запросы отключены.');
+        $spent = self::actual_expense();
+        $checked_at = self::billing_checked_at();
+
+        if ($spent === null || $checked_at <= 0) {
+            return new WP_Error('ksef_billing_data_missing', 'Платные запросы заблокированы: внесите фактический расход из Yandex Cloud Billing.');
+        }
+        if ($checked_at < time() - DAY_IN_SECONDS || $checked_at > time() + 300) {
+            return new WP_Error('ksef_billing_data_stale', 'Платные запросы заблокированы: сверка расходов устарела. Обновите сумму из Yandex Cloud Billing.');
+        }
+        if ($spent >= $stop) {
+            return new WP_Error('ksef_budget_stop', 'Достигнут порог фактического расхода ' . number_format_i18n($stop, 2) . ' ₽; платные запросы отключены.');
         }
         return true;
     }
