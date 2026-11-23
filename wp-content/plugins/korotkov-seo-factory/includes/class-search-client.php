@@ -32,11 +32,16 @@ final class KSEF_Search_Client {
             return new WP_Error('ksef_missing_credentials', 'Не заданы API-ключ и Folder ID.');
         }
 
-        $cache_key = hash('sha256', 'web-search:ru:225:xml:' . $page . ':' . mb_strtolower($query_text));
+        $normalized_query = function_exists('mb_strtolower') ? mb_strtolower($query_text) : strtolower($query_text);
+        $cache_key = hash('sha256', 'web-search:ru:225:xml:' . $page . ':' . $normalized_query);
         $cached = $this->get_cache($cache_key);
         if ($cached !== null) {
             Korotkov_SEO_Factory::write_log('info', 'search_cache_hit', 'Search API: использован кэшированный ответ.');
             return $cached;
+        }
+
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
+            return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
         }
 
         $reservation = $this->reserve_search_slot();
