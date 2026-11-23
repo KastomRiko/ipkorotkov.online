@@ -33,6 +33,10 @@ final class KSEF_Queue {
                     "SELECT id FROM {$keywords} WHERE normalized_phrase = %s LIMIT 1",
                     $normalized
                 ));
+                if ($wpdb->last_error !== '') {
+                    $failed++;
+                    continue;
+                }
                 if ($exists) continue;
 
                 // Ключевая фраза и её задание создаются как одна транзакция.
