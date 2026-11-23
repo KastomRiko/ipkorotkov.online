@@ -276,6 +276,10 @@ final class KSEF_Publisher {
             return new WP_Error('ksef_page_meta_write_failed', 'Страница создана (ID ' . (int) $post_id . '), но обязательные метаданные записались не полностью. Повторите действие для восстановления; дубль создаваться не должен.');
         }
 
+        if (!self::write_compat_meta($post_id, $meta_title, $meta_desc)) {
+            Korotkov_SEO_Factory::write_log('warning', 'seo_compat_meta_write_failed', 'Не удалось подтвердить запись совместимых SEO-метаполей. Основные метаданные SEO Factory сохранены.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id));
+        }
+
         // WordPress мог скорректировать slug (зарезервированные имена и т.п.) — сохраняем фактический.
         $actual_slug = get_post_field('post_name', $post_id);
         if ($actual_slug) $slug = $actual_slug;
@@ -424,24 +428,31 @@ final class KSEF_Publisher {
     }
 
     private static function write_compat_meta($post_id, $title, $desc) {
-        $title = wp_slash($title);
-        $desc = wp_slash($desc);
+        $values = array();
         if (defined('WPSEO_VERSION')) {
-            update_post_meta($post_id, '_yoast_wpseo_title', $title);
-            update_post_meta($post_id, '_yoast_wpseo_metadesc', $desc);
+            $values['_yoast_wpseo_title'] = $title;
+            $values['_yoast_wpseo_metadesc'] = $desc;
         }
         if (defined('RANK_MATH_VERSION')) {
-            update_post_meta($post_id, 'rank_math_title', $title);
-            update_post_meta($post_id, 'rank_math_description', $desc);
+            $values['rank_math_title'] = $title;
+            $values['rank_math_description'] = $desc;
         }
         if (defined('SEOPRESS_VERSION')) {
-            update_post_meta($post_id, '_seopress_titles_title', $title);
-            update_post_meta($post_id, '_seopress_titles_desc', $desc);
+            $values['_seopress_titles_title'] = $title;
+            $values['_seopress_titles_desc'] = $desc;
         }
         if (defined('AIOSEO_VERSION')) {
-            update_post_meta($post_id, '_aioseo_title', $title);
-            update_post_meta($post_id, '_aioseo_description', $desc);
+            $values['_aioseo_title'] = $title;
+            $values['_aioseo_description'] = $desc;
         }
+
+        foreach ($values as $key => $value) {
+            update_post_meta($post_id, $key, wp_slash($value));
+            if ((string) get_post_meta($post_id, $key, true) !== (string) $value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Блок «Читайте также» только из URL, которые реально ведут на страницы этого сайта. */
