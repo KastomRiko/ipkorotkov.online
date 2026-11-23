@@ -267,8 +267,12 @@ final class KSEF_Qwen_Exchange {
             ));
             if ($other_cluster === $cluster_id) continue;
 
-            if (self::normalize_text($payload['meta_title']) === self::normalize_text($other['meta_title'] ?? '') ||
-                self::normalize_text($payload['h1']) === self::normalize_text($other['h1'] ?? '')) {
+            $candidate_meta = self::normalize_text($payload['meta_title']);
+            $candidate_h1 = self::normalize_text($payload['h1']);
+            $other_meta = self::normalize_text($other['meta_title'] ?? '');
+            $other_h1 = self::normalize_text($other['h1'] ?? '');
+            if (($candidate_meta !== '' && $candidate_meta === $other_meta) ||
+                ($candidate_h1 !== '' && $candidate_h1 === $other_h1)) {
                 $errors[] = 'Обнаружен совпадающий H1 или meta title у другой страницы';
                 break;
             }
