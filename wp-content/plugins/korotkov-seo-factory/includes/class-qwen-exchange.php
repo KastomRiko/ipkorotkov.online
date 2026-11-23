@@ -213,12 +213,14 @@ final class KSEF_Qwen_Exchange {
                 "SELECT id FROM {$pages_table} WHERE cluster_id = %d ORDER BY id DESC LIMIT 1",
                 (int) $keyword->cluster_id
             ));
-            $wpdb->update($pages_table, array(
-                'page_title' => $title,
-                'page_slug' => $slug,
-                'status' => $status,
-                'updated_at' => $now,
-            ), array('id' => (int) $page_id), array('%s','%s','%s','%s'), array('%d'));
+            if ($page_id) {
+                $wpdb->update($pages_table, array(
+                    'page_title' => $title,
+                    'page_slug' => $slug,
+                    'status' => $status,
+                    'updated_at' => $now,
+                ), array('id' => (int) $page_id), array('%s','%s','%s','%s'), array('%d'));
+            }
         }
 
         fclose($handle);
@@ -241,6 +243,14 @@ final class KSEF_Qwen_Exchange {
         }
 
         $pages_table = $wpdb->prefix . 'ksef_pages';
+        $staging_page_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$pages_table} WHERE cluster_id = %d ORDER BY id DESC LIMIT 1",
+            $cluster_id
+        ));
+        if (!$staging_page_id) {
+            $errors[] = 'Для кластера отсутствует карточка SEO-страницы; повтори кластеризацию';
+        }
+
         $slug = sanitize_title($payload['recommended_title']);
         $same_slug = $wpdb->get_var($wpdb->prepare(
             "SELECT p.id FROM {$pages_table} p
