@@ -109,16 +109,14 @@ final class KSEF_Publisher {
         $page_id = absint($page_id);
 
         // Блокировка MySQL охватывает и проверку занятого URL, и вставку страницы (иначе возможна гонка).
-        global $wpdb;
-        $lock_name = 'ksef_publish_' . $wpdb->prefix;
-        $got = (int) $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 5)', $lock_name));
-        if ($got !== 1) {
+        $lock = KSEF_Lock::acquire('publisher', 5);
+        if (is_wp_error($lock)) {
             return new WP_Error('ksef_publish_busy', 'Другая операция создания страниц ещё выполняется. Повторите позже.');
         }
         try {
             $result = self::do_create($page_id, $status ?: self::target_status(), $manual);
         } finally {
-            $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock_name));
+            KSEF_Lock::release($lock);
         }
         return $result;
     }
