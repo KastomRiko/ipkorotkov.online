@@ -190,11 +190,6 @@ final class KSEF_Yandex_Client {
         update_option($key, $this->get_daily_usage($service) + 1, false);
     }
 
-    private function decrement_daily_usage($service) {
-        $key = 'ksef_' . $service . '_usage_' . gmdate('Ymd');
-        update_option($key, max(0, $this->get_daily_usage($service) - 1), false);
-    }
-
     private function record_usage($method, $estimated_cost) {
         global $wpdb;
         $table = $wpdb->prefix . 'ksef_api_usage';
