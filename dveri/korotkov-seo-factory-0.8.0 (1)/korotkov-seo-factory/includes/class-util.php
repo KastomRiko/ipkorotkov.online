@@ -82,7 +82,7 @@ final class KSEF_Util {
      */
     public static function actual_expense() {
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
-        if (!isset($settings['billing_actual_expense']) || $settings['billing_actual_expense'] === '') {
+        if (!isset($settings['billing_actual_expense']) || $settings['billing_actual_expense'] === '' || !is_numeric($settings['billing_actual_expense'])) {
             return null;
         }
         return (float) $settings['billing_actual_expense'];
