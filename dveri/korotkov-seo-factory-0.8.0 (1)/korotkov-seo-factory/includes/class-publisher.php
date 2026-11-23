@@ -160,7 +160,29 @@ final class KSEF_Publisher {
                 return (int) $orphan_id;
             }
         }
-        if ((int) $row->wp_page_id > 0 || in_array($row->status, array('draft_created', 'published'), true)) {
+        if ((int) $row->wp_page_id > 0) {
+            $linked_post = get_post((int) $row->wp_page_id);
+            if (!$linked_post || $linked_post->post_type !== 'page' || !in_array($linked_post->post_status, array('draft', 'publish', 'pending', 'private'), true)) {
+                return new WP_Error('ksef_page_exists', 'Связанная страница не найдена или находится в корзине; автоматическое изменение запрещено.');
+            }
+            $linked_import = $wpdb->get_row($wpdb->prepare(
+                "SELECT qi.payload, qi.status FROM {$wpdb->prefix}ksef_qwen_imports qi
+                 INNER JOIN {$wpdb->prefix}ksef_keywords k ON k.id = qi.keyword_id
+                 WHERE k.cluster_id = %d ORDER BY qi.id DESC LIMIT 1",
+                (int) $row->cluster_id
+            ));
+            if (!$linked_import || $linked_import->status !== 'ready_for_publish') {
+                return new WP_Error('ksef_recovery_import_missing', 'Связанная страница найдена, но готовый исходный материал для восстановления отсутствует.');
+            }
+            $linked_data = json_decode($linked_import->payload, true);
+            if (!is_array($linked_data)) return new WP_Error('ksef_recovery_import_corrupt', 'Исходный материал для восстановления повреждён.');
+            $meta_recovered = self::write_managed_meta((int) $linked_post->ID, $row, $linked_data);
+            if (is_wp_error($meta_recovered)) return $meta_recovered;
+            $reconciled = self::reconcile_page_link($row, (int) $linked_post->ID);
+            if (is_wp_error($reconciled)) return $reconciled;
+            return (int) $linked_post->ID;
+        }
+        if (in_array($row->status, array('draft_created', 'published'), true)) {
             return new WP_Error('ksef_page_exists', 'Для этой карточки страница уже создана; перезапись запрещена.');
         }
         if ($row->status !== 'ready_for_publish') {
@@ -244,7 +266,13 @@ final class KSEF_Publisher {
 
         $meta_result = self::write_managed_meta($post_id, $row, $data);
         if (is_wp_error($meta_result)) {
-            Korotkov_SEO_Factory::write_log('critical', 'page_meta_write_failed', 'Страница создана, но обязательные метаполя не прошли проверку чтением. Повторный запуск попробует восстановить метаданные по служебной связи.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'error' => $meta_result->get_error_message()));
+            // Сначала фиксируем ID созданной страницы в основной карточке. Это
+            // даёт безопасный путь восстановления даже при сбое служебного postmeta.
+            $linked_after_meta_error = $wpdb->update($pages, array(
+                'wp_page_id' => (int) $post_id,
+                'updated_at' => current_time('mysql', true),
+            ), array('id' => (int) $row->id), array('%d', '%s'), array('%d'));
+            Korotkov_SEO_Factory::write_log('critical', 'page_meta_write_failed', 'Страница создана, но обязательные метаполя не прошли проверку чтением. Сохранение связи с карточкой: ' . ($linked_after_meta_error === false ? 'ошибка' : 'выполнено') . '.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error, 'error' => $meta_result->get_error_message()));
             return new WP_Error('ksef_page_meta_write_failed', 'Страница создана (ID ' . (int) $post_id . '), но обязательные метаданные записались не полностью. Повторите действие для восстановления; дубль создаваться не должен.');
         }
 
