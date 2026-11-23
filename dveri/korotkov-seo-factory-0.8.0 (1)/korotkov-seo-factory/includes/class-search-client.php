@@ -39,13 +39,13 @@ final class KSEF_Search_Client {
             return $cached;
         }
 
-        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
-            return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
+        // Кэш доступен и при выключенной автоматизации; новые внешние запросы — нет.
+        if (empty($settings['automation_enabled'])) {
+            return new WP_Error('ksef_automation_disabled', 'Автоматические запросы Search API отключены в настройках плагина.');
         }
 
-        $budget = KSEF_Util::check_budget();
-        if (is_wp_error($budget)) {
-            return $budget;
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
+            return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
         }
 
         $reservation = $this->reserve_search_slot();
@@ -53,6 +53,7 @@ final class KSEF_Search_Client {
             return $reservation;
         }
 
+        try {
         $payload = array(
             'query' => array(
                 'searchType' => 'SEARCH_TYPE_RU',
@@ -70,6 +71,10 @@ final class KSEF_Search_Client {
             $payload['folderId'] = (string) $folder_id;
         }
 
+        // Резервируем оценку до сетевого вызова: запрос мог тарифицироваться даже при тайм-ауте.
+        if (!$this->record_search_usage()) {
+            return new WP_Error('ksef_billing_reserve_failed', 'Не удалось сохранить резерв стоимости запроса. Внешний запрос не отправлен.');
+        }
         $response = wp_remote_post(self::ENDPOINT, array(
             'timeout' => 30,
             'redirection' => 0,
@@ -83,12 +88,10 @@ final class KSEF_Search_Client {
         ));
 
         if (is_wp_error($response)) {
-            $this->release_search_slot();
             Korotkov_SEO_Factory::write_log('error', 'search_transport_error', 'Ошибка соединения с Yandex Search API.');
             return new WP_Error('ksef_search_transport', 'Не удалось связаться с Yandex Search API.');
         }
 
-        delete_transient('ksef_search_request_lock');
         $status = (int) wp_remote_retrieve_response_code($response);
         $body = (string) wp_remote_retrieve_body($response);
 
@@ -129,9 +132,11 @@ final class KSEF_Search_Client {
         );
 
         $this->set_cache($cache_key, $result, self::CACHE_TTL);
-        $this->record_search_usage();
         Korotkov_SEO_Factory::write_log('info', 'search_request_ok', 'Успешно получена выдача Яндекса.', array('page' => $page));
         return $result;
+        } finally {
+            KSEF_Lock::release($reservation);
+        }
     }
 
     /**
@@ -237,43 +242,45 @@ final class KSEF_Search_Client {
         if (get_transient('ksef_api_circuit_open')) {
             return new WP_Error('ksef_search_circuit_open', 'Все запросы к Яндексу временно остановлены.');
         }
-        if (get_transient('ksef_search_request_lock')) {
-            return new WP_Error('ksef_search_busy', 'Предыдущий поисковый запрос ещё выполняется.');
+        $lock = KSEF_Lock::acquire('paid_api_budget', 0);
+        if (is_wp_error($lock)) {
+            return new WP_Error('ksef_search_busy', 'Другой запрос Search API уже выполняется.');
+        }
+
+        $budget = KSEF_Util::check_budget();
+        if (is_wp_error($budget)) {
+            KSEF_Lock::release($lock);
+            return $budget;
         }
 
         $day_key = 'ksef_search_usage_' . gmdate('Ymd');
         $used = absint(get_option($day_key, 0));
         if ($used >= self::DAILY_LIMIT) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_search_daily_limit', 'Достигнут внутренний лимит Search API — 100 запросов в сутки.');
         }
 
         $last = absint(get_option('ksef_search_last_request', 0));
         if (time() - $last < self::MIN_INTERVAL) {
+            KSEF_Lock::release($lock);
             return new WP_Error('ksef_search_rate_limit', 'Соблюдается двухсекундный интервал между запросами.');
         }
 
-        set_transient('ksef_search_request_lock', 1, 60);
         update_option('ksef_search_last_request', time(), false);
         update_option($day_key, $used + 1, false);
-        return true;
-    }
-
-    private function release_search_slot() {
-        delete_transient('ksef_search_request_lock');
-        $day_key = 'ksef_search_usage_' . gmdate('Ymd');
-        update_option($day_key, max(0, absint(get_option($day_key, 0)) - 1), false);
+        return $lock;
     }
 
     private function record_search_usage() {
         global $wpdb;
-        $wpdb->insert($wpdb->prefix . 'ksef_api_usage', array(
+        return $wpdb->insert($wpdb->prefix . 'ksef_api_usage', array(
             'service' => 'search',
             'method' => 'WebSearch',
             'request_count' => 1,
-            // Ориентировочная оценка по публичному прайсу (~$4 за 1000 синхронных запросов); не подтверждённое списание.
+            // Оценка для резерва, не подтверждённое списание.
             'estimated_cost' => KSEF_Util::SEARCH_COST_ESTIMATE,
             'created_at' => current_time('mysql', true),
-        ), array('%s', '%s', '%d', '%f', '%s'));
+        ), array('%s', '%s', '%d', '%f', '%s')) !== false;
     }
 
     private function get_cache($key) {

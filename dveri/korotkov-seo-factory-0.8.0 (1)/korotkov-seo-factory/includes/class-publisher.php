@@ -109,16 +109,14 @@ final class KSEF_Publisher {
         $page_id = absint($page_id);
 
         // Блокировка MySQL охватывает и проверку занятого URL, и вставку страницы (иначе возможна гонка).
-        global $wpdb;
-        $lock_name = 'ksef_publish_' . $wpdb->prefix;
-        $got = (int) $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 5)', $lock_name));
-        if ($got !== 1) {
+        $lock = KSEF_Lock::acquire('publisher', 5);
+        if (is_wp_error($lock)) {
             return new WP_Error('ksef_publish_busy', 'Другая операция создания страниц ещё выполняется. Повторите позже.');
         }
         try {
             $result = self::do_create($page_id, $status ?: self::target_status(), $manual);
         } finally {
-            $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock_name));
+            KSEF_Lock::release($lock);
         }
         return $result;
     }
@@ -128,7 +126,63 @@ final class KSEF_Publisher {
         $pages = $wpdb->prefix . 'ksef_pages';
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", $page_id));
         if (!$row) return new WP_Error('ksef_page_missing', 'Карточка страницы не найдена.');
-        if ((int) $row->wp_page_id > 0 || in_array($row->status, array('draft_created', 'published'), true)) {
+        // Восстановление после сбоя БД: WP-страница могла создаться, а связь в ksef_pages — не сохраниться.
+        if ((int) $row->wp_page_id <= 0) {
+            $orphan_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT p.ID FROM {$wpdb->posts} p
+                 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+                 WHERE pm.meta_key = '_ksef_page_row_id' AND pm.meta_value = %s
+                   AND p.post_type = 'page' AND p.post_status NOT IN ('trash','auto-draft')
+                 ORDER BY p.ID DESC LIMIT 1",
+                (string) $row->id
+            ));
+            if ($orphan_id) {
+                // При предыдущем сбое страница могла сохраниться, а часть метаданных — нет.
+                // Повторно загружаем последний готовый импорт и восстанавливаем служебные поля.
+                $recovery_import = $wpdb->get_row($wpdb->prepare(
+                    "SELECT qi.payload, qi.status FROM {$wpdb->prefix}ksef_qwen_imports qi
+                     INNER JOIN {$wpdb->prefix}ksef_keywords k ON k.id = qi.keyword_id
+                     WHERE k.cluster_id = %d ORDER BY qi.id DESC LIMIT 1",
+                    (int) $row->cluster_id
+                ));
+                if (!$recovery_import || $recovery_import->status !== 'ready_for_publish') {
+                    return new WP_Error('ksef_recovery_import_missing', 'Страница найдена, но готовый исходный материал для восстановления метаданных отсутствует.');
+                }
+                $recovery_data = json_decode($recovery_import->payload, true);
+                if (!is_array($recovery_data)) {
+                    return new WP_Error('ksef_recovery_import_corrupt', 'Исходный материал для восстановления метаданных повреждён.');
+                }
+                $meta_recovered = self::write_managed_meta((int) $orphan_id, $row, $recovery_data);
+                if (is_wp_error($meta_recovered)) return $meta_recovered;
+
+                $recovered = self::reconcile_page_link($row, (int) $orphan_id);
+                if (is_wp_error($recovered)) return $recovered;
+                return (int) $orphan_id;
+            }
+        }
+        if ((int) $row->wp_page_id > 0) {
+            $linked_post = get_post((int) $row->wp_page_id);
+            if (!$linked_post || $linked_post->post_type !== 'page' || !in_array($linked_post->post_status, array('draft', 'publish', 'pending', 'private'), true)) {
+                return new WP_Error('ksef_page_exists', 'Связанная страница не найдена или находится в корзине; автоматическое изменение запрещено.');
+            }
+            $linked_import = $wpdb->get_row($wpdb->prepare(
+                "SELECT qi.payload, qi.status FROM {$wpdb->prefix}ksef_qwen_imports qi
+                 INNER JOIN {$wpdb->prefix}ksef_keywords k ON k.id = qi.keyword_id
+                 WHERE k.cluster_id = %d ORDER BY qi.id DESC LIMIT 1",
+                (int) $row->cluster_id
+            ));
+            if (!$linked_import || $linked_import->status !== 'ready_for_publish') {
+                return new WP_Error('ksef_recovery_import_missing', 'Связанная страница найдена, но готовый исходный материал для восстановления отсутствует.');
+            }
+            $linked_data = json_decode($linked_import->payload, true);
+            if (!is_array($linked_data)) return new WP_Error('ksef_recovery_import_corrupt', 'Исходный материал для восстановления повреждён.');
+            $meta_recovered = self::write_managed_meta((int) $linked_post->ID, $row, $linked_data);
+            if (is_wp_error($meta_recovered)) return $meta_recovered;
+            $reconciled = self::reconcile_page_link($row, (int) $linked_post->ID);
+            if (is_wp_error($reconciled)) return $reconciled;
+            return (int) $linked_post->ID;
+        }
+        if (in_array($row->status, array('draft_created', 'published'), true)) {
             return new WP_Error('ksef_page_exists', 'Для этой карточки страница уже создана; перезапись запрещена.');
         }
         if ($row->status !== 'ready_for_publish') {
@@ -210,20 +264,28 @@ final class KSEF_Publisher {
         if (is_wp_error($post_id)) return $post_id;
         if (!$post_id) return new WP_Error('ksef_insert_failed', 'WordPress не создал страницу.');
 
-        update_post_meta($post_id, '_ksef_cluster_id', (int) $row->cluster_id);
-        update_post_meta($post_id, '_ksef_page_row_id', (int) $row->id);
-        update_post_meta($post_id, '_ksef_meta_title', wp_slash($meta_title));
-        update_post_meta($post_id, '_ksef_meta_description', wp_slash($meta_desc));
-        $faq_items = KSEF_Util::parse_faq($faq);
-        if ($faq_items) update_post_meta($post_id, '_ksef_faq', wp_slash(wp_json_encode($faq_items, JSON_UNESCAPED_UNICODE)));
-        self::write_compat_meta($post_id, $meta_title, $meta_desc);
+        $meta_result = self::write_managed_meta($post_id, $row, $data);
+        if (is_wp_error($meta_result)) {
+            // Сначала фиксируем ID созданной страницы в основной карточке. Это
+            // даёт безопасный путь восстановления даже при сбое служебного postmeta.
+            $linked_after_meta_error = $wpdb->update($pages, array(
+                'wp_page_id' => (int) $post_id,
+                'updated_at' => current_time('mysql', true),
+            ), array('id' => (int) $row->id), array('%d', '%s'), array('%d'));
+            Korotkov_SEO_Factory::write_log('critical', 'page_meta_write_failed', 'Страница создана, но обязательные метаполя не прошли проверку чтением. Сохранение связи с карточкой: ' . ($linked_after_meta_error === false ? 'ошибка' : 'выполнено') . '.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error, 'error' => $meta_result->get_error_message()));
+            return new WP_Error('ksef_page_meta_write_failed', 'Страница создана (ID ' . (int) $post_id . '), но обязательные метаданные записались не полностью. Повторите действие для восстановления; дубль создаваться не должен.');
+        }
+
+        if (!self::write_compat_meta($post_id, $meta_title, $meta_desc)) {
+            Korotkov_SEO_Factory::write_log('warning', 'seo_compat_meta_write_failed', 'Не удалось подтвердить запись совместимых SEO-метаполей. Основные метаданные SEO Factory сохранены.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id));
+        }
 
         // WordPress мог скорректировать slug (зарезервированные имена и т.п.) — сохраняем фактический.
         $actual_slug = get_post_field('post_name', $post_id);
         if ($actual_slug) $slug = $actual_slug;
         $now = current_time('mysql', true);
         $final = get_post_status($post_id);
-        $wpdb->update($pages, array(
+        $linked = $wpdb->update($pages, array(
             'wp_page_id' => (int) $post_id,
             'page_slug' => $slug,
             'page_url' => $final === 'publish' ? get_permalink($post_id) : '',
@@ -231,7 +293,14 @@ final class KSEF_Publisher {
             'published_at' => $final === 'publish' ? $now : null,
             'updated_at' => $now,
         ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
-        $wpdb->update($wpdb->prefix . 'ksef_clusters', array('status' => $final === 'publish' ? 'published' : 'draft_created', 'updated_at' => $now), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($linked === false || $linked === 0) {
+            Korotkov_SEO_Factory::write_log('critical', 'page_link_failed', 'Страница WordPress создана, но связь с карточкой не сохранена. Повторный запуск выполнит восстановление по метаполю.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+            return new WP_Error('ksef_page_link_failed', 'Страница создана (ID ' . (int) $post_id . '), но связь с карточкой не записалась. Повторите действие: плагин восстановит связь и не создаст дубль.');
+        }
+        $cluster_updated = $wpdb->update($wpdb->prefix . 'ksef_clusters', array('status' => $final === 'publish' ? 'published' : 'draft_created', 'updated_at' => $now), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($cluster_updated === false) {
+            Korotkov_SEO_Factory::write_log('error', 'cluster_status_update_failed', 'Страница привязана, но статус кластера не обновлён.', array('cluster_id' => (int) $row->cluster_id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+        }
 
         if (!$manual) {
             update_option('ksef_created_' . gmdate('Ymd'), self::created_today() + 1, false);
@@ -240,51 +309,150 @@ final class KSEF_Publisher {
         return (int) $post_id;
     }
 
+    /**
+     * Записывает принадлежащие плагину метаданные и проверяет результат чтением.
+     * Повторный вызов безопасен: значения перезаписываются теми же данными.
+     */
+    private static function write_managed_meta($post_id, $row, $data) {
+        $values = array(
+            '_ksef_cluster_id' => (string) (int) $row->cluster_id,
+            '_ksef_page_row_id' => (string) (int) $row->id,
+            '_ksef_meta_title' => (string) ($data['meta_title'] ?? ''),
+            '_ksef_meta_description' => (string) ($data['meta_description'] ?? ''),
+        );
+
+        $faq = (string) ($data['faq_html'] ?? '');
+        $faq_items = KSEF_Util::parse_faq($faq);
+        if ($faq_items) {
+            $values['_ksef_faq'] = wp_json_encode($faq_items, JSON_UNESCAPED_UNICODE);
+        }
+
+        foreach ($values as $key => $value) {
+            update_post_meta($post_id, $key, wp_slash($value));
+            $stored = get_post_meta($post_id, $key, true);
+            if ((string) $stored !== (string) $value) {
+                return new WP_Error('ksef_meta_verification_failed', 'Не удалось подтвердить метаполе ' . $key . '.');
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Идемпотентно восстанавливает связь существующей WP-страницы с карточкой SEO Factory.
+     */
+    private static function reconcile_page_link($row, $post_id) {
+        global $wpdb;
+        $post = get_post($post_id);
+        if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post_id, '_ksef_page_row_id', true) !== (int) $row->id) {
+            return new WP_Error('ksef_orphan_mismatch', 'Найдена страница, но её метаданные не подтверждают связь с этой карточкой.');
+        }
+        $status = get_post_status($post_id);
+        $now = current_time('mysql', true);
+        $updated = $wpdb->update($wpdb->prefix . 'ksef_pages', array(
+            'wp_page_id' => (int) $post_id,
+            'page_slug' => $post->post_name,
+            'page_url' => $status === 'publish' ? get_permalink($post_id) : '',
+            'status' => $status === 'publish' ? 'published' : 'draft_created',
+            'published_at' => $status === 'publish' ? $now : null,
+            'updated_at' => $now,
+        ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
+        if ($updated === false || $updated === 0) {
+            Korotkov_SEO_Factory::write_log('critical', 'page_link_recovery_failed', 'Не удалось восстановить связь WP-страницы с карточкой SEO Factory.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
+            return new WP_Error('ksef_page_link_recovery_failed', 'Страница найдена, но восстановление связи завершилось ошибкой БД. Повторите попытку позже.');
+        }
+        $cluster_updated = $wpdb->update($wpdb->prefix . 'ksef_clusters', array(
+            'status' => $status === 'publish' ? 'published' : 'draft_created',
+            'updated_at' => $now,
+        ), array('id' => (int) $row->cluster_id), array('%s', '%s'), array('%d'));
+        if ($cluster_updated === false) {
+            Korotkov_SEO_Factory::write_log('error', 'cluster_status_recovery_failed', 'Связь страницы восстановлена, но статус кластера не обновлён.', array('cluster_id' => (int) $row->cluster_id, 'db_error' => $wpdb->last_error));
+        }
+        Korotkov_SEO_Factory::write_log('warning', 'page_link_recovered', 'Восстановлена связь ранее созданной страницы без создания дубля.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id));
+        return true;
+    }
+
     /** Публикует ранее созданный черновик. Проверяет, что это именно наша страница. */
     public static function promote($page_id) {
         global $wpdb;
-        $pages = $wpdb->prefix . 'ksef_pages';
-        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", absint($page_id)));
-        if (!$row || $row->status !== 'draft_created' || !(int) $row->wp_page_id) {
-            return new WP_Error('ksef_not_draft', 'Карточка не является созданным черновиком.');
+        // Используем ту же блокировку, что и создание: публикация и восстановление
+        // связи не должны выполняться параллельно для разных запросов.
+        $lock = KSEF_Lock::acquire('publisher', 5);
+        if (is_wp_error($lock)) {
+            return new WP_Error('ksef_publish_busy', 'Другая операция создания или публикации страниц ещё выполняется. Повторите позже.');
         }
-        $post = get_post((int) $row->wp_page_id);
-        if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post->ID, '_ksef_page_row_id', true) !== (int) $row->id) {
-            return new WP_Error('ksef_post_mismatch', 'Страница WordPress не найдена или не связана с карточкой.');
+
+        try {
+            $pages = $wpdb->prefix . 'ksef_pages';
+            $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pages} WHERE id = %d", absint($page_id)));
+            if (!$row || !(int) $row->wp_page_id) {
+                return new WP_Error('ksef_not_draft', 'Карточка не является созданным черновиком.');
+            }
+
+            $post = get_post((int) $row->wp_page_id);
+            if (!$post || $post->post_type !== 'page' || (int) get_post_meta($post->ID, '_ksef_page_row_id', true) !== (int) $row->id) {
+                return new WP_Error('ksef_post_mismatch', 'Страница WordPress не найдена или не связана с карточкой.');
+            }
+
+            // Восстановление после сбоя: WP уже опубликовал страницу, но запись
+            // статуса/URL в таблице плагина могла не сохраниться.
+            if ($post->post_status === 'publish') {
+                $recovered = self::reconcile_page_link($row, (int) $post->ID);
+                if (is_wp_error($recovered)) return $recovered;
+                Korotkov_SEO_Factory::write_log('warning', 'page_publish_reconciled', 'Восстановлена связь уже опубликованной страницы с карточкой.', array('page_row' => (int) $row->id, 'post_id' => (int) $post->ID));
+                return (int) $post->ID;
+            }
+
+            if ($row->status !== 'draft_created' || $post->post_status !== 'draft') {
+                return new WP_Error('ksef_not_draft_status', 'Карточка или страница не находятся в состоянии черновика; публикация не выполнена.');
+            }
+
+            $ok = wp_update_post(array('ID' => $post->ID, 'post_status' => 'publish'), true);
+            if (is_wp_error($ok)) return $ok;
+            if (!$ok || get_post_status($post->ID) !== 'publish') {
+                return new WP_Error('ksef_publish_failed', 'WordPress не подтвердил публикацию страницы.');
+            }
+
+            // Повторяемая синхронизация вместо отдельного UPDATE: если БД временно
+            // недоступна, следующий запуск попадёт в ветку восстановления выше.
+            $synced = self::reconcile_page_link($row, (int) $post->ID);
+            if (is_wp_error($synced)) {
+                return new WP_Error('ksef_publish_sync_failed', 'Страница опубликована, но карточка не синхронизирована. Повторите действие для восстановления связи. ' . $synced->get_error_message());
+            }
+
+            Korotkov_SEO_Factory::write_log('info', 'page_published', 'Черновик опубликован и карточка синхронизирована.', array('post_id' => (int) $post->ID));
+            return (int) $post->ID;
+        } finally {
+            KSEF_Lock::release($lock);
         }
-        if ($post->post_status !== 'draft') {
-            return new WP_Error('ksef_not_draft_status', 'Страница уже не черновик; изменения вручную не затрагиваются.');
-        }
-        $ok = wp_update_post(array('ID' => $post->ID, 'post_status' => 'publish'), true);
-        if (is_wp_error($ok)) return $ok;
-        $now = current_time('mysql', true);
-        $wpdb->update($pages, array(
-            'status' => 'published', 'published_at' => $now, 'updated_at' => $now,
-            'page_url' => get_permalink($post->ID),
-        ), array('id' => (int) $row->id), array('%s', '%s', '%s', '%s'), array('%d'));
-        Korotkov_SEO_Factory::write_log('info', 'page_published', 'Черновик опубликован.', array('post_id' => (int) $post->ID));
-        return (int) $post->ID;
     }
 
     private static function write_compat_meta($post_id, $title, $desc) {
-        $title = wp_slash($title);
-        $desc = wp_slash($desc);
+        $values = array();
         if (defined('WPSEO_VERSION')) {
-            update_post_meta($post_id, '_yoast_wpseo_title', $title);
-            update_post_meta($post_id, '_yoast_wpseo_metadesc', $desc);
+            $values['_yoast_wpseo_title'] = $title;
+            $values['_yoast_wpseo_metadesc'] = $desc;
         }
         if (defined('RANK_MATH_VERSION')) {
-            update_post_meta($post_id, 'rank_math_title', $title);
-            update_post_meta($post_id, 'rank_math_description', $desc);
+            $values['rank_math_title'] = $title;
+            $values['rank_math_description'] = $desc;
         }
         if (defined('SEOPRESS_VERSION')) {
-            update_post_meta($post_id, '_seopress_titles_title', $title);
-            update_post_meta($post_id, '_seopress_titles_desc', $desc);
+            $values['_seopress_titles_title'] = $title;
+            $values['_seopress_titles_desc'] = $desc;
         }
         if (defined('AIOSEO_VERSION')) {
-            update_post_meta($post_id, '_aioseo_title', $title);
-            update_post_meta($post_id, '_aioseo_description', $desc);
+            $values['_aioseo_title'] = $title;
+            $values['_aioseo_description'] = $desc;
         }
+
+        foreach ($values as $key => $value) {
+            update_post_meta($post_id, $key, wp_slash($value));
+            if ((string) get_post_meta($post_id, $key, true) !== (string) $value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Блок «Читайте также» только из URL, которые реально ведут на страницы этого сайта. */

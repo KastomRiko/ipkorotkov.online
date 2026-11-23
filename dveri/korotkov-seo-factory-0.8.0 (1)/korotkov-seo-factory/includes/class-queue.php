@@ -19,45 +19,95 @@ final class KSEF_Queue {
 
         $keywords = $wpdb->prefix . 'ksef_keywords';
         $jobs = $wpdb->prefix . 'ksef_jobs';
+        // Сериализуем все операции добавления через один MySQL lock: SELECT-проверка
+        // и последующая вставка больше не могут одновременно пройти в двух PHP workers.
+        $lock = KSEF_Lock::acquire('queue_enqueue', 0);
+        if (is_wp_error($lock)) return $lock;
+
         $added = 0;
-        foreach ($phrases as $phrase) {
-            $normalized = function_exists('mb_strtolower') ? mb_strtolower($phrase) : strtolower($phrase);
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM {$keywords} WHERE normalized_phrase = %s LIMIT 1",
-                $normalized
-            ));
-            if ($exists) continue;
+        $failed = 0;
+        try {
+            foreach ($phrases as $phrase) {
+                $normalized = function_exists('mb_strtolower') ? mb_strtolower($phrase) : strtolower($phrase);
+                $exists = $wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM {$keywords} WHERE normalized_phrase = %s LIMIT 1",
+                    $normalized
+                ));
+                if ($wpdb->last_error !== '') {
+                    $failed++;
+                    continue;
+                }
+                if ($exists) continue;
 
-            $now = current_time('mysql', true);
-            $ok = $wpdb->insert($keywords, array(
-                'source_phrase' => $phrase,
-                'normalized_phrase' => $normalized,
-                'region' => 'Россия',
-                'created_at' => $now,
-            ), array('%s','%s','%s','%s'));
-            if (!$ok) continue;
-            $keyword_id = (int) $wpdb->insert_id;
+                // Ключевая фраза и её задание создаются как одна транзакция.
+                if ($wpdb->query('START TRANSACTION') === false) {
+                    $failed++;
+                    continue;
+                }
 
-            $payload = wp_json_encode(array('keyword_id' => $keyword_id, 'page' => 0));
-            $wpdb->insert($jobs, array(
-                'job_type' => 'serp_search',
-                'status' => 'new',
-                'payload' => $payload,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ), array('%s','%s','%s','%s','%s'));
-            $job_id = (int) $wpdb->insert_id;
-            $wpdb->update($keywords, array('job_id' => $job_id), array('id' => $keyword_id), array('%d'), array('%d'));
-            $added++;
+                $now = current_time('mysql', true);
+                $keyword_ok = $wpdb->insert($keywords, array(
+                    'source_phrase' => $phrase,
+                    'normalized_phrase' => $normalized,
+                    'region' => 'Россия',
+                    'created_at' => $now,
+                ), array('%s','%s','%s','%s'));
+
+                if ($keyword_ok !== 1 || (int) $wpdb->insert_id < 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $keyword_id = (int) $wpdb->insert_id;
+
+                $payload = wp_json_encode(array('keyword_id' => $keyword_id, 'page' => 0));
+                $job_ok = $wpdb->insert($jobs, array(
+                    'job_type' => 'serp_search',
+                    'status' => 'new',
+                    'payload' => $payload,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ), array('%s','%s','%s','%s','%s'));
+
+                if ($job_ok !== 1 || (int) $wpdb->insert_id < 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $job_id = (int) $wpdb->insert_id;
+
+                $linked = $wpdb->update(
+                    $keywords,
+                    array('job_id' => $job_id),
+                    array('id' => $keyword_id),
+                    array('%d'),
+                    array('%d')
+                );
+                if ($linked !== 1) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+
+                if ($wpdb->query('COMMIT') === false) {
+                    $wpdb->query('ROLLBACK');
+                    $failed++;
+                    continue;
+                }
+                $added++;
+            }
+        } finally {
+            KSEF_Lock::release($lock);
         }
-        return array('added' => $added, 'received' => count($phrases));
+
+        return array('added' => $added, 'received' => count($phrases), 'failed' => $failed);
     }
 
     /** Коды ошибок, при которых задание возвращается в очередь без расхода попытки. */
     private static function waiting_codes() {
         return array(
             'ksef_search_busy', 'ksef_search_rate_limit', 'ksef_search_circuit_open', 'ksef_search_throttled',
-            'ksef_api_circuit_open', 'ksef_search_daily_limit', 'ksef_budget_stop',
+            'ksef_api_circuit_open', 'ksef_automation_disabled', 'ksef_search_daily_limit', 'ksef_budget_stop', 'ksef_billing_data_missing', 'ksef_billing_data_stale', 'ksef_billing_estimate_read_failed', 'ksef_billing_reserve_failed',
         );
     }
 
@@ -75,20 +125,21 @@ final class KSEF_Queue {
 
     public static function process_one() {
         global $wpdb;
-        if (get_transient('ksef_queue_worker_lock')) return;
         if (get_transient('ksef_api_circuit_open')) return;
 
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
         if (empty($settings['automation_enabled'])) return;
         if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return;
 
+        $lock = KSEF_Lock::acquire('queue_worker', 0);
+        if (is_wp_error($lock)) return;
+
+        try {
         self::recover_stuck();
 
         $jobs = $wpdb->prefix . 'ksef_jobs';
         $row = $wpdb->get_row("SELECT id, payload FROM {$jobs} WHERE status = 'new' AND job_type = 'serp_search' ORDER BY id ASC LIMIT 1");
         if (!$row) return;
-
-        set_transient('ksef_queue_worker_lock', 1, 90);
         $wpdb->update($jobs, array('status' => 'processing', 'updated_at' => current_time('mysql', true)), array('id' => (int) $row->id), array('%s','%s'), array('%d'));
 
         $payload = json_decode($row->payload, true);
@@ -101,7 +152,6 @@ final class KSEF_Queue {
 
         if (!$keyword_id || !$keyword) {
             self::finish_job((int) $row->id, 'rejected');
-            delete_transient('ksef_queue_worker_lock');
             return;
         }
 
@@ -131,7 +181,9 @@ final class KSEF_Queue {
             $wpdb->update($wpdb->prefix . 'ksef_keywords', array('researched_at' => current_time('mysql', true)), array('id' => $keyword_id), array('%s'), array('%d'));
             self::finish_job((int) $row->id, 'researched');
         }
-        delete_transient('ksef_queue_worker_lock');
+        } finally {
+            KSEF_Lock::release($lock);
+        }
     }
 
     private static function finish_job($id, $status) {
