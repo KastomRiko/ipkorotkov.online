@@ -87,7 +87,7 @@ final class KSEF_Queue {
 
         if (is_wp_error($result)) {
             $code = $result->get_error_code();
-            $status = in_array($code, array('ksef_search_busy','ksef_search_rate_limit','ksef_search_circuit_open','ksef_search_throttled'), true) ? 'new' : 'error';
+            $status = in_array($code, array('ksef_search_busy','ksef_search_rate_limit','ksef_search_circuit_open','ksef_search_throttled','ksef_api_circuit_open'), true) ? 'new' : 'error';
             self::finish_job((int) $row->id, $status);
             Korotkov_SEO_Factory::write_log('error', 'queue_job_failed', 'Задание поиска не выполнено.', array('job_id' => (int) $row->id, 'error' => $code));
         } else {
