@@ -232,6 +232,10 @@ final class Korotkov_SEO_Factory {
             'budget_stop' => 3800,
             'billing_reported_cost' => '',
             'billing_checked_at' => 0,
+            'billing_grant_consumed' => '',
+            'billing_grant_credit' => '',
+            'billing_expense' => '',
+            'billing_grant_end_utc' => '',
             'automation_enabled' => 0,
             'folder_id' => '',
             'api_key' => '',
@@ -309,18 +313,38 @@ final class Korotkov_SEO_Factory {
         $clean['search_interval'] = isset($input['search_interval']) ? min(60, max(2, absint($input['search_interval']))) : 2;
         $clean['budget_total'] = 4000;
         $clean['budget_stop'] = 3800;
-        // Не обновляем время сверки при обычном сохранении настроек: требуется явное подтверждение свежего отчёта.
-        $billing_value = isset($input['billing_reported_cost']) ? trim((string) $input['billing_reported_cost']) : '';
+        // Ручная сверка всех финансовых показателей. Галочка обновляет timestamp только
+        // если заполнены все поля; обычное сохранение настроек не продлевает срок.
+        $billing_fields = array('billing_reported_cost', 'billing_grant_consumed', 'billing_grant_credit', 'billing_expense');
         if (!empty($input['billing_refresh_confirm'])) {
-            if ($billing_value !== '' && is_numeric($billing_value) && (float) $billing_value >= 0) {
-                $clean['billing_reported_cost'] = number_format((float) $billing_value, 2, '.', '');
+            $valid = true;
+            foreach ($billing_fields as $field) {
+                $value = isset($input[$field]) ? trim((string) $input[$field]) : '';
+                if ($value === '' || !is_numeric($value) || (float) $value < 0) {
+                    $valid = false;
+                    break;
+                }
+                $clean[$field] = number_format((float) $value, 2, '.', '');
+            }
+            $end_utc = isset($input['billing_grant_end_utc']) ? trim((string) $input['billing_grant_end_utc']) : '';
+            $end_ts = $end_utc !== '' ? strtotime($end_utc) : false;
+            if (!$end_ts || !preg_match('/^202[0-9]-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/', $end_utc)) {
+                $valid = false;
+            }
+            if ($valid) {
+                $clean['billing_grant_end_utc'] = $end_utc;
                 $clean['billing_checked_at'] = time();
             } else {
-                $clean['billing_reported_cost'] = '';
+                foreach ($billing_fields as $field) $clean[$field] = '';
+                $clean['billing_grant_end_utc'] = '';
                 $clean['billing_checked_at'] = 0;
+                self::write_log('warning', 'billing_confirmation_invalid', 'Сверка Billing не принята: заполните все суммы и точное время окончания гранта в UTC.');
             }
         } else {
-            $clean['billing_reported_cost'] = isset($old['billing_reported_cost']) ? $old['billing_reported_cost'] : '';
+            foreach ($billing_fields as $field) {
+                $clean[$field] = isset($old[$field]) ? $old[$field] : '';
+            }
+            $clean['billing_grant_end_utc'] = isset($old['billing_grant_end_utc']) ? $old['billing_grant_end_utc'] : '';
             $clean['billing_checked_at'] = isset($old['billing_checked_at']) ? (int) $old['billing_checked_at'] : 0;
         }
         $clean['automation_enabled'] = !empty($input['automation_enabled']) ? 1 : 0;
@@ -390,13 +414,17 @@ final class Korotkov_SEO_Factory {
                         <td><strong>4 000 ₽</strong><p class="description">Бюджет зафиксирован. Перед включением платных запросов потребуется проверить покрытие бонусами каждого метода и фактический тариф.</p></td>
                     </tr>
                     <tr>
-                        <th scope="row">Стоимость ресурсов по Billing (cost), ₽</th>
+                        <th scope="row">Сверка гранта и Billing</th>
                         <td>
-                            <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_reported_cost]" value="<?php echo esc_attr($settings['billing_reported_cost'] ?? ''); ?>" placeholder="Сумма cost из Billing">
-                            <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что проверил свежий отчёт Billing и подтверждаю указанную сумму</label>
-                            <p class="description">Внесите накопленное значение cost (до скидок и кредитов) из отчёта Yandex Cloud Billing за период с начала расходов этого проекта по текущую дату. Показатель expense не подходит для лимита бонусного бюджета: он уже уменьшен на кредиты. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Дополнительно к cost учитывается резерв оценочных затрат всех попыток API после времени сверки. Если запись резерва в БД не удалась, внешний запрос не отправляется. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы предварительные и могут корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
-                            <p class="description"><strong>Порог остановки: 3 800 ₽. Резерв: 200 ₽.</strong></p>
-                            <p class="description">Последняя сверка cost: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
+                            <p><label>Billing cost (до кредитов), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_reported_cost]" value="<?php echo esc_attr($settings['billing_reported_cost'] ?? ''); ?>"></label></p>
+                            <p><label>Grant consumedAmount из записи гранта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_consumed]" value="<?php echo esc_attr($settings['billing_grant_consumed'] ?? ''); ?>"></label></p>
+                            <p><label>monetary_grant_credit из Billing, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_credit]" value="<?php echo esc_attr($settings['billing_grant_credit'] ?? ''); ?>"></label></p>
+                            <p><label>expense из Billing API/отчёта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_expense]" value="<?php echo esc_attr($settings['billing_expense'] ?? ''); ?>"></label></p>
+                            <p><label>Окончание гранта (точное время UTC, формат 2027-01-19T21:59:59Z)<br><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_end_utc]" value="<?php echo esc_attr($settings['billing_grant_end_utc'] ?? ''); ?>" placeholder="2027-01-19T21:59:59Z"></label></p>
+                            <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что сверил все пять значений с актуальными данными Billing и гранта</label>
+                            <p class="description">Грант 4 000 ₽. Остаток рассчитывается консервативно: 4 000 ₽ минус большее из consumedAmount и monetary_grant_credit. Эти два значения должны совпадать с допуском 0,05 ₽; при расхождении запросы блокируются. Любой expense больше 0 ₽ блокирует платные запросы. Сверка действует 24 часа. Время окончания вводится строго в UTC. Не вводите предполагаемые значения: берите их из свежих данных. Автоматического Billing API здесь нет.</p>
+                            <p class="description"><strong>Порог остановки: 3 800 ₽. Резерв: 200 ₽.</strong> Дополнительно к фактическому потреблению учитывается резерв локальных запросов после сверки.</p>
+                            <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
                     </tr>
                     <tr>
