@@ -75,20 +75,21 @@ final class KSEF_Queue {
 
     public static function process_one() {
         global $wpdb;
-        if (get_transient('ksef_queue_worker_lock')) return;
         if (get_transient('ksef_api_circuit_open')) return;
 
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
         if (empty($settings['automation_enabled'])) return;
         if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return;
 
+        $lock = KSEF_Lock::acquire('queue_worker', 0);
+        if (is_wp_error($lock)) return;
+
+        try {
         self::recover_stuck();
 
         $jobs = $wpdb->prefix . 'ksef_jobs';
         $row = $wpdb->get_row("SELECT id, payload FROM {$jobs} WHERE status = 'new' AND job_type = 'serp_search' ORDER BY id ASC LIMIT 1");
         if (!$row) return;
-
-        set_transient('ksef_queue_worker_lock', 1, 90);
         $wpdb->update($jobs, array('status' => 'processing', 'updated_at' => current_time('mysql', true)), array('id' => (int) $row->id), array('%s','%s'), array('%d'));
 
         $payload = json_decode($row->payload, true);
@@ -101,7 +102,6 @@ final class KSEF_Queue {
 
         if (!$keyword_id || !$keyword) {
             self::finish_job((int) $row->id, 'rejected');
-            delete_transient('ksef_queue_worker_lock');
             return;
         }
 
@@ -131,7 +131,9 @@ final class KSEF_Queue {
             $wpdb->update($wpdb->prefix . 'ksef_keywords', array('researched_at' => current_time('mysql', true)), array('id' => $keyword_id), array('%s'), array('%d'));
             self::finish_job((int) $row->id, 'researched');
         }
-        delete_transient('ksef_queue_worker_lock');
+        } finally {
+            KSEF_Lock::release($lock);
+        }
     }
 
     private static function finish_job($id, $status) {
