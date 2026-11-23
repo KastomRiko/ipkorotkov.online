@@ -51,7 +51,7 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_missing_credentials', 'Не заданы KSEF_YANDEX_API_KEY и/или Folder ID.');
         }
 
-        $cache_key = 'wordstat:' . $method . ':' . hash('sha256', wp_json_encode($payload));
+        $cache_key = hash('sha256', 'wordstat:' . $method . ':' . wp_json_encode($payload));
         $cached = $this->get_cache($cache_key);
         if ($cached !== null) {
             Korotkov_SEO_Factory::write_log('info', 'api_cache_hit', 'Wordstat: использован кэшированный ответ.', array('method' => $method));
