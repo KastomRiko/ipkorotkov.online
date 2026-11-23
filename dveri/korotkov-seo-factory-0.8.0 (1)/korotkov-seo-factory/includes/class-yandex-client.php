@@ -29,21 +29,21 @@ final class KSEF_Yandex_Client {
      * GetTop. Параметры: phrase (обяз., до 400 симв.), numPhrases (1..2000), regions[], devices[].
      */
     public function wordstat_top($payload) {
-        return $this->request_wordstat('/v2/wordstat/topRequests', $payload, 'GetTop', 0.02);
+        return $this->request_wordstat('/v2/wordstat/topRequests', $payload, 'GetTop', 20.00);
     }
 
     /**
      * GetDynamics. Параметры: phrase, period (PERIOD_MONTHLY|WEEKLY|DAILY), fromDate (RFC 3339), toDate, regions[], devices[].
      */
     public function wordstat_dynamics($payload) {
-        return $this->request_wordstat('/v2/wordstat/dynamics', $payload, 'GetDynamics', 0.02);
+        return $this->request_wordstat('/v2/wordstat/dynamics', $payload, 'GetDynamics', 20.00);
     }
 
     /**
      * GetRegionsDistribution. Параметры: phrase, region (REGION_ALL|REGION_CITIES|REGION_REGIONS), devices[].
      */
     public function wordstat_regions($payload) {
-        return $this->request_wordstat('/v2/wordstat/regions', $payload, 'GetRegionsDistribution', 0.05);
+        return $this->request_wordstat('/v2/wordstat/regions', $payload, 'GetRegionsDistribution', 50.00);
     }
 
     public function wordstat_regions_tree($payload = array()) {
