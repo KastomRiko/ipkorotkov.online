@@ -66,6 +66,8 @@ final class KSEF_Search_Client {
             $payload['folderId'] = (string) $folder_id;
         }
 
+        // Резервируем оценку до сетевого вызова: запрос мог тарифицироваться даже при тайм-ауте.
+        $this->record_search_usage();
         $response = wp_remote_post(self::ENDPOINT, array(
             'timeout' => 30,
             'redirection' => 0,
@@ -123,7 +125,6 @@ final class KSEF_Search_Client {
         );
 
         $this->set_cache($cache_key, $result, self::CACHE_TTL);
-        $this->record_search_usage();
         Korotkov_SEO_Factory::write_log('info', 'search_request_ok', 'Успешно получена выдача Яндекса.', array('page' => $page));
         return $result;
         } finally {
