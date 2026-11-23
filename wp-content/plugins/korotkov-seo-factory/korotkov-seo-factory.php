@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.6.0
+ * Version: 0.7.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.6.0');
+define('KSEF_VERSION', '0.7.0');
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
 require_once __DIR__ . '/includes/class-queue.php';
@@ -403,7 +403,7 @@ final class Korotkov_SEO_Factory {
             <?php endif; ?>
             <hr>
             <h2>Ручной обмен с Qwen</h2>
-            <p>Экспортирует до 30 добавленных фраз вместе с данными органической выдачи, если они уже собраны. Открой CSV в Qwen, попроси заполнить пустые поля и импортируй результат обратно. Qwen API и автоматизация браузера не используются.</p>
+            <p>Экспортирует до 30 кластеров: связанные поисковые фразы и собранные URL конкурентов. В Qwen нужно подготовить полноценную статью, FAQ и рекомендации внутренних ссылок, затем импортировать CSV обратно. Qwen API и автоматизация браузера не используются.</p>
             <p><strong>Порядок работы:</strong> экспорт CSV → обработка в chat.qwen.ai → сохранение результата в CSV с теми же заголовками и порядком столбцов → импорт.</p>
             <p><a class="button button-secondary" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=ksef_qwen_export'), 'ksef_qwen_export')); ?>">Экспортировать задания для Qwen</a></p>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
@@ -411,7 +411,7 @@ final class Korotkov_SEO_Factory {
                 <?php wp_nonce_field('ksef_qwen_import'); ?>
                 <input type="file" name="ksef_qwen_csv" accept=".csv,text/csv" required>
                 <?php submit_button('Импортировать CSV из Qwen', 'secondary', 'submit', false); ?>
-                <p class="description">Лимит файла — 1 МБ, до 30 строк. Обязательные поля: рекомендуемый заголовок, H1, meta title, meta description и краткое вступление. Импорт не создаёт и не публикует страницы.</p>
+                <p class="description">Лимит файла — 1 МБ, до 30 кластеров. Обязательны SEO-поля и article_html (не менее 500 слов). Проверяются дубли H1/meta title, URL-slug и близость текста к другим материалам. При ошибках материал получает blocked_review; прошедший проверки — ready_for_publish. Создание и публикация страниц WordPress пока отключены.</p>
             </form>
             <?php
             $qwen_notice = get_transient('ksef_qwen_notice_' . get_current_user_id());
