@@ -67,7 +67,9 @@ final class KSEF_Search_Client {
         }
 
         // Резервируем оценку до сетевого вызова: запрос мог тарифицироваться даже при тайм-ауте.
-        $this->record_search_usage();
+        if (!$this->record_search_usage()) {
+            return new WP_Error('ksef_billing_reserve_failed', 'Не удалось сохранить резерв стоимости запроса. Внешний запрос не отправлен.');
+        }
         $response = wp_remote_post(self::ENDPOINT, array(
             'timeout' => 30,
             'redirection' => 0,
@@ -266,14 +268,14 @@ final class KSEF_Search_Client {
 
     private function record_search_usage() {
         global $wpdb;
-        $wpdb->insert($wpdb->prefix . 'ksef_api_usage', array(
+        return $wpdb->insert($wpdb->prefix . 'ksef_api_usage', array(
             'service' => 'search',
             'method' => 'WebSearch',
             'request_count' => 1,
-            // Ориентировочная оценка по публичному прайсу (~$4 за 1000 синхронных запросов); не подтверждённое списание.
+            // Оценка для резерва, не подтверждённое списание.
             'estimated_cost' => KSEF_Util::SEARCH_COST_ESTIMATE,
             'created_at' => current_time('mysql', true),
-        ), array('%s', '%s', '%d', '%f', '%s'));
+        ), array('%s', '%s', '%d', '%f', '%s')) !== false;
     }
 
     private function get_cache($key) {
