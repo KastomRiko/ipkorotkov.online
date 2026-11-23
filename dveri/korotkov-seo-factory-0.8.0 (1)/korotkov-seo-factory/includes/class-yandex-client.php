@@ -96,6 +96,8 @@ final class KSEF_Yandex_Client {
             $body_payload['folderId'] = (string) $folder_id;
         }
 
+        // Резервируем оценку до сетевого вызова: запрос мог тарифицироваться даже при тайм-ауте.
+        $this->record_usage($method, $estimated_cost_per_call);
         $response = wp_remote_post(self::BASE_URL . $path, array(
             'timeout' => 25,
             'redirection' => 0,
@@ -133,7 +135,6 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_api_invalid_json', 'Получен некорректный JSON от Yandex API.');
         }
 
-        $this->record_usage($method, $estimated_cost_per_call);
         $this->set_cache($cache_key, $decoded, self::CACHE_TTL);
         Korotkov_SEO_Factory::write_log('info', 'api_request_ok', 'Успешный запрос Wordstat API.', array('method' => $method, 'http_status' => $status));
 
