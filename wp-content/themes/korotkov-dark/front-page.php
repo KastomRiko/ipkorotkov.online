@@ -62,8 +62,8 @@ $pages = array_filter($pages, function($p){ return (int) $p->ID !== (int) get_op
     <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Раздел сайта</span><h3><a href="<?php echo esc_url(get_permalink($p)); ?>"><?php echo esc_html($page_title); ?></a></h3><p><?php echo esc_html($page_desc); ?></p><a class="kd-text-link" href="<?php echo esc_url(get_permalink($p)); ?>">Открыть раздел →</a></article>
    <?php endforeach; else: ?>
     <article class="kd-page-tile"><h3>Разделы сайта</h3><p>Страницы появятся здесь автоматически после публикации в WordPress.</p></article>
-   <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Публикации</span><h3><a href="<?php echo esc_url(home_url('/blog/')); ?>">Блог и обновления</a></h3><p>Заметки о разработке, автоматизации, парсинге и новых проектах.</p><a class="kd-text-link" href="<?php echo esc_url(home_url('/blog/')); ?>">Читать материалы →</a></article>
    <?php endif; ?>
+   <article class="kd-page-tile"><span class="kd-page-arrow">↗</span><span class="kd-tag">Публикации</span><h3><a href="<?php echo esc_url(home_url('/blog/')); ?>">Блог и обновления</a></h3><p>Заметки о разработке, автоматизации, парсинге и новых проектах.</p><a class="kd-text-link" href="<?php echo esc_url(home_url('/blog/')); ?>">Читать материалы →</a></article>
   </div>
  </div>
 </section>
