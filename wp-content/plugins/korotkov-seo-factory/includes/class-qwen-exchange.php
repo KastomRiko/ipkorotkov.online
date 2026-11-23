@@ -208,7 +208,7 @@ final class KSEF_Qwen_Exchange {
             $imported++;
             if (!empty($checks['errors'])) $blocked++;
 
-            $slug = sanitize_title($title);
+            $slug = self::make_slug($title);
             $page_id = $wpdb->get_var($wpdb->prepare(
                 "SELECT id FROM {$pages_table} WHERE cluster_id = %d ORDER BY id DESC LIMIT 1",
                 (int) $keyword->cluster_id
@@ -251,7 +251,8 @@ final class KSEF_Qwen_Exchange {
             $errors[] = 'Для кластера отсутствует карточка SEO-страницы; повтори кластеризацию';
         }
 
-        $slug = sanitize_title($payload['recommended_title']);
+        $slug = self::make_slug($payload['recommended_title']);
+        if ($slug === '') $errors[] = 'Не удалось сформировать URL-slug из заголовка';
         $same_slug = $wpdb->get_var($wpdb->prepare(
             "SELECT p.id FROM {$pages_table} p
              WHERE p.page_slug = %s AND p.cluster_id <> %d LIMIT 1",
@@ -301,6 +302,12 @@ final class KSEF_Qwen_Exchange {
             'warnings' => array_values(array_unique($warnings)),
             'checked_at' => current_time('mysql', true),
         );
+    }
+
+    private static function make_slug($title) {
+        $slug = sanitize_title((string) $title);
+        // The staging table stores slugs in varchar(200); keep room below the DB limit.
+        return substr($slug, 0, 180);
     }
 
     private static function word_count($text) {
