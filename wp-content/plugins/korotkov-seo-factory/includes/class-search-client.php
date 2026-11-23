@@ -17,7 +17,7 @@ final class KSEF_Search_Client {
         $query_text = trim(sanitize_text_field($query_text));
         $page = absint($page);
 
-        if ($query_text === '' || mb_strlen($query_text) > 400) {
+        if ($query_text === '' || (function_exists('mb_strlen') ? mb_strlen($query_text) : strlen($query_text)) > 400) {
             return new WP_Error('ksef_invalid_search_query', 'Поисковая фраза пуста или слишком длинная.');
         }
         if ($page > 2) {
@@ -116,6 +116,89 @@ final class KSEF_Search_Client {
         $this->record_search_usage();
         Korotkov_SEO_Factory::write_log('info', 'search_request_ok', 'Успешно получена выдача Яндекса.', array('page' => $page));
         return $result;
+    }
+
+    /**
+     * Parse XML safely and persist organic result documents for a known keyword.
+     * Returns the number of rows stored.
+     */
+    public function search_and_store($keyword_id, $query_text, $page = 0) {
+        global $wpdb;
+        $keyword_id = absint($keyword_id);
+        if (!$keyword_id) {
+            return new WP_Error('ksef_keyword_required', 'Для сохранения выдачи нужен ID поисковой фразы.');
+        }
+
+        $result = $this->search($query_text, $page);
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        if (!class_exists('DOMDocument')) {
+            return new WP_Error('ksef_xml_extension_missing', 'На сервере не включено расширение PHP DOM для разбора XML.');
+        }
+
+        $previous = libxml_use_internal_errors(true);
+        $dom = new DOMDocument();
+        $loaded = $dom->loadXML($result['raw_data'], LIBXML_NONET | LIBXML_NOBLANKS);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        if (!$loaded) {
+            Korotkov_SEO_Factory::write_log('error', 'search_xml_invalid', 'Не удалось разобрать XML поисковой выдачи.');
+            return new WP_Error('ksef_search_xml_invalid', 'Яндекс вернул XML, который не удалось разобрать.');
+        }
+
+        $xpath = new DOMXPath($dom);
+        $docs = $xpath->query('//*[local-name()="group"]/*[local-name()="doc"] | //*[local-name()="doc"]');
+        if (!$docs) {
+            return new WP_Error('ksef_search_no_documents', 'В XML не найдены документы поисковой выдачи.');
+        }
+
+        $table = $wpdb->prefix . 'ksef_serp_results';
+        $stored = 0;
+        $position = 0;
+        foreach ($docs as $doc) {
+            $url_node = $xpath->query('./*[local-name()="url"]', $doc)->item(0);
+            $title_node = $xpath->query('./*[local-name()="title"]', $doc)->item(0);
+            $passage_nodes = $xpath->query('.//*[local-name()="passage"]', $doc);
+
+            $url = $url_node ? esc_url_raw(trim($url_node->textContent)) : '';
+            if (!$url || !wp_http_validate_url($url)) {
+                continue;
+            }
+
+            $title = $title_node ? sanitize_text_field(wp_strip_all_tags($title_node->textContent)) : '';
+            $snippets = array();
+            if ($passage_nodes) {
+                foreach ($passage_nodes as $passage) {
+                    $text = trim(preg_replace('/\\s+/u', ' ', wp_strip_all_tags($passage->textContent)));
+                    if ($text !== '') $snippets[] = $text;
+                }
+            }
+            $snippet = implode(' ', array_slice($snippets, 0, 4));
+            $position++;
+
+            $exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$table} WHERE keyword_id = %d AND result_url = %s AND checked_at >= %s LIMIT 1",
+                $keyword_id,
+                $url,
+                gmdate('Y-m-d H:i:s', time() - DAY_IN_SECONDS)
+            ));
+            if ($exists) continue;
+
+            $ok = $wpdb->insert($table, array(
+                'keyword_id' => $keyword_id,
+                'result_url' => $url,
+                'result_title' => $title,
+                'result_snippet' => $snippet,
+                'position_num' => $position,
+                'checked_at' => current_time('mysql', true),
+            ), array('%d', '%s', '%s', '%s', '%d', '%s'));
+            if ($ok) $stored++;
+        }
+
+        Korotkov_SEO_Factory::write_log('info', 'serp_results_saved', 'Результаты поисковой выдачи сохранены.', array('keyword_id' => $keyword_id, 'count' => $stored));
+        return $stored;
     }
 
     private function reserve_search_slot() {
