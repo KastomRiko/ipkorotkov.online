@@ -245,7 +245,7 @@ final class KSEF_Publisher {
             'published_at' => $final === 'publish' ? $now : null,
             'updated_at' => $now,
         ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
-        if ($linked === false) {
+        if ($linked === false || $linked === 0) {
             Korotkov_SEO_Factory::write_log('critical', 'page_link_failed', 'Страница WordPress создана, но связь с карточкой не сохранена. Повторный запуск выполнит восстановление по метаполю.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
             return new WP_Error('ksef_page_link_failed', 'Страница создана (ID ' . (int) $post_id . '), но связь с карточкой не записалась. Повторите действие: плагин восстановит связь и не создаст дубль.');
         }
@@ -280,7 +280,7 @@ final class KSEF_Publisher {
             'published_at' => $status === 'publish' ? $now : null,
             'updated_at' => $now,
         ), array('id' => (int) $row->id), array('%d', '%s', '%s', '%s', '%s', '%s'), array('%d'));
-        if ($updated === false) {
+        if ($updated === false || $updated === 0) {
             Korotkov_SEO_Factory::write_log('critical', 'page_link_recovery_failed', 'Не удалось восстановить связь WP-страницы с карточкой SEO Factory.', array('page_row' => (int) $row->id, 'post_id' => (int) $post_id, 'db_error' => $wpdb->last_error));
             return new WP_Error('ksef_page_link_recovery_failed', 'Страница найдена, но восстановление связи завершилось ошибкой БД. Повторите попытку позже.');
         }
