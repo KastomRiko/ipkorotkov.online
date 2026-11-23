@@ -355,7 +355,7 @@ final class Korotkov_SEO_Factory {
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
-            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы, пока в wp-config.php не задан KSEF_BILLING_VERIFIED. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
+            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы без KSEF_BILLING_VERIFIED и свежей ручной сверки expense из Yandex Cloud Billing. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
                 <h2>Исследование и ограничения</h2>
@@ -385,7 +385,7 @@ final class Korotkov_SEO_Factory {
                         <td>
                             <input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_actual_expense]" value="<?php echo esc_attr($settings['billing_actual_expense'] ?? ''); ?>" placeholder="Сумма expense из Billing">
                             <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что проверил свежий отчёт Billing и подтверждаю указанную сумму</label>
-                            <p class="description">Внесите значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы могут быть предварительными и корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
+                            <p class="description">Внесите накопленное значение expense (после скидок/кредитов) из отчёта Yandex Cloud Billing за период с начала расходов этого проекта по текущую дату. Время сверки обновится только при установленной галочке — обычное сохранение других настроек не продлевает срок. Данные действуют 24 часа. Без суммы или при устаревшей сверке платные запросы блокируются. Значение вводится вручную: автоматического подключения к Billing API пока нет. Отчётные суммы могут быть предварительными и корректироваться. Сверяйте весь платежный аккаунт, если он используется только для этого проекта.</p>
                             <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
                     </tr>
