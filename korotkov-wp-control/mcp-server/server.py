@@ -22,6 +22,9 @@ mcp = FastMCP("Korotkov WP Control")
 def client() -> httpx.Client:
     if not API_BASE or not TOKEN:
         raise RuntimeError("Заполните KWC_BASE_URL и KWC_TOKEN в файле .env или переменных окружения.")
+    base = urlsplit(BASE_URL)
+    if base.scheme != "https" or not base.netloc or base.username or base.password or base.query or base.fragment:
+        raise RuntimeError("KWC_BASE_URL должен быть HTTPS-адресом сайта без логина, пароля, query и fragment.")
     headers = {"X-KWC-Token": TOKEN, "Accept": "application/json"}
     if not WP_USERNAME or not WP_APP_PASSWORD:
         raise RuntimeError("Укажите KWC_WP_USERNAME и KWC_WP_APP_PASSWORD: требуется отдельный Application Password администратора WordPress.")
