@@ -1,0 +1,13 @@
+# Local MCP credentials and runtime
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Generated archives and build output
+*.zip
+*.part
+/build/
