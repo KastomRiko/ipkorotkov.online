@@ -1,0 +1,87 @@
+name: Enable Korotkov SEO Factory paid Yandex APIs
+
+on:
+  push:
+    branches:
+      - design/portfolio-refresh
+    paths:
+      - '.github/workflows/enable-ksef-search-api.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enable-ksef-search-api
+  cancel-in-progress: false
+
+jobs:
+  enable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check connection secrets
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+        run: |
+          test -n "$KWC_TOKEN" || { echo "::error::Missing KWC_API_TOKEN"; exit 1; }
+          test -n "$WP_USER" || { echo "::error::Missing KWC_WP_USERNAME"; exit 1; }
+          test -n "$WP_APP_PASSWORD" || { echo "::error::Missing KWC_WP_APP_PASSWORD"; exit 1; }
+
+      - name: Enable billing flag in wp-config through Korotkov WP Control
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+          KWC_BASE_URL: https://ipkorotkov.online
+        shell: bash
+        run: |
+          set -euo pipefail
+          WP_APP_PASSWORD="${WP_APP_PASSWORD// /}"
+          READ_JSON="$(mktemp)"
+          WRITE_JSON="$(mktemp)"
+          CONFIG_FILE="$(mktemp)"
+          HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
+            --user "$WP_USER:$WP_APP_PASSWORD" \
+            --header "X-KWC-Token: $KWC_TOKEN" \
+            --get --data-urlencode "path=wp-config.php" \
+            "$KWC_BASE_URL/wp-json/kwc/v1/read")
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::WP Control cannot read wp-config.php (HTTP $HTTP_CODE). No change was made."
+            jq '{code,message}' "$READ_JSON" 2>/dev/null || true
+            exit 1
+          fi
+          jq -er '.content' "$READ_JSON" > "$CONFIG_FILE"
+          EXPECTED_SHA=$(jq -er '.sha256' "$READ_JSON")
+          python3 - "$CONFIG_FILE" <<'PY'
+          import pathlib, re, sys
+          p = pathlib.Path(sys.argv[1])
+          s = p.read_text(encoding="utf-8")
+          pattern = r"define\s*\(\s*['\"]KSEF_BILLING_VERIFIED['\"]\s*,\s*(?:true|false)\s*\)\s*;"
+          if re.search(pattern, s):
+              s = re.sub(pattern, "define('KSEF_BILLING_VERIFIED', true);", s, count=1)
+          else:
+              marker = "/* That's all, stop editing!"
+              if marker in s:
+                  s = s.replace(marker, "define('KSEF_BILLING_VERIFIED', true);\n\n" + marker, 1)
+              else:
+                  s += "\n\ndefine('KSEF_BILLING_VERIFIED', true);\n"
+          p.write_text(s, encoding="utf-8")
+          PY
+          jq -n --rawfile content "$CONFIG_FILE" --arg path "wp-config.php" --arg sha "$EXPECTED_SHA" \
+            '{path:$path,content:$content,expected_sha256:$sha}' > "$WRITE_JSON"
+          HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
+            --user "$WP_USER:$WP_APP_PASSWORD" \
+            --header "X-KWC-Token: $KWC_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data-binary "@$WRITE_JSON" \
+            "$KWC_BASE_URL/wp-json/kwc/v1/write")
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::WP Control rejected wp-config.php write (HTTP $HTTP_CODE)."
+            jq '{code,message}' "$READ_JSON" 2>/dev/null || true
+            exit 1
+          fi
+          echo "Billing flag set. Server response:"
+          jq '{success,path,backup_id,sha256}' "$READ_JSON"
+          rm -f "$READ_JSON" "$WRITE_JSON" "$CONFIG_FILE"
