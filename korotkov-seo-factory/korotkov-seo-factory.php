@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.2
+ * Version: 0.8.3
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.2');
+define('KSEF_VERSION', '0.8.3');
 require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
@@ -394,6 +394,7 @@ final class Korotkov_SEO_Factory {
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
+            <div class="notice notice-warning inline"><p><strong>Ограничение Wordstat:</strong> по уведомлению Яндекса статистика API недоступна за даты после 7 октября 2026 года. GetTop продолжает отвечать, но данные являются архивными и не отражают текущую частотность. Для актуального анализа конкурентов используй Search API.</p></div>
             <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы без KSEF_BILLING_VERIFIED и свежей ручной сверки cost из Yandex Cloud Billing. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
@@ -632,7 +633,7 @@ final class Korotkov_SEO_Factory {
                 set_transient($key, array('status' => 'error', 'message' => $result->get_error_message()), 60);
             } else {
                 $wpdb->update($table, array('wordstat_data' => wp_json_encode($result)), array('id' => $keyword_id), array('%s'), array('%d'));
-                set_transient($key, array('status' => 'success', 'message' => 'Wordstat сохранён. Показов за 30 дней: ' . (int) ($result['totalCount'] ?? 0) . '.'), 60);
+                set_transient($key, array('status' => 'success', 'message' => 'Архивная статистика Wordstat сохранена (данные не новее 07.10.2026). Значение за доступный период: ' . (int) ($result['totalCount'] ?? 0) . '.'), 60);
             }
         }
         wp_safe_redirect(admin_url('admin.php?page=korotkov-seo-factory'));
@@ -651,15 +652,15 @@ final class Korotkov_SEO_Factory {
             echo '<p>Сначала добавьте фразы в очередь.</p>';
             return;
         }
-        echo '<p>Запрос выполняется вручную, по одной фразе (метод GetTop, вся Россия, 30 дней). Результат кэшируется на 30 дней и используется для выбора головной фразы кластера.</p>';
-        echo '<table class="widefat striped"><thead><tr><th>Фраза</th><th>Показов (30 дн.)</th><th></th></tr></thead><tbody>';
+        echo '<p>Запрос выполняется вручную, по одной фразе (GetTop, вся Россия). Важно: API не содержит статистики после 07.10.2026; результат архивный, а не текущая частотность. Ответ кэшируется на 30 дней.</p>';
+        echo '<table class="widefat striped"><thead><tr><th>Фраза</th><th>Архивные показы (до 07.10.2026)</th><th></th></tr></thead><tbody>';
         foreach ($rows as $r) {
             $ws = $r->wordstat_data ? json_decode($r->wordstat_data, true) : null;
             echo '<tr><td>' . esc_html($r->source_phrase) . '</td><td>' . ($ws && isset($ws['totalCount']) ? esc_html(number_format_i18n((int) $ws['totalCount'])) : '—') . '</td><td>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
             echo '<input type="hidden" name="action" value="ksef_wordstat_fetch"><input type="hidden" name="keyword_id" value="' . (int) $r->id . '">';
             wp_nonce_field('ksef_wordstat_fetch');
-            submit_button($ws ? 'Обновить' : 'Запросить', 'secondary small', 'submit', false);
+            submit_button($ws ? 'Повторить архивный запрос' : 'Запросить архив', 'secondary small', 'submit', false);
             echo '</form></td></tr>';
         }
         echo '</tbody></table>';
