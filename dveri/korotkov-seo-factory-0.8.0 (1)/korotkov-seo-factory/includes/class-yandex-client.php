@@ -29,7 +29,7 @@ final class KSEF_Yandex_Client {
      * GetTop. Параметры: phrase (обяз., до 400 симв.), numPhrases (1..2000), regions[], devices[].
      */
     public function wordstat_top($payload) {
-        return $this->request_wordstat('/v2/wordstat/topRequests', $payload, 'GetTop', 20.00);
+        return $this->request_wordstat('/v2/wordstat/topRequests', $payload, 'GetTop', 0.02);
     }
 
     /**
