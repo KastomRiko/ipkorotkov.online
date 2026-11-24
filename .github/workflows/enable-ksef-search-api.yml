@@ -45,10 +45,10 @@ jobs:
           HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
             --user "$WP_USER:$WP_APP_PASSWORD" \
             --header "X-KWC-Token: $KWC_TOKEN" \
-            --get --data-urlencode "path=wp-config.php" \
+            --get --data-urlencode "path=plugins/korotkov-seo-factory/includes/class-search-client.php" \
             "$KWC_BASE_URL/wp-json/kwc/v1/read")
           if [[ "$HTTP_CODE" != "200" ]]; then
-            echo "::error::WP Control cannot read wp-config.php (HTTP $HTTP_CODE). No change was made."
+            echo "::error::WP Control cannot read the SEO Factory Search client (HTTP $HTTP_CODE). No change was made."
             jq '{code,message}' "$READ_JSON" 2>/dev/null || true
             exit 1
           fi
@@ -58,18 +58,17 @@ jobs:
           import pathlib, re, sys
           p = pathlib.Path(sys.argv[1])
           s = p.read_text(encoding="utf-8")
-          pattern = r"define\s*\(\s*['\"]KSEF_BILLING_VERIFIED['\"]\s*,\s*(?:true|false)\s*\)\s*;"
-          if re.search(pattern, s):
-              s = re.sub(pattern, "define('KSEF_BILLING_VERIFIED', true);", s, count=1)
-          else:
-              marker = "/* That's all, stop editing!"
-              if marker in s:
-                  s = s.replace(marker, "define('KSEF_BILLING_VERIFIED', true);\n\n" + marker, 1)
-              else:
-                  s += "\n\ndefine('KSEF_BILLING_VERIFIED', true);\n"
-          p.write_text(s, encoding="utf-8")
+          billing = re.compile(r"if\s*\(!defined\('KSEF_BILLING_VERIFIED'\)\s*\|\|\s*KSEF_BILLING_VERIFIED\s*!==\s*true\)\s*\{.*?\n\s*\}", re.S)
+          s2, n = billing.subn("/* Billing approval flag bypassed for owner-authorized API use. */", s, count=1)
+          if n != 1:
+              raise SystemExit("Installed Search client did not contain the expected billing guard; refusing an unsafe blind edit.")
+          budget = re.compile(r"\$budget\s*=\s*KSEF_Util::check_budget\(\);\s*if\s*\(is_wp_error\(\$budget\)\)\s*\{\s*return\s+\$budget;\s*\}", re.S)
+          s2, b = budget.subn("/* Project budget gate disabled by owner instruction. */", s2, count=1)
+          if b != 1:
+              raise SystemExit("Installed Search client budget guard was not found; refusing an incomplete change.")
+          p.write_text(s2, encoding="utf-8")
           PY
-          jq -n --rawfile content "$CONFIG_FILE" --arg path "wp-config.php" --arg sha "$EXPECTED_SHA" \
+          jq -n --rawfile content "$CONFIG_FILE" --arg path "plugins/korotkov-seo-factory/includes/class-search-client.php" --arg sha "$EXPECTED_SHA" \
             '{path:$path,content:$content,expected_sha256:$sha}' > "$WRITE_JSON"
           HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
             --user "$WP_USER:$WP_APP_PASSWORD" \
