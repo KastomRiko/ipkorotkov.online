@@ -21,6 +21,12 @@ jobs:
       - name: Check PHP syntax
         run: php -l korotkov-wp-control/korotkov-wp-control.php
 
+      - name: Check Python syntax
+        run: python -m py_compile korotkov-wp-control/mcp-server/server.py
+
+      - name: Check patch whitespace
+        run: git diff --check
+
       - name: Build installable plugin
         run: |
           mkdir -p build/korotkov-wp-control
