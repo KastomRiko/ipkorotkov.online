@@ -35,6 +35,9 @@ final class Korotkov_WP_Control {
         foreach (glob($dir . DIRECTORY_SEPARATOR . '*.zip') ?: [] as $file) {
             if (is_file($file) && filemtime($file) < time() - HOUR_IN_SECONDS) @unlink($file);
         }
+        foreach (glob($dir . DIRECTORY_SEPARATOR . '*.bak') ?: [] as $file) {
+            if (is_file($file) && filemtime($file) < time() - DAY_IN_SECONDS) @unlink($file);
+        }
     }
 
     public static function routes(): void {
@@ -167,7 +170,7 @@ final class Korotkov_WP_Control {
         }
         $content = file_get_contents($resolved['path']);
         if ($content === false || preg_match('//u', $content) !== 1) return new WP_Error('kwc_binary_file', 'Файл не является UTF-8 текстом.', ['status' => 415]);
-        return new WP_REST_Response(['path' => $resolved['relative'], 'size' => $size, 'content' => $content]);
+        return new WP_REST_Response(['path' => $resolved['relative'], 'size' => $size, 'sha256' => hash('sha256', $content), 'content' => $content]);
     }
 
     private static function private_dir() {
