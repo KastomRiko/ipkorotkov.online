@@ -7,7 +7,6 @@ on:
     paths:
       - 'wp-content/themes/korotkov-dark/**'
       - '.github/workflows/deploy-korotkov-dark.yml'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -45,12 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           BEFORE="${{ github.event.before }}"
-          AFTER="${{ github.sha }}"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$BEFORE" =~ ^0+$ ]]; then
-            mapfile -t FILES < <(find wp-content/themes/korotkov-dark -type f -not -path '*/.*' | sort)
-          else
-            mapfile -t FILES < <(git diff --name-only "$BEFORE" "$AFTER" -- wp-content/themes/korotkov-dark | grep -vE '(^|/)\.' || true)
-          fi
+          mapfile -t FILES < <(git diff --name-only "$BEFORE" "${{ github.sha }}" -- wp-content/themes/korotkov-dark | grep -vE '(^|/)\.' || true)
           if [[ "${#FILES[@]}" -eq 0 ]]; then
             echo "No theme files changed."
             exit 0
