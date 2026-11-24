@@ -463,7 +463,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
-                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении обрабатывается не более одного задания за 5 минут. Для реальных платных запросов дополнительно требуется KSEF_BILLING_VERIFIED=true в wp-config.php после проверки тарифа и покрытия бонусами. Wordstat и публикация этим переключателем не запускаются.</p></td>
+                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении очередь запускается сразу после добавления фраз и далее каждую минуту: до 5 заданий за один запуск с интервалом не менее 2 секунд. Для реальных платных запросов дополнительно требуется KSEF_BILLING_VERIFIED=true в wp-config.php и действующая проверка Billing. Wordstat и публикация этим переключателем не запускаются.</p></td>
                     </tr>
                 </table>
                 <?php submit_button('Сохранить настройки'); ?>
