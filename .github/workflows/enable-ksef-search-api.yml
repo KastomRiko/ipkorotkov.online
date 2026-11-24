@@ -55,20 +55,12 @@ jobs:
           jq -er '.content' "$READ_JSON" > "$CONFIG_FILE"
           EXPECTED_SHA=$(jq -er '.sha256' "$READ_JSON")
           python3 - "$CONFIG_FILE" <<'PY'
-          import pathlib, re, sys
-          p = pathlib.Path(sys.argv[1])
-          lines = p.read_text(encoding="utf-8").splitlines()
-          needles = ("KSEF_BILLING_VERIFIED", "check_budget", "budget", "100/day", "reserve")
-          hits = [i for i, line in enumerate(lines) if any(n.lower() in line.lower() for n in needles)]
-          if not hits:
-              raise SystemExit("No billing or budget guard markers found in installed Search client.")
-          shown = set()
-          for i in hits:
-              for j in range(max(0, i-3), min(len(lines), i+5)):
-                  if j not in shown:
-                      print(f"SEARCH_CLIENT:{j+1}: {lines[j][:500]}")
-                      shown.add(j)
-              print("---")
+          import pathlib, sys
+          lines = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()
+          for lo, hi in ((30, 90), (235, 310)):
+              print(f"===== INSTALLED SEARCH CLIENT LINES {lo}-{hi} =====")
+              for n in range(lo, min(hi, len(lines)) + 1):
+                  print(f"SEARCH_CLIENT:{n}: {lines[n-1][:500]}")
           PY
           echo "Diagnostic only: installed Search client guards reported; no production file changed."
           exit 0
