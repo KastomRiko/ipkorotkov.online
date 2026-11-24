@@ -1,6 +1,6 @@
 <?php
 /**
- * Small, resumable queue. One SERP job is processed per cron tick.
+ * Small, resumable queue. Up to five SERP jobs are processed per cron tick.
  * Wordstat and publishing are intentionally not scheduled by this class.
  */
 if (!defined('ABSPATH')) { exit; }
