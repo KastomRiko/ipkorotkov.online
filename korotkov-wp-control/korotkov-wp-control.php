@@ -18,6 +18,22 @@ final class Korotkov_WP_Control {
 
     public static function boot(): void {
         add_action('rest_api_init', [__CLASS__, 'routes']);
+        add_action('init', [__CLASS__, 'schedule_cleanup']);
+        add_action('kwc_cleanup_archives', [__CLASS__, 'cleanup_archives']);
+    }
+
+    public static function schedule_cleanup(): void {
+        if (!wp_next_scheduled('kwc_cleanup_archives')) {
+            wp_schedule_event(time() + 300, 'hourly', 'kwc_cleanup_archives');
+        }
+    }
+
+    public static function cleanup_archives(): void {
+        $dir = self::private_dir();
+        if (is_wp_error($dir) || !is_dir($dir)) return;
+        foreach (glob($dir . DIRECTORY_SEPARATOR . '*.zip') ?: [] as $file) {
+            if (is_file($file) && filemtime($file) < time() - HOUR_IN_SECONDS) @unlink($file);
+        }
     }
 
     public static function routes(): void {
@@ -79,7 +95,13 @@ final class Korotkov_WP_Control {
         if (!$root || !is_dir($root)) {
             return new WP_Error('kwc_root_missing', 'Каталог недоступен.', ['status' => 404]);
         }
-        $candidate = $root . ($parts ? DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts) : '');
+        $candidate = $root;
+        foreach ($parts as $part) {
+            $candidate .= DIRECTORY_SEPARATOR . $part;
+            if (is_link($candidate)) {
+                return new WP_Error('kwc_symlink', 'Символические ссылки запрещены.', ['status' => 403]);
+            }
+        }
         $real = realpath($candidate);
         if ($must_exist && $real === false) {
             return new WP_Error('kwc_not_found', 'Файл или каталог не найден.', ['status' => 404]);
@@ -88,9 +110,6 @@ final class Korotkov_WP_Control {
             $prefix = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
             if ($real !== $root && !str_starts_with($real . (is_dir($real) ? DIRECTORY_SEPARATOR : ''), $prefix)) {
                 return new WP_Error('kwc_path_escape', 'Путь выходит за пределы разрешённого каталога.', ['status' => 403]);
-            }
-            if (is_link($candidate)) {
-                return new WP_Error('kwc_symlink', 'Символические ссылки запрещены.', ['status' => 403]);
             }
             $candidate = $real;
         }
@@ -125,7 +144,7 @@ final class Korotkov_WP_Control {
         } catch (Throwable $e) {
             return new WP_Error('kwc_list_failed', 'Не удалось прочитать каталог.', ['status' => 500]);
         }
-        usort($items, static fn($a, $b) => [$b['type'] === 'directory', strtolower($a['name'])] <=> [$a['type'] === 'directory', strtolower($b['name'])]);
+        usort($items, static function ($a, $b) { $type = ($a['type'] === 'directory' ? 0 : 1) <=> ($b['type'] === 'directory' ? 0 : 1); return $type !== 0 ? $type : strcasecmp($a['name'], $b['name']); });
         return new WP_REST_Response(['path' => $path, 'items' => $items, 'limit' => 500]);
     }
 
@@ -140,20 +159,32 @@ final class Korotkov_WP_Control {
             return new WP_Error('kwc_sensitive_file', 'Чтение этого типа файла запрещено.', ['status' => 403]);
         }
         $content = file_get_contents($resolved['path']);
-        if ($content === false || !mb_check_encoding($content, 'UTF-8')) return new WP_Error('kwc_binary_file', 'Файл не является UTF-8 текстом.', ['status' => 415]);
+        if ($content === false || preg_match('//u', $content) !== 1) return new WP_Error('kwc_binary_file', 'Файл не является UTF-8 текстом.', ['status' => 415]);
         return new WP_REST_Response(['path' => $resolved['relative'], 'size' => $size, 'content' => $content]);
     }
 
-    private static function private_dir(): string {
-        $upload = wp_upload_dir();
-        $dir = trailingslashit($upload['basedir']) . 'kwc-private';
-        if (!is_dir($dir)) wp_mkdir_p($dir);
-        if (is_dir($dir)) {
-            if (!file_exists($dir . '/index.php')) file_put_contents($dir . '/index.php', "<?php\n// Silence is golden.\n");
-            if (!file_exists($dir . '/.htaccess')) file_put_contents($dir . '/.htaccess', "Deny from all\n");
-            if (!file_exists($dir . '/web.config')) file_put_contents($dir . '/web.config', '<configuration><system.webServer><authorization><deny users="*" /></authorization></system.webServer></configuration>');
+    private static function private_dir() {
+        $tmp = realpath(sys_get_temp_dir());
+        if (!$tmp || !is_dir($tmp) || !is_writable($tmp)) {
+            return new WP_Error('kwc_temp_unavailable', 'Системный временный каталог недоступен.', ['status' => 500]);
         }
-        return $dir;
+        $tmp = rtrim($tmp, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $docroot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string) $_SERVER['DOCUMENT_ROOT']) : false;
+        $wp_root = realpath(ABSPATH);
+        foreach ([$docroot, $wp_root] as $public_root) {
+            if ($public_root) {
+                $public_prefix = rtrim($public_root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+                if (str_starts_with($tmp, $public_prefix) || rtrim($tmp, DIRECTORY_SEPARATOR) === $public_root) {
+                    return new WP_Error('kwc_temp_public', 'Системный временный каталог находится внутри публичной папки сайта. Создание архива остановлено.', ['status' => 500]);
+                }
+            }
+        }
+        $dir = $tmp . 'kwc-' . substr(hash('sha256', ABSPATH), 0, 16);
+        if (!is_dir($dir) && !wp_mkdir_p($dir)) {
+            return new WP_Error('kwc_temp_create_failed', 'Не удалось создать закрытый временный каталог.', ['status' => 500]);
+        }
+        @chmod($dir, 0700);
+        return is_dir($dir) && is_writable($dir) ? $dir : new WP_Error('kwc_temp_permissions', 'Нет доступа к временному каталогу.', ['status' => 500]);
     }
 
     public static function create_archive(WP_REST_Request $request) {
@@ -163,7 +194,7 @@ final class Korotkov_WP_Control {
         if (!is_dir($resolved['path'])) return new WP_Error('kwc_not_directory', 'Для архива нужен каталог.', ['status' => 400]);
         $id = bin2hex(random_bytes(16));
         $dir = self::private_dir();
-        if (!is_dir($dir) || !is_writable($dir)) return new WP_Error('kwc_storage_failed', 'Не удалось подготовить закрытый каталог архива.', ['status' => 500]);
+        if (is_wp_error($dir)) return $dir;
         $file = $dir . '/' . $id . '.zip';
         $zip = new ZipArchive();
         if ($zip->open($file, ZipArchive::CREATE | ZipArchive::EXCL) !== true) return new WP_Error('kwc_zip_create_failed', 'Не удалось создать ZIP.', ['status' => 500]);
@@ -199,6 +230,8 @@ final class Korotkov_WP_Control {
         $data = get_transient('kwc_archive_' . $id);
         if (!$data || empty($data['file']) || !is_file($data['file'])) return new WP_Error('kwc_archive_expired', 'Архив не найден или срок хранения истёк.', ['status' => 404]);
         $file = $data['file'];
+        $dir = self::private_dir();
+        if (is_wp_error($dir) || dirname($file) !== $dir) return new WP_Error('kwc_archive_invalid', 'Путь к архиву недействителен.', ['status' => 403]);
         nocache_headers();
         header('Content-Type: application/zip');
         header('Content-Length: ' . filesize($file));
