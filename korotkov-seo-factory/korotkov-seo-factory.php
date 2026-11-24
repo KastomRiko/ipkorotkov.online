@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.1
+ * Version: 0.8.2
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
