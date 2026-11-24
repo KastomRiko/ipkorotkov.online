@@ -48,6 +48,22 @@ def request_json(method: str, endpoint: str, **kwargs):
         return response.json()
 
 
+def wp_request_json(method: str, endpoint: str, **kwargs):
+    """Use WordPress core REST API for pages, posts and plugin management."""
+    with client() as c:
+        response = c.request(method, f"{BASE_URL}/wp-json/wp/v2/{endpoint.lstrip('/')}", **kwargs)
+        response.raise_for_status()
+        if response.status_code == 204 or not response.content:
+            return {"success": True}
+        return response.json()
+
+
+def checked_kind(kind: str) -> str:
+    if kind not in {"pages", "posts"}:
+        raise ValueError("Разрешены только pages и posts.")
+    return kind
+
+
 @mcp.tool()
 def site_status() -> dict:
     """Проверить связь с сайтом, версию плагина и доступные операции."""
@@ -64,6 +80,84 @@ def list_site_files(path: str = "plugins") -> dict:
 def read_site_file(path: str) -> dict:
     """Прочитать текстовый файл WordPress (лимит 256 КБ; секретные файлы запрещены)."""
     return request_json("GET", "read", params={"path": checked_path(path)})
+
+
+@mcp.tool()
+def write_site_file(path: str, content: str, expected_sha256: str = "") -> dict:
+    """Изменить существующий UTF-8 файл сайта (до 1 МБ). Перед записью сервер создаёт резервную копию; expected_sha256 защищает от перезаписи чужих изменений."""
+    payload = {"path": checked_path(path), "content": content}
+    if expected_sha256:
+        if not re.fullmatch(r"[a-f0-9]{64}", expected_sha256):
+            raise ValueError("expected_sha256 должен содержать 64 символа hex.")
+        payload["expected_sha256"] = expected_sha256
+    return request_json("POST", "write", json=payload)
+
+
+@mcp.tool()
+def restore_site_file(backup_id: str) -> dict:
+    """Восстановить файл из резервной копии, созданной write_site_file. Копия хранится до 24 часов."""
+    if not re.fullmatch(r"[a-f0-9]{32}", backup_id):
+        raise ValueError("Некорректный backup_id.")
+    return request_json("POST", "restore", json={"backup_id": backup_id})
+
+
+@mcp.tool()
+def list_site_content(kind: str = "pages", status: str = "any", per_page: int = 50) -> list:
+    """Получить страницы или записи WordPress. kind: pages/posts; status: any/publish/draft/private/pending."""
+    kind = checked_kind(kind)
+    if status not in {"any", "publish", "draft", "private", "pending"}:
+        raise ValueError("Недопустимый статус.")
+    if not 1 <= per_page <= 100:
+        raise ValueError("per_page должен быть от 1 до 100.")
+    return wp_request_json("GET", kind, params={"status": status, "per_page": per_page, "_fields": "id,date,modified,slug,status,link,title,content,author"})
+
+
+@mcp.tool()
+def create_site_content(kind: str, title: str, content: str, status: str = "draft") -> dict:
+    """Создать страницу или запись WordPress. По умолчанию создаётся черновик; публикация возможна только при status='publish'."""
+    kind = checked_kind(kind)
+    if status not in {"draft", "publish", "private", "pending"}:
+        raise ValueError("Недопустимый статус.")
+    if not title.strip():
+        raise ValueError("Заголовок не может быть пустым.")
+    return wp_request_json("POST", kind, json={"title": title, "content": content, "status": status})
+
+
+@mcp.tool()
+def update_site_content(kind: str, content_id: int, title: str = "", content: str = "", status: str = "") -> dict:
+    """Изменить существующую страницу или запись. Передавайте только изменяемые поля; пустые поля не затрагиваются."""
+    kind = checked_kind(kind)
+    if content_id < 1:
+        raise ValueError("Некорректный ID.")
+    payload = {}
+    if title:
+        payload["title"] = title
+    if content:
+        payload["content"] = content
+    if status:
+        if status not in {"draft", "publish", "private", "pending"}:
+            raise ValueError("Недопустимый статус.")
+        payload["status"] = status
+    if not payload:
+        raise ValueError("Не указаны поля для изменения.")
+    return wp_request_json("POST", f"{kind}/{content_id}", json=payload)
+
+
+@mcp.tool()
+def list_site_plugins() -> list:
+    """Получить список установленных плагинов и их статусы через WordPress REST API."""
+    return wp_request_json("GET", "plugins")
+
+
+@mcp.tool()
+def set_site_plugin_status(plugin: str, status: str) -> dict:
+    """Активировать или деактивировать установленный плагин. Перед изменением проверьте точный plugin basename из list_site_plugins."""
+    if status not in {"active", "inactive"}:
+        raise ValueError("Статус должен быть active или inactive.")
+    if not plugin or len(plugin) > 200 or plugin.startswith("/") or ".." in plugin or "\\\\" in plugin:
+        raise ValueError("Некорректный plugin basename.")
+    from urllib.parse import quote
+    return wp_request_json("POST", "plugins/" + quote(plugin, safe=""), json={"status": status})
 
 
 @mcp.tool()
