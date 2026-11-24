@@ -14,6 +14,7 @@ final class Korotkov_WP_Control {
     private const NS = 'kwc/v1';
     private const MAX_READ = 262144;
     private const MAX_ARCHIVE_FILES = 5000;
+    private const MAX_ARCHIVE_ENTRIES = 20000;
     private const MAX_ARCHIVE_BYTES = 268435456;
 
     public static function boot(): void {
@@ -208,29 +209,42 @@ final class Korotkov_WP_Control {
         $file = $dir . '/' . $id . '.zip';
         $zip = new ZipArchive();
         if ($zip->open($file, ZipArchive::CREATE | ZipArchive::EXCL) !== true) return new WP_Error('kwc_zip_create_failed', 'Не удалось создать ZIP.', ['status' => 500]);
-        $count = 0; $bytes = 0; $base = $resolved['path'];
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
-        foreach ($iterator as $entry) {
-            if ($entry->isLink() || !$entry->isFile()) continue;
-            $name = $entry->getFilename();
-            $full = $entry->getPathname();
-            $relative = ltrim(str_replace(DIRECTORY_SEPARATOR, '/', substr($full, strlen($base))), '/');
-            $segments = explode('/', $relative);
-            $hidden = false;
-            foreach ($segments as $segment) { if ($segment !== '' && str_starts_with($segment, '.')) { $hidden = true; break; } }
-            if ($hidden || preg_match('~(^|/)(node_modules|vendor|cache|tmp|temp|backups?|kwc-private|updraft|ai1wm-backups|wpvividbackups)(/|$)~i', $relative)) continue;
-            if (preg_match('~(^|/)(wp-config\\.php|[^/]*\\.env[^/]*|[^/]*\\.(pem|key|p12|pfx|sql|bak|old|orig|log))$~i', $relative)) continue;
-            $size = $entry->getSize();
-            if (++$count > self::MAX_ARCHIVE_FILES || ($bytes += $size) > self::MAX_ARCHIVE_BYTES) {
-                $zip->close(); @unlink($file);
-                return new WP_Error('kwc_archive_limit', 'Превышен лимит архива: 5000 файлов или 256 МБ.', ['status' => 413]);
+        $count = 0; $bytes = 0; $scanned = 0; $base = $resolved['path'];
+        try {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
+            foreach ($iterator as $entry) {
+                if (++$scanned > self::MAX_ARCHIVE_ENTRIES) {
+                    throw new LengthException('Превышен лимит обхода каталога.');
+                }
+                if ($entry->isLink() || !$entry->isFile()) continue;
+                $full = $entry->getPathname();
+                $relative = ltrim(str_replace(DIRECTORY_SEPARATOR, '/', substr($full, strlen($base))), '/');
+                $segments = explode('/', $relative);
+                $hidden = false;
+                foreach ($segments as $segment) {
+                    if ($segment !== '' && str_starts_with($segment, '.')) { $hidden = true; break; }
+                }
+                if ($hidden || preg_match('~(^|/)(node_modules|vendor|cache|tmp|temp|backups?|kwc-private|updraft|ai1wm-backups|wpvividbackups)(/|$)~i', $relative)) continue;
+                if (preg_match('~(^|/)(wp-config\\.php|[^/]*\\.env[^/]*|[^/]*\\.(pem|key|p12|pfx|sql|bak|old|orig|log))$~i', $relative)) continue;
+                $size = $entry->getSize();
+                if (++$count > self::MAX_ARCHIVE_FILES || ($bytes += $size) > self::MAX_ARCHIVE_BYTES) {
+                    throw new LengthException('Превышен лимит размера архива.');
+                }
+                if (!$zip->addFile($full, $relative)) {
+                    throw new RuntimeException('Не удалось добавить файл в ZIP.');
+                }
             }
-            if (!$zip->addFile($full, $relative)) {
-                $zip->close(); @unlink($file);
-                return new WP_Error('kwc_zip_add_failed', 'Ошибка добавления файла в ZIP.', ['status' => 500]);
-            }
+        } catch (LengthException $e) {
+            $zip->close(); @unlink($file);
+            return new WP_Error('kwc_archive_limit', 'Превышен лимит архива: 5000 файлов, 20000 элементов обхода или 256 МБ.', ['status' => 413]);
+        } catch (Throwable $e) {
+            $zip->close(); @unlink($file);
+            return new WP_Error('kwc_archive_failed', 'Ошибка чтения каталога при создании архива.', ['status' => 500]);
         }
-        $zip->close();
+        if (!$zip->close()) {
+            @unlink($file);
+            return new WP_Error('kwc_zip_close_failed', 'Не удалось корректно завершить ZIP-архив.', ['status' => 500]);
+        }
         set_transient('kwc_archive_' . $id, ['file' => $file, 'name' => sanitize_file_name(basename($base)) . '.zip', 'created' => time()], HOUR_IN_SECONDS);
         return new WP_REST_Response([
             'archive_id' => $id, 'files' => $count, 'bytes_uncompressed' => $bytes,
