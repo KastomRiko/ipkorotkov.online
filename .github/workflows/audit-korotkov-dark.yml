@@ -1,0 +1,80 @@
+name: Audit Korotkov Dark theme against WordPress
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: Git branch to compare with the live theme
+        required: true
+        default: design/portfolio-refresh
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout selected source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 1
+
+      - name: Check required secrets
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+        run: |
+          test -n "$KWC_TOKEN" || { echo "::error::Missing KWC_API_TOKEN"; exit 1; }
+          test -n "$WP_USER" || { echo "::error::Missing KWC_WP_USERNAME"; exit 1; }
+          test -n "$WP_APP_PASSWORD" || { echo "::error::Missing KWC_WP_APP_PASSWORD"; exit 1; }
+
+      - name: Compare tracked theme files with live WordPress files
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+          KWC_BASE_URL: https://ipkorotkov.online
+        shell: bash
+        run: |
+          set -euo pipefail
+          WP_APP_PASSWORD="${WP_APP_PASSWORD// /}"
+          DIFFERENT=0
+          MISSING=0
+          COUNT=0
+          while IFS= read -r FILE; do
+            [[ -n "$FILE" ]] || continue
+            COUNT=$((COUNT + 1))
+            RELATIVE="${FILE#wp-content/}"
+            RESPONSE=$(mktemp)
+            CODE=$(curl --silent --show-error --output "$RESPONSE" --write-out '%{http_code}' \
+              --user "$WP_USER:$WP_APP_PASSWORD" \
+              --header "X-KWC-Token: $KWC_TOKEN" \
+              --get --data-urlencode "path=$RELATIVE" \
+              "$KWC_BASE_URL/wp-json/kwc/v1/read")
+            if [[ "$CODE" != "200" ]]; then
+              echo "MISSING_OR_UNREADABLE: $RELATIVE (HTTP $CODE)"
+              MISSING=$((MISSING + 1))
+              rm -f "$RESPONSE"
+              continue
+            fi
+            SITE_SHA=$(jq -r '.sha256 // empty' "$RESPONSE")
+            LOCAL_SHA=$(sha256sum "$FILE" | awk '{print $1}')
+            if [[ -z "$SITE_SHA" ]]; then
+              echo "NO_SITE_HASH: $RELATIVE"
+              DIFFERENT=$((DIFFERENT + 1))
+            elif [[ "$SITE_SHA" != "$LOCAL_SHA" ]]; then
+              echo "DIFFERENT: $RELATIVE"
+              DIFFERENT=$((DIFFERENT + 1))
+            else
+              echo "MATCH: $RELATIVE"
+            fi
+            rm -f "$RESPONSE"
+          done < <(git ls-files 'wp-content/themes/korotkov-dark/*')
+          echo "SUMMARY: checked=$COUNT different=$DIFFERENT missing_or_unreadable=$MISSING"
+          if (( DIFFERENT > 0 || MISSING > 0 )); then
+            echo "::warning::Theme differs from the repository or contains unreadable files. No site files were changed."
+          fi
