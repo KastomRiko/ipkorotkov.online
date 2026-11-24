@@ -1,0 +1,100 @@
+name: Deploy Korotkov Dark theme to WordPress
+
+on:
+  push:
+    branches:
+      - design/portfolio-refresh
+    paths:
+      - 'wp-content/themes/korotkov-dark/**'
+      - '.github/workflows/deploy-korotkov-dark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-korotkov-dark
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check required secrets
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+        run: |
+          test -n "$KWC_TOKEN" || { echo "::error::Missing repository secret KWC_API_TOKEN"; exit 1; }
+          test -n "$WP_USER" || { echo "::error::Missing repository secret KWC_WP_USERNAME"; exit 1; }
+          test -n "$WP_APP_PASSWORD" || { echo "::error::Missing repository secret KWC_WP_APP_PASSWORD"; exit 1; }
+
+      - name: Deploy changed theme files
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+          KWC_BASE_URL: https://ipkorotkov.online
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$BEFORE" =~ ^0+$ ]]; then
+            mapfile -t FILES < <(find wp-content/themes/korotkov-dark -type f -not -path '*/.*' | sort)
+          else
+            mapfile -t FILES < <(git diff --name-only "$BEFORE" "$AFTER" -- wp-content/themes/korotkov-dark | grep -vE '(^|/)\.' || true)
+          fi
+          if [[ "${#FILES[@]}" -eq 0 ]]; then
+            echo "No theme files changed."
+            exit 0
+          fi
+          WP_APP_PASSWORD="${WP_APP_PASSWORD// /}"
+          for FILE in "${FILES[@]}"; do
+            [[ -f "$FILE" ]] || continue
+            SIZE=$(wc -c < "$FILE")
+            if (( SIZE > 1048576 )); then
+              echo "::error::File exceeds 1 MB: $FILE"
+              exit 1
+            fi
+            RELATIVE="${FILE#wp-content/themes/}"
+            READ_JSON=$(mktemp)
+            WRITE_JSON=$(mktemp)
+            HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
+              --user "$WP_USER:$WP_APP_PASSWORD" \
+              --header "X-KWC-Token: $KWC_TOKEN" \
+              --get --data-urlencode "path=themes/$RELATIVE" \
+              "$KWC_BASE_URL/wp-json/kwc/v1/read")
+            if [[ "$HTTP_CODE" != "200" ]]; then
+              echo "::error::Cannot read existing site file ($HTTP_CODE): themes/$RELATIVE"
+              cat "$READ_JSON"
+              exit 1
+            fi
+            EXPECTED_SHA=$(jq -r '.sha256 // empty' "$READ_JSON")
+            if [[ -z "$EXPECTED_SHA" ]]; then
+              echo "::error::Site did not return SHA-256 for themes/$RELATIVE"
+              cat "$READ_JSON"
+              exit 1
+            fi
+            jq -n --rawfile content "$FILE" --arg path "themes/$RELATIVE" --arg sha "$EXPECTED_SHA" \
+              '{path:$path,content:$content,expected_sha256:$sha}' > "$WRITE_JSON"
+            HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
+              --user "$WP_USER:$WP_APP_PASSWORD" \
+              --header "X-KWC-Token: $KWC_TOKEN" \
+              --header "Content-Type: application/json" \
+              --data-binary "@$WRITE_JSON" \
+              "$KWC_BASE_URL/wp-json/kwc/v1/write")
+            if [[ "$HTTP_CODE" != "200" ]]; then
+              echo "::error::Deployment failed ($HTTP_CODE): themes/$RELATIVE"
+              cat "$READ_JSON"
+              exit 1
+            fi
+            echo "Deployed: themes/$RELATIVE"
+            rm -f "$READ_JSON" "$WRITE_JSON"
+          done
