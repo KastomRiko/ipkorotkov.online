@@ -1,6 +1,7 @@
 name: Deploy Korotkov Dark theme to WordPress
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - design/portfolio-refresh
