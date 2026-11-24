@@ -139,11 +139,11 @@ final class KSEF_Queue {
 
     public static function process_one() {
         global $wpdb;
-        if (get_transient('ksef_api_circuit_open')) return;
+        if (get_transient('ksef_api_circuit_open')) return false;
 
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
-        if (empty($settings['automation_enabled'])) return;
-        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return;
+        if (empty($settings['automation_enabled'])) return false;
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return false;
 
         $lock = KSEF_Lock::acquire('queue_worker', 0);
         if (is_wp_error($lock)) return false;
