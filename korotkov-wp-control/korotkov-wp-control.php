@@ -155,7 +155,7 @@ final class Korotkov_WP_Control {
         $size = filesize($resolved['path']);
         if ($size === false || $size > self::MAX_READ) return new WP_Error('kwc_too_large', 'Чтение ограничено 256 КБ.', ['status' => 413]);
         $name = basename($resolved['path']);
-        if (preg_match('/^(wp-config\.php|\.env|.*\.pem|.*\.key|.*\.sql)$/i', $name) || str_contains($resolved['relative'], '/.')) {
+        if (str_starts_with($name, '.') || preg_match('/^(wp-config\\.php|.*\\.env.*|.*\\.pem|.*\\.key|.*\\.p12|.*\\.pfx|.*\\.sql|.*\\.bak|.*\\.old|.*\\.orig)$/i', $name) || preg_match('~(^|/)\\.~', $resolved['relative'])) {
             return new WP_Error('kwc_sensitive_file', 'Чтение этого типа файла запрещено.', ['status' => 403]);
         }
         $content = file_get_contents($resolved['path']);
@@ -205,8 +205,11 @@ final class Korotkov_WP_Control {
             $name = $entry->getFilename();
             $full = $entry->getPathname();
             $relative = ltrim(str_replace(DIRECTORY_SEPARATOR, '/', substr($full, strlen($base))), '/');
-            if (preg_match('~(^|/)(\.git|node_modules|vendor|cache|kwc-private)(/|$)~i', $relative)) continue;
-            if (preg_match('~(^|/)(wp-config\.php|\.env|.*\.pem|.*\.key|.*\.sql)$~i', $relative)) continue;
+            $segments = explode('/', $relative);
+            $hidden = false;
+            foreach ($segments as $segment) { if ($segment !== '' && str_starts_with($segment, '.')) { $hidden = true; break; } }
+            if ($hidden || preg_match('~(^|/)(node_modules|vendor|cache|tmp|temp|backups?|kwc-private|updraft|ai1wm-backups|wpvividbackups)(/|$)~i', $relative)) continue;
+            if (preg_match('~(^|/)(wp-config\\.php|[^/]*\\.env[^/]*|[^/]*\\.(pem|key|p12|pfx|sql|bak|old|orig|log))$~i', $relative)) continue;
             $size = $entry->getSize();
             if (++$count > self::MAX_ARCHIVE_FILES || ($bytes += $size) > self::MAX_ARCHIVE_BYTES) {
                 $zip->close(); @unlink($file);
