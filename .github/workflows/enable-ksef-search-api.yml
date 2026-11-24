@@ -57,17 +57,21 @@ jobs:
           python3 - "$CONFIG_FILE" <<'PY'
           import pathlib, re, sys
           p = pathlib.Path(sys.argv[1])
-          s = p.read_text(encoding="utf-8")
-          billing = re.compile(r"if\s*\(!defined\('KSEF_BILLING_VERIFIED'\)\s*\|\|\s*KSEF_BILLING_VERIFIED\s*!==\s*true\)\s*\{.*?\n\s*\}", re.S)
-          s2, n = billing.subn("/* Billing approval flag bypassed for owner-authorized API use. */", s, count=1)
-          if n != 1:
-              raise SystemExit("Installed Search client did not contain the expected billing guard; refusing an unsafe blind edit.")
-          budget = re.compile(r"\$budget\s*=\s*KSEF_Util::check_budget\(\);\s*if\s*\(is_wp_error\(\$budget\)\)\s*\{\s*return\s+\$budget;\s*\}", re.S)
-          s2, b = budget.subn("/* Project budget gate disabled by owner instruction. */", s2, count=1)
-          if b != 1:
-              raise SystemExit("Installed Search client budget guard was not found; refusing an incomplete change.")
-          p.write_text(s2, encoding="utf-8")
+          lines = p.read_text(encoding="utf-8").splitlines()
+          needles = ("KSEF_BILLING_VERIFIED", "check_budget", "budget", "100/day", "reserve")
+          hits = [i for i, line in enumerate(lines) if any(n.lower() in line.lower() for n in needles)]
+          if not hits:
+              raise SystemExit("No billing or budget guard markers found in installed Search client.")
+          shown = set()
+          for i in hits:
+              for j in range(max(0, i-3), min(len(lines), i+5)):
+                  if j not in shown:
+                      print(f"SEARCH_CLIENT:{j+1}: {lines[j][:500]}")
+                      shown.add(j)
+              print("---")
           PY
+          echo "Diagnostic only: installed Search client guards reported; no production file changed."
+          exit 0
           jq -n --rawfile content "$CONFIG_FILE" --arg path "plugins/korotkov-seo-factory/includes/class-search-client.php" --arg sha "$EXPECTED_SHA" \
             '{path:$path,content:$content,expected_sha256:$sha}' > "$WRITE_JSON"
           HTTP_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
