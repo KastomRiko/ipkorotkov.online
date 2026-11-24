@@ -1,10 +1,12 @@
 import os
 import re
 from pathlib import Path
-from urllib.parse import urljoin
 
+from dotenv import load_dotenv
 import httpx
 from mcp.server.fastmcp import FastMCP
+
+load_dotenv()
 
 BASE_URL = os.environ.get("KWC_BASE_URL", "").rstrip("/")
 TOKEN = os.environ.get("KWC_TOKEN", "")
@@ -18,7 +20,7 @@ mcp = FastMCP("Korotkov WP Control")
 
 def client() -> httpx.Client:
     if not API_BASE or not TOKEN:
-        raise RuntimeError("Заполните KWC_BASE_URL и KWC_TOKEN в переменных окружения.")
+        raise RuntimeError("Заполните KWC_BASE_URL и KWC_TOKEN в файле .env или переменных окружения.")
     headers = {"X-KWC-Token": TOKEN, "Accept": "application/json"}
     auth = (WP_USERNAME, WP_APP_PASSWORD) if WP_USERNAME and WP_APP_PASSWORD else None
     return httpx.Client(timeout=90, headers=headers, auth=auth, follow_redirects=False)
