@@ -1,0 +1,40 @@
+name: Build Korotkov SEO Factory install ZIP
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ksef-build-release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current SEO Factory source
+        uses: actions/checkout@v7
+        with:
+          ref: cleanup/remove-duplicate-plugin-copies
+      - name: Build installable plugin ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f korotkov-seo-factory/korotkov-seo-factory.php
+          mkdir -p dist
+          zip -r dist/korotkov-seo-factory-0.8.3.zip korotkov-seo-factory
+          unzip -l dist/korotkov-seo-factory-0.8.3.zip
+      - name: Publish release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_NUMBER: ${{ github.run_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="ksef-v0.8.3-build-${RUN_NUMBER}"
+          gh release create "$tag" dist/korotkov-seo-factory-0.8.3.zip \
+            --title "Korotkov SEO Factory 0.8.3 (build ${RUN_NUMBER})" \
+            --notes "Installable ZIP built from cleanup/remove-duplicate-plugin-copies. Billing safety guard remains enabled; this workflow makes no API calls."
