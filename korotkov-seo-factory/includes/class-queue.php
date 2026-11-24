@@ -123,6 +123,20 @@ final class KSEF_Queue {
         ));
     }
 
+    /** Обрабатывает до пяти фраз за один запуск, соблюдая двухсекундный интервал API. */
+    public static function process_batch() {
+        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
+        if (empty($settings['automation_enabled'])) return false;
+        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return false;
+        if (get_transient('ksef_api_circuit_open')) return false;
+
+        for ($i = 0; $i < 5; $i++) {
+            $processed = self::process_one();
+            if (!$processed) break;
+            if ($i < 4) sleep(2);
+        }
+    }
+
     public static function process_one() {
         global $wpdb;
         if (get_transient('ksef_api_circuit_open')) return;
@@ -132,14 +146,14 @@ final class KSEF_Queue {
         if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return;
 
         $lock = KSEF_Lock::acquire('queue_worker', 0);
-        if (is_wp_error($lock)) return;
+        if (is_wp_error($lock)) return false;
 
         try {
         self::recover_stuck();
 
         $jobs = $wpdb->prefix . 'ksef_jobs';
         $row = $wpdb->get_row("SELECT id, payload FROM {$jobs} WHERE status = 'new' AND job_type = 'serp_search' ORDER BY id ASC LIMIT 1");
-        if (!$row) return;
+        if (!$row) return false;
         $wpdb->update($jobs, array('status' => 'processing', 'updated_at' => current_time('mysql', true)), array('id' => (int) $row->id), array('%s','%s'), array('%d'));
 
         $payload = json_decode($row->payload, true);
@@ -152,7 +166,7 @@ final class KSEF_Queue {
 
         if (!$keyword_id || !$keyword) {
             self::finish_job((int) $row->id, 'rejected');
-            return;
+            return true;
         }
 
         $client = new KSEF_Search_Client();
@@ -177,9 +191,11 @@ final class KSEF_Queue {
             }
             self::finish_job((int) $row->id, $status);
             Korotkov_SEO_Factory::write_log('error', 'queue_job_failed', 'Задание поиска не выполнено.', array('job_id' => (int) $row->id, 'error' => $code, 'next_status' => $status));
+            return !in_array($code, self::waiting_codes(), true);
         } else {
             $wpdb->update($wpdb->prefix . 'ksef_keywords', array('researched_at' => current_time('mysql', true)), array('id' => $keyword_id), array('%s'), array('%d'));
             self::finish_job((int) $row->id, 'researched');
+            return true;
         }
         } finally {
             KSEF_Lock::release($lock);
