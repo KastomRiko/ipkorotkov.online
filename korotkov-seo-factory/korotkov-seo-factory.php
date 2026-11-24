@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.1');
+define('KSEF_VERSION', '0.8.2');
 require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
@@ -39,7 +39,8 @@ final class Korotkov_SEO_Factory {
         add_action('admin_menu', array($this, 'admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('ksef_daily_tick', array($this, 'daily_tick'));
-        add_action('ksef_queue_tick', array('KSEF_Queue', 'process_one'));
+        add_action('ksef_queue_tick', array('KSEF_Queue', 'process_batch'));
+        add_action('ksef_queue_immediate_tick', array('KSEF_Queue', 'process_batch'));
         add_filter('cron_schedules', array($this, 'cron_schedules'));
         add_action('admin_post_ksef_enqueue_phrases', array($this, 'handle_enqueue_phrases'));
         KSEF_Qwen_Exchange::register_hooks();
@@ -54,8 +55,9 @@ final class Korotkov_SEO_Factory {
     public function maybe_upgrade() {
         if (get_option('ksef_db_version') === KSEF_VERSION) return;
         self::create_tables();
+        wp_clear_scheduled_hook('ksef_queue_tick');
         if (!wp_next_scheduled('ksef_queue_tick')) {
-            wp_schedule_event(time() + 600, 'ksef_five_minutes', 'ksef_queue_tick');
+            wp_schedule_event(time() + 60, 'ksef_one_minute', 'ksef_queue_tick');
         }
         if (!wp_next_scheduled('ksef_daily_tick')) {
             wp_schedule_event(time() + 300, 'daily', 'ksef_daily_tick');
@@ -207,7 +209,7 @@ final class Korotkov_SEO_Factory {
         }
 
         if (!wp_next_scheduled('ksef_queue_tick')) {
-            wp_schedule_event(time() + 600, 'ksef_five_minutes', 'ksef_queue_tick');
+            wp_schedule_event(time() + 60, 'ksef_one_minute', 'ksef_queue_tick');
         }
 
         if (!wp_next_scheduled('ksef_daily_tick')) {
@@ -264,8 +266,8 @@ final class Korotkov_SEO_Factory {
     }
 
     public function cron_schedules($schedules) {
-        if (!isset($schedules['ksef_five_minutes'])) {
-            $schedules['ksef_five_minutes'] = array('interval' => 300, 'display' => 'Korotkov SEO Factory: каждые 5 минут');
+        if (!isset($schedules['ksef_one_minute'])) {
+            $schedules['ksef_one_minute'] = array('interval' => 60, 'display' => 'Korotkov SEO Factory: каждую минуту');
         }
         return $schedules;
     }
@@ -288,6 +290,10 @@ final class Korotkov_SEO_Factory {
                 ), admin_url('admin.php?page=korotkov-seo-factory'));
             } else {
                 self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
+                $settings = get_option(KSEF_OPTION, self::default_settings());
+                if (!empty($result['added']) && !empty($settings['automation_enabled']) && defined('KSEF_BILLING_VERIFIED') && KSEF_BILLING_VERIFIED === true && !wp_next_scheduled('ksef_queue_immediate_tick')) {
+                    wp_schedule_single_event(time() + 5, 'ksef_queue_immediate_tick');
+                }
                 $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
             }
         }
