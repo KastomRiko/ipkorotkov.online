@@ -164,6 +164,9 @@ final class Korotkov_WP_Control {
     }
 
     private static function private_dir() {
+        if (!defined('KWC_API_TOKEN') || !is_string(KWC_API_TOKEN) || strlen(KWC_API_TOKEN) < 40) {
+            return new WP_Error('kwc_not_configured', 'KWC_API_TOKEN не настроен; закрытое хранилище недоступно.', ['status' => 503]);
+        }
         $tmp = realpath(sys_get_temp_dir());
         if (!$tmp || !is_dir($tmp) || !is_writable($tmp)) {
             return new WP_Error('kwc_temp_unavailable', 'Системный временный каталог недоступен.', ['status' => 500]);
@@ -179,12 +182,19 @@ final class Korotkov_WP_Control {
                 }
             }
         }
-        $dir = $tmp . 'kwc-' . substr(hash('sha256', ABSPATH), 0, 16);
-        if (!is_dir($dir) && !wp_mkdir_p($dir)) {
+        $dir = $tmp . 'kwc-' . substr(hash('sha256', ABSPATH . KWC_API_TOKEN), 0, 32);
+        if (is_link($dir)) {
+            return new WP_Error('kwc_temp_symlink', 'Временный каталог не может быть символической ссылкой.', ['status' => 500]);
+        }
+        if (!is_dir($dir) && !@mkdir($dir, 0700)) {
             return new WP_Error('kwc_temp_create_failed', 'Не удалось создать закрытый временный каталог.', ['status' => 500]);
         }
-        @chmod($dir, 0700);
-        return is_dir($dir) && is_writable($dir) ? $dir : new WP_Error('kwc_temp_permissions', 'Нет доступа к временному каталогу.', ['status' => 500]);
+        $real_dir = realpath($dir);
+        if (!$real_dir || $real_dir !== rtrim($tmp, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . basename($dir) || is_link($dir)) {
+            return new WP_Error('kwc_temp_path_invalid', 'Не удалось подтвердить безопасный путь временного каталога.', ['status' => 500]);
+        }
+        @chmod($real_dir, 0700);
+        return is_dir($real_dir) && is_writable($real_dir) ? $real_dir : new WP_Error('kwc_temp_permissions', 'Нет доступа к временному каталогу.', ['status' => 500]);
     }
 
     public static function create_archive(WP_REST_Request $request) {
