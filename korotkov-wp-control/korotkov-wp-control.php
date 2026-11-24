@@ -118,7 +118,7 @@ final class Korotkov_WP_Control {
             foreach ($iterator as $item) {
                 if ($item->isDot()) continue;
                 $name = $item->getFilename();
-                if ($item->isLink() || in_array($name, ['.git', 'node_modules', 'vendor', 'cache'], true)) continue;
+                if ($item->isLink() || str_starts_with($name, '.') || in_array($name, ['.git', 'node_modules', 'vendor', 'cache', 'kwc-private'], true)) continue;
                 $items[] = ['name' => $name, 'type' => $item->isDir() ? 'directory' : 'file', 'size' => $item->isFile() ? $item->getSize() : null];
                 if (count($items) >= 500) break;
             }
