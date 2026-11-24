@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 import httpx
@@ -22,7 +23,9 @@ def client() -> httpx.Client:
     if not API_BASE or not TOKEN:
         raise RuntimeError("Заполните KWC_BASE_URL и KWC_TOKEN в файле .env или переменных окружения.")
     headers = {"X-KWC-Token": TOKEN, "Accept": "application/json"}
-    auth = (WP_USERNAME, WP_APP_PASSWORD) if WP_USERNAME and WP_APP_PASSWORD else None
+    if not WP_USERNAME or not WP_APP_PASSWORD:
+        raise RuntimeError("Укажите KWC_WP_USERNAME и KWC_WP_APP_PASSWORD: требуется отдельный Application Password администратора WordPress.")
+    auth = (WP_USERNAME, WP_APP_PASSWORD)
     return httpx.Client(timeout=90, headers=headers, auth=auth, follow_redirects=False)
 
 
@@ -68,16 +71,28 @@ def create_site_zip(path: str) -> dict:
     archive_id = payload.get("archive_id")
     if not download_url or not archive_id or not re.fullmatch(r"[a-f0-9]{32}", archive_id):
         raise RuntimeError("Сайт вернул некорректные данные архива.")
+    expected = urlsplit(f"{API_BASE}/download/{archive_id}")
+    actual = urlsplit(download_url)
+    if actual.scheme != "https" or actual.netloc != expected.netloc or actual.path != expected.path or actual.query or actual.fragment:
+        raise RuntimeError("Сайт вернул небезопасный адрес скачивания; запрос отменён.")
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     filename = re.sub(r"[^A-Za-z0-9._-]+", "_", Path(path).name or "wordpress") + ".zip"
     target = DOWNLOAD_DIR / f"{filename}-{archive_id[:8]}.zip"
     headers = {"X-KWC-Token": TOKEN}
-    auth = (WP_USERNAME, WP_APP_PASSWORD) if WP_USERNAME and WP_APP_PASSWORD else None
-    with httpx.stream("GET", download_url, headers=headers, auth=auth, timeout=180, follow_redirects=False) as response:
-        response.raise_for_status()
-        with target.open("wb") as output:
-            for chunk in response.iter_bytes():
-                output.write(chunk)
+    auth = (WP_USERNAME, WP_APP_PASSWORD)
+    partial = target.with_suffix(target.suffix + ".part")
+    try:
+        with httpx.stream("GET", download_url, headers=headers, auth=auth, timeout=180, follow_redirects=False) as response:
+            response.raise_for_status()
+            with partial.open("wb") as output:
+                for chunk in response.iter_bytes():
+                    output.write(chunk)
+        if not partial.is_file() or partial.stat().st_size == 0:
+            raise RuntimeError("Скачанный архив пуст.")
+        os.replace(partial, target)
+    finally:
+        if partial.exists():
+            partial.unlink()
     return {"saved_to": str(target), "bytes": target.stat().st_size, "archive_id": archive_id}
 
 
