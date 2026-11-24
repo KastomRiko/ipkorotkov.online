@@ -86,20 +86,20 @@ jobs:
           jq '{success,path,backup_id,sha256}' "$READ_JSON"
 
           # Extract credentials locally on the runner; never print or upload them.
-          python3 - "$CONFIG_FILE" >> "$GITHUB_OUTPUT" <<'PY'
-          import re, sys
-          s = open(sys.argv[1], encoding="utf-8").read()
+          python3 - "$CONFIG_FILE" <<'PY'
+          import pathlib, re, sys
+          s = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
           def get(name):
               m = re.search(r"define\\s*\\(\\s*['\\"]" + re.escape(name) + r"['\\"]\\s*,\\s*(['\\"])(.*?)\\1\\s*\\)", s, re.S)
               return m.group(2) if m else ""
           key, folder = get("KSEF_YANDEX_API_KEY"), get("KSEF_YANDEX_FOLDER_ID")
           if not key:
               raise SystemExit("KSEF_YANDEX_API_KEY is not present in wp-config.php")
-          print("yandex_key=" + key)
-          print("folder_id=" + folder)
+          pathlib.Path(sys.argv[1] + ".key").write_text(key, encoding="utf-8")
+          pathlib.Path(sys.argv[1] + ".folder").write_text(folder, encoding="utf-8")
           PY
-          YANDEX_KEY="$(sed -n 's/^yandex_key=//p' "$GITHUB_OUTPUT" | tail -n1)"
-          FOLDER_ID="$(sed -n 's/^folder_id=//p' "$GITHUB_OUTPUT" | tail -n1)"
+          YANDEX_KEY="$(cat "$CONFIG_FILE.key")"
+          FOLDER_ID="$(cat "$CONFIG_FILE.folder")"
           echo "::add-mask::$YANDEX_KEY"
           python3 - "$FOLDER_ID" > "$WRITE_JSON" <<'PY'
           import json, sys
@@ -130,4 +130,4 @@ jobs:
           PY
           )
           echo "Yandex Search API test successful: HTTP 200, organic document nodes=$DOCS, query=настройка VPS для VPN, region=225."
-          rm -f "$READ_JSON" "$WRITE_JSON" "$CONFIG_FILE"
+          rm -f "$READ_JSON" "$WRITE_JSON" "$CONFIG_FILE" "$CONFIG_FILE.key" "$CONFIG_FILE.folder"
