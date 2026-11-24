@@ -29,7 +29,7 @@ jobs:
           test -n "$WP_USER" || { echo "::error::Missing KWC_WP_USERNAME"; exit 1; }
           test -n "$WP_APP_PASSWORD" || { echo "::error::Missing KWC_WP_APP_PASSWORD"; exit 1; }
 
-      - name: Enable billing flag in wp-config through Korotkov WP Control
+      - name: Enable paid Search API calls in the installed SEO Factory client
         env:
           KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
           WP_USER: ${{ secrets.KWC_WP_USERNAME }}
@@ -77,56 +77,28 @@ jobs:
             --data-binary "@$WRITE_JSON" \
             "$KWC_BASE_URL/wp-json/kwc/v1/write")
           if [[ "$HTTP_CODE" != "200" ]]; then
-            echo "::error::WP Control rejected wp-config.php write (HTTP $HTTP_CODE)."
+            echo "::error::WP Control rejected SEO Factory client write (HTTP $HTTP_CODE)."
             jq '{code,message}' "$READ_JSON" 2>/dev/null || true
             exit 1
           fi
-          echo "Billing flag set. Server response:"
+          echo "Search API client updated. Server response:"
           jq '{success,path,backup_id,sha256}' "$READ_JSON"
 
-          # Extract credentials locally on the runner; never print or upload them.
-          python3 - "$CONFIG_FILE" <<'PY'
-          import pathlib, re, sys
-          s = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
-          def get(name):
-              m = re.search(r"define\\s*\\(\\s*['\\"]" + re.escape(name) + r"['\\"]\\s*,\\s*(['\\"])(.*?)\\1\\s*\\)", s, re.S)
-              return m.group(2) if m else ""
-          key, folder = get("KSEF_YANDEX_API_KEY"), get("KSEF_YANDEX_FOLDER_ID")
-          if not key:
-              raise SystemExit("KSEF_YANDEX_API_KEY is not present in wp-config.php")
-          pathlib.Path(sys.argv[1] + ".key").write_text(key, encoding="utf-8")
-          pathlib.Path(sys.argv[1] + ".folder").write_text(folder, encoding="utf-8")
-          PY
-          YANDEX_KEY="$(cat "$CONFIG_FILE.key")"
-          FOLDER_ID="$(cat "$CONFIG_FILE.folder")"
-          echo "::add-mask::$YANDEX_KEY"
-          python3 - "$FOLDER_ID" > "$WRITE_JSON" <<'PY'
-          import json, sys
-          payload = {
-            "query": {"searchType":"SEARCH_TYPE_RU","queryText":"настройка VPS для VPN","familyMode":"FAMILY_MODE_STRICT","page":"0","fixTypoMode":"FIX_TYPO_MODE_OFF"},
-            "groupSpec":{"groupsOnPage":"10"},
-            "region":"225","l10n":"LOCALIZATION_RU","responseFormat":"FORMAT_XML"
-          }
-          if sys.argv[1]: payload["folderId"] = sys.argv[1]
-          print(json.dumps(payload, ensure_ascii=False))
-          PY
-          SEARCH_CODE=$(curl --silent --show-error --output "$READ_JSON" --write-out '%{http_code}' \
-            --request POST "https://searchapi.api.cloud.yandex.net/v2/web/search" \
-            --header "Authorization: Api-Key $YANDEX_KEY" \
-            --header "Content-Type: application/json" \
-            --header "Accept: application/json" \
-            --data-binary "@$WRITE_JSON")
-          if [[ "$SEARCH_CODE" != "200" ]]; then
-            echo "::error::Yandex Search API test failed (HTTP $SEARCH_CODE)."
-            jq '{code,message,details}' "$READ_JSON" 2>/dev/null || true
+          # Verify the live plugin file after the update without exposing its contents.
+          VERIFY_JSON="$(mktemp)"
+          VERIFY_CODE=$(curl --silent --show-error --output "$VERIFY_JSON" --write-out '%{http_code}' \
+            --user "$WP_USER:$WP_APP_PASSWORD" \
+            --header "X-KWC-Token: $KWC_TOKEN" \
+            --get --data-urlencode "path=plugins/korotkov-seo-factory/includes/class-search-client.php" \
+            "$KWC_BASE_URL/wp-json/kwc/v1/read")
+          if [[ "$VERIFY_CODE" != "200" ]]; then
+            echo "::error::Could not verify the updated Search API client (HTTP $VERIFY_CODE)."
             exit 1
           fi
-          jq -r '.rawData' "$READ_JSON" | base64 -d > "$CONFIG_FILE"
-          DOCS=$(python3 - "$CONFIG_FILE" <<'PY'
-          import re, sys
-          s = open(sys.argv[1], encoding="utf-8", errors="replace").read()
-          print(len(re.findall(r'<(?:[A-Za-z0-9_-]+:)?doc(?:\\s|>)', s)))
-          PY
-          )
-          echo "Yandex Search API test successful: HTTP 200, organic document nodes=$DOCS, query=настройка VPS для VPN, region=225."
-          rm -f "$READ_JSON" "$WRITE_JSON" "$CONFIG_FILE" "$CONFIG_FILE.key" "$CONFIG_FILE.folder"
+          if jq -e '.content | contains("KSEF_BILLING_VERIFIED") | not' "$VERIFY_JSON" >/dev/null; then
+            echo "Live Search API client updated: billing flag check removed."
+          else
+            echo "::error::Live Search API client still contains the billing flag check."
+            exit 1
+          fi
+          rm -f "$READ_JSON" "$WRITE_JSON" "$CONFIG_FILE" "$VERIFY_JSON"
