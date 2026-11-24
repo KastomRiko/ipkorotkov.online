@@ -1,0 +1,26 @@
+name: Build Kvin Assistant ZIP
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Build plugin archive
+        run: |
+          mkdir -p dist
+          cd kvin-site-assistant
+          zip -r ../dist/kvin-site-assistant-1.0.0.zip kvin-site-assistant.php
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="kvin-v1.0.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" dist/kvin-site-assistant-1.0.0.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Kvin Site Assistant 1.0.0" \
+            --notes "Local-mode Kvin assistant plugin for ipkorotkov.online."
