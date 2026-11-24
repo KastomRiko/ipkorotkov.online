@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov WP Control
  * Description: Защищённый API для удалённого управления файлами WordPress и создания ZIP-архивов.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: Korotkov
  * Requires PHP: 8.1
  */
@@ -10,7 +10,7 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class Korotkov_WP_Control {
-    private const VERSION = '0.1.0';
+    private const VERSION = '0.2.0';
     private const NS = 'kwc/v1';
     private const MAX_READ = 262144;
     private const MAX_ARCHIVE_FILES = 5000;
@@ -48,6 +48,12 @@ final class Korotkov_WP_Control {
         register_rest_route(self::NS, '/read', [
             'methods' => 'GET', 'callback' => [__CLASS__, 'read_file'], 'permission_callback' => [__CLASS__, 'authorize'],
             'args' => ['path' => ['type' => 'string', 'required' => true]],
+        ]);
+        register_rest_route(self::NS, '/write', [
+            'methods' => 'POST', 'callback' => [__CLASS__, 'write_file'], 'permission_callback' => [__CLASS__, 'authorize'],
+        ]);
+        register_rest_route(self::NS, '/restore', [
+            'methods' => 'POST', 'callback' => [__CLASS__, 'restore_file'], 'permission_callback' => [__CLASS__, 'authorize'],
         ]);
         register_rest_route(self::NS, '/archive', [
             'methods' => 'POST', 'callback' => [__CLASS__, 'create_archive'], 'permission_callback' => [__CLASS__, 'authorize'],
@@ -122,8 +128,8 @@ final class Korotkov_WP_Control {
             'product' => 'Korotkov WP Control', 'version' => self::VERSION,
             'wordpress' => get_bloginfo('version'), 'php' => PHP_VERSION,
             'site' => home_url('/'), 'ziparchive' => class_exists('ZipArchive'),
-            'capabilities' => ['status', 'list_files', 'read_file', 'create_zip', 'download_zip'],
-            'write_operations' => 'disabled_in_0.1.0',
+            'capabilities' => ['status', 'list_files', 'read_file', 'write_file_with_backup', 'restore_file_backup', 'create_zip', 'download_zip'],
+            'write_operations' => 'enabled_with_backup_and_sha256_check',
         ]);
     }
 
@@ -269,6 +275,83 @@ final class Korotkov_WP_Control {
         delete_transient('kwc_archive_' . $id);
         exit;
     }
+
+    private static function sensitive_path(string $relative): bool {
+        $name = basename($relative);
+        return str_starts_with($name, '.') ||
+            preg_match('/^(wp-config\\.php|.*\\.env.*|.*\\.(pem|key|p12|pfx|sql|bak|old|orig|log))$/i', $name) ||
+            preg_match('~(^|/)\\.~', $relative);
+    }
+
+    public static function write_file(WP_REST_Request $request) {
+        $path = (string) $request->get_param('path');
+        $content = $request->get_param('content');
+        $expected = (string) $request->get_param('expected_sha256');
+        if (!is_string($content) || strlen($content) > 1048576 || preg_match('//u', $content) !== 1) {
+            return new WP_Error('kwc_invalid_content', 'Содержимое должно быть UTF-8 текстом размером не более 1 МБ.', ['status' => 400]);
+        }
+        $resolved = self::resolve($path);
+        if (is_wp_error($resolved)) return $resolved;
+        if (self::sensitive_path($path)) return new WP_Error('kwc_sensitive_file', 'Изменение этого типа файла запрещено.', ['status' => 403]);
+        if (!is_file($resolved['path']) || !is_writable($resolved['path'])) return new WP_Error('kwc_not_writable_file', 'Разрешено изменять только существующие доступные для записи файлы.', ['status' => 400]);
+        $old = file_get_contents($resolved['path']);
+        if ($old === false || preg_match('//u', $old) !== 1) return new WP_Error('kwc_binary_file', 'Бинарные файлы изменять нельзя.', ['status' => 415]);
+        $old_hash = hash('sha256', $old);
+        if ($expected !== '' && !hash_equals($old_hash, $expected)) {
+            return new WP_Error('kwc_conflict', 'Файл изменился после последнего чтения. Повторно прочитайте его перед записью.', ['status' => 409]);
+        }
+        $dir = self::private_dir();
+        if (is_wp_error($dir)) return $dir;
+        $backup_id = bin2hex(random_bytes(16));
+        $backup_file = $dir . DIRECTORY_SEPARATOR . $backup_id . '.bak';
+        if (file_put_contents($backup_file, $old, LOCK_EX) === false) return new WP_Error('kwc_backup_failed', 'Не удалось создать резервную копию; файл не изменён.', ['status' => 500]);
+        @chmod($backup_file, 0600);
+        $written = file_put_contents($resolved['path'], $content, LOCK_EX);
+        if ($written === false || $written !== strlen($content)) {
+            @copy($backup_file, $resolved['path']);
+            @unlink($backup_file);
+            return new WP_Error('kwc_write_failed', 'Запись не удалась; исходная версия восстановлена из резервной копии.', ['status' => 500]);
+        }
+        set_transient('kwc_backup_' . $backup_id, ['file' => $backup_file, 'path' => $resolved['relative'], 'hash' => $old_hash], DAY_IN_SECONDS);
+        return new WP_REST_Response([
+            'success' => true, 'path' => $resolved['relative'], 'bytes_written' => $written,
+            'previous_sha256' => $old_hash, 'new_sha256' => hash('sha256', $content),
+            'backup_id' => $backup_id, 'backup_expires_in' => DAY_IN_SECONDS,
+        ]);
+    }
+
+    public static function restore_file(WP_REST_Request $request) {
+        $id = (string) $request->get_param('backup_id');
+        if (!preg_match('/^[a-f0-9]{32}$/', $id)) return new WP_Error('kwc_bad_backup_id', 'Некорректный идентификатор резервной копии.', ['status' => 400]);
+        $backup = get_transient('kwc_backup_' . $id);
+        if (!$backup || empty($backup['file']) || empty($backup['path']) || !is_file($backup['file'])) {
+            return new WP_Error('kwc_backup_expired', 'Резервная копия не найдена или срок хранения истёк.', ['status' => 404]);
+        }
+        $resolved = self::resolve((string) $backup['path']);
+        if (is_wp_error($resolved)) return $resolved;
+        if (self::sensitive_path((string) $backup['path']) || !is_file($resolved['path']) || !is_writable($resolved['path'])) {
+            return new WP_Error('kwc_restore_denied', 'Восстановление этого файла запрещено.', ['status' => 403]);
+        }
+        $current = file_get_contents($resolved['path']);
+        if ($current === false) return new WP_Error('kwc_restore_read_failed', 'Не удалось прочитать текущий файл.', ['status' => 500]);
+        $rollback_id = bin2hex(random_bytes(16));
+        $dir = self::private_dir();
+        if (is_wp_error($dir)) return $dir;
+        $rollback_file = $dir . DIRECTORY_SEPARATOR . $rollback_id . '.bak';
+        if (file_put_contents($rollback_file, $current, LOCK_EX) === false) return new WP_Error('kwc_backup_failed', 'Не удалось сохранить текущую версию перед восстановлением.', ['status' => 500]);
+        @chmod($rollback_file, 0600);
+        $original = file_get_contents($backup['file']);
+        if ($original === false || file_put_contents($resolved['path'], $original, LOCK_EX) !== strlen($original)) {
+            @copy($rollback_file, $resolved['path']);
+            @unlink($rollback_file);
+            return new WP_Error('kwc_restore_failed', 'Восстановление не удалось; предыдущая версия возвращена.', ['status' => 500]);
+        }
+        set_transient('kwc_backup_' . $rollback_id, ['file' => $rollback_file, 'path' => $resolved['relative']], DAY_IN_SECONDS);
+        delete_transient('kwc_backup_' . $id);
+        @unlink($backup['file']);
+        return new WP_REST_Response(['success' => true, 'path' => $resolved['relative'], 'restored_sha256' => hash('sha256', $original), 'rollback_backup_id' => $rollback_id]);
+    }
+
 }
 
 Korotkov_WP_Control::boot();
