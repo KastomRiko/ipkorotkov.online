@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.5
+ * Version: 0.8.6
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.5');
+define('KSEF_VERSION', '0.8.6');
 require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
@@ -23,6 +23,7 @@ require_once __DIR__ . '/includes/class-qwen-exchange.php';
 require_once __DIR__ . '/includes/class-clusterer.php';
 require_once __DIR__ . '/includes/class-publisher.php';
 require_once __DIR__ . '/includes/class-frontend.php';
+require_once __DIR__ . '/includes/class-title-audit.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -47,6 +48,7 @@ final class Korotkov_SEO_Factory {
         KSEF_Clusterer::register_hooks();
         KSEF_Publisher::register_hooks();
         KSEF_Frontend::register_hooks();
+        KSEF_Title_Audit::register_hooks();
         add_action('plugins_loaded', array($this, 'maybe_upgrade'));
         add_action('admin_post_ksef_wordstat_fetch', array($this, 'handle_wordstat_fetch'));
         add_action('rest_api_init', array($this, 'register_wordstat_test_route'));
@@ -585,6 +587,7 @@ final class Korotkov_SEO_Factory {
             <?php endif; ?>
             <h2>Страницы WordPress</h2>
             <?php KSEF_Publisher::render_admin_section(); ?>
+            <?php KSEF_Title_Audit::render(); ?>
             <h2>Wordstat по фразам</h2>
             <?php $this->render_wordstat_section(); ?>
             <h2>Search API</h2>
