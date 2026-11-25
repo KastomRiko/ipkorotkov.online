@@ -1,211 +1,3471 @@
 {
-  "batch_id": "20261125-short-services-40",
+  "batch_id": "20261125-remote-it-expanded-200",
   "contact_phone": "+7-964-151-93-62",
   "services": [
     {
-      "title": "Настройка Active Directory и домена Windows",
-      "slug": "nastrojka-active-directory-domena-windows",
-      "description": "Настрою домен Active Directory, подключение компьютеров и централизованное управление учётными записями."
+      "title": "Настройка Microsoft Entra ID для организации",
+      "slug": "nastrojka-microsoft-entra-id-organizacii",
+      "description": "Настрою Microsoft Entra ID, пользователей, группы, роли и безопасный вход сотрудников."
     },
     {
-      "title": "Настройка групповых политик GPO Windows",
-      "slug": "nastrojka-gruppovyh-politik-gpo-windows",
-      "description": "Настрою групповые политики для ограничений, параметров безопасности и рабочих станций организации."
+      "title": "Настройка двухфакторной аутентификации Microsoft 365",
+      "slug": "nastrojka-mfa-microsoft-365",
+      "description": "Включу многофакторную аутентификацию Microsoft 365 и проверю политики входа пользователей."
     },
     {
-      "title": "Настройка удалённого рабочего стола RDP",
-      "slug": "nastrojka-udalennogo-rabochego-stola-rdp",
-      "description": "Настрою безопасное подключение по RDP к компьютеру или серверу Windows."
+      "title": "Настройка условного доступа Microsoft Entra",
+      "slug": "nastrojka-uslovnogo-dostupa-entra",
+      "description": "Настрою правила условного доступа по устройствам, местоположению и уровню риска."
     },
     {
-      "title": "Настройка VPN WireGuard для удалённого доступа",
-      "slug": "nastrojka-vpn-wireguard-udalennogo-dostupa",
-      "description": "Разверну WireGuard для защищённого удалённого доступа сотрудников к рабочей сети."
+      "title": "Настройка Exchange Online для компании",
+      "slug": "nastrojka-exchange-online-kompanii",
+      "description": "Настрою Exchange Online, почтовые ящики, домен и корпоративные политики электронной почты."
     },
     {
-      "title": "Настройка AmneziaWG на VPS",
-      "slug": "nastrojka-amneziawg-vps",
-      "description": "Установлю AmneziaWG на VPS, настрою конфигурацию и проверю подключение клиентов."
+      "title": "Миграция почты на Microsoft 365",
+      "slug": "migraciya-pochty-microsoft-365",
+      "description": "Перенесу корпоративную почту в Microsoft 365 с проверкой писем и папок."
     },
     {
-      "title": "Настройка VLESS Reality на сервере",
-      "slug": "nastrojka-vless-reality-server",
-      "description": "Настрою сервер VLESS Reality, параметры подключения и проверку доступности сервиса."
+      "title": "Настройка резервного копирования Microsoft 365",
+      "slug": "rezervnoe-kopirovanie-microsoft-365",
+      "description": "Настрою резервное копирование почты, файлов и данных Microsoft 365."
     },
     {
-      "title": "Настройка Proxmox VE и виртуальных машин",
-      "slug": "nastrojka-proxmox-ve-virtualnyh-mashin",
-      "description": "Установлю Proxmox VE, настрою хранилище, сеть и создание виртуальных машин."
+      "title": "Настройка Microsoft Intune для устройств",
+      "slug": "nastrojka-microsoft-intune-ustrojstv",
+      "description": "Подключу устройства к Intune, настрою политики управления и базовые ограничения безопасности."
     },
     {
-      "title": "Настройка резервного копирования Proxmox",
-      "slug": "nastrojka-rezervnogo-kopirovaniya-proxmox",
-      "description": "Настрою расписание резервного копирования виртуальных машин и проверку восстановления Proxmox."
+      "title": "Настройка Windows Autopilot",
+      "slug": "nastrojka-windows-autopilot",
+      "description": "Настрою Windows Autopilot для автоматической подготовки корпоративных компьютеров сотрудников."
     },
     {
-      "title": "Настройка Nginx Proxy Manager",
-      "slug": "nastrojka-nginx-proxy-manager",
-      "description": "Установлю Nginx Proxy Manager, настрою проксирование доменов и SSL-сертификаты."
+      "title": "Настройка файлового сервера Windows",
+      "slug": "nastrojka-fajlovogo-servera-windows",
+      "description": "Настрою файловый сервер Windows, общие папки, права доступа и квоты."
     },
     {
-      "title": "Настройка Apache VirtualHost",
-      "slug": "nastrojka-apache-virtualhost",
-      "description": "Настрою VirtualHost Apache для размещения нескольких сайтов на одном сервере."
+      "title": "Настройка DFS Namespaces Windows Server",
+      "slug": "nastrojka-dfs-namespaces-windows",
+      "description": "Настрою DFS Namespaces для удобного доступа к общим папкам организации."
     },
     {
-      "title": "Настройка HTTPS и SSL-сертификата Let's Encrypt",
-      "slug": "nastrojka-https-ssl-lets-encrypt",
-      "description": "Подключу HTTPS, выпущу SSL-сертификат Let's Encrypt и проверю автоматическое продление."
+      "title": "Настройка DFS Replication",
+      "slug": "nastrojka-dfs-replication",
+      "description": "Настрою репликацию DFS между файловыми серверами и проверю синхронизацию данных."
     },
     {
-      "title": "Настройка DNS-записей домена",
-      "slug": "nastrojka-dns-zapisej-domena",
-      "description": "Настрою A, AAAA, CNAME, MX и TXT записи для корректной работы домена."
+      "title": "Настройка DHCP Failover Windows Server",
+      "slug": "nastrojka-dhcp-failover-windows",
+      "description": "Настрою отказоустойчивую пару DHCP серверов Windows для корпоративной сети."
     },
     {
-      "title": "Настройка SPF DKIM DMARC для почты",
-      "slug": "nastrojka-spf-dkim-dmarc-pochty",
-      "description": "Настрою SPF, DKIM и DMARC для повышения доставляемости корпоративной электронной почты."
+      "title": "Настройка DNS Server Windows Server",
+      "slug": "nastrojka-dns-server-windows",
+      "description": "Настрою DNS Server, прямые и обратные зоны, записи и пересылку запросов."
     },
     {
-      "title": "Настройка почтового сервера SMTP",
-      "slug": "nastrojka-pochtovogo-servera-smtp",
-      "description": "Настрою SMTP-отправку сайта или приложения, проверю авторизацию и доставку писем."
+      "title": "Настройка Windows Server Update Services",
+      "slug": "nastrojka-wsus-windows-server",
+      "description": "Разверну WSUS, настрою группы компьютеров и централизованное управление обновлениями Windows."
     },
     {
-      "title": "Настройка Cloudflare для сайта",
-      "slug": "nastrojka-cloudflare-dlya-sajta",
-      "description": "Подключу домен к Cloudflare, настрою DNS, SSL и базовые правила защиты."
+      "title": "Настройка удалённого управления Windows Server",
+      "slug": "nastrojka-udalennogo-upravleniya-windows-server",
+      "description": "Настрою PowerShell Remoting и безопасное удалённое администрирование Windows Server."
     },
     {
-      "title": "Настройка PostgreSQL на VPS",
-      "slug": "nastrojka-postgresql-vps",
-      "description": "Установлю PostgreSQL на VPS, создам базу данных и настрою удалённый доступ."
+      "title": "Настройка сертификатов Active Directory Certificate Services",
+      "slug": "nastrojka-ad-cs-sertifikatov",
+      "description": "Разверну AD CS и настрою выпуск сертификатов для устройств и пользователей."
     },
     {
-      "title": "Оптимизация PostgreSQL и запросов",
-      "slug": "optimizaciya-postgresql-zaprosov",
-      "description": "Проверю настройки PostgreSQL, медленные запросы, индексы и использование ресурсов сервера."
+      "title": "Настройка политики паролей домена Windows",
+      "slug": "nastrojka-politiki-parolej-domena",
+      "description": "Настрою парольные политики домена, блокировки учётных записей и требования безопасности."
     },
     {
-      "title": "Настройка резервного копирования PostgreSQL",
-      "slug": "nastrojka-rezervnogo-kopirovaniya-postgresql",
-      "description": "Настрою регулярные резервные копии PostgreSQL и проверю процедуру восстановления базы."
+      "title": "Аудит прав доступа Windows Server",
+      "slug": "audit-prav-dostupa-windows-server",
+      "description": "Проверю группы, разрешения общих папок и избыточные права пользователей Windows Server."
     },
     {
-      "title": "Настройка Redis для веб-приложения",
-      "slug": "nastrojka-redis-veb-prilozheniya",
-      "description": "Установлю Redis и настрою подключение приложения для кеширования и хранения данных."
+      "title": "Настройка резервного копирования Windows Server",
+      "slug": "rezervnoe-kopirovanie-windows-server",
+      "description": "Настрою расписание резервного копирования Windows Server и тестовое восстановление файлов."
     },
     {
-      "title": "Настройка MongoDB на сервере",
-      "slug": "nastrojka-mongodb-server",
-      "description": "Установлю MongoDB, настрою пользователя, права доступа и сетевую защиту сервера."
+      "title": "Перенос файлового сервера Windows",
+      "slug": "perenos-fajlovogo-servera-windows",
+      "description": "Перенесу общие папки Windows Server с сохранением структуры и разрешений доступа."
     },
     {
-      "title": "Развёртывание приложения FastAPI на VPS",
-      "slug": "razvertyvanie-fastapi-vps",
-      "description": "Разверну приложение FastAPI на VPS, настрою Python-окружение, запуск и Nginx."
+      "title": "Установка и настройка Debian Docker Host",
+      "slug": "ustanovka-debian-docker-host",
+      "description": "Подготовлю Debian сервер для Docker, настрою системные параметры и сетевой доступ."
     },
     {
-      "title": "Развёртывание приложения Flask на сервере",
-      "slug": "razvertyvanie-flask-server",
-      "description": "Разверну Flask-приложение на сервере, настрою Gunicorn, Nginx и системную службу."
+      "title": "Настройка Podman на Linux сервере",
+      "slug": "nastrojka-podman-linux-server",
+      "description": "Установлю Podman и настрою запуск контейнеров без постоянного root-доступа."
     },
     {
-      "title": "Развёртывание Node.js приложения на VPS",
-      "slug": "razvertyvanie-nodejs-prilozheniya-vps",
-      "description": "Разверну Node.js приложение на VPS, настрою npm, процесс запуска и обратный прокси."
+      "title": "Настройка Docker Registry",
+      "slug": "nastrojka-docker-registry",
+      "description": "Разверну приватный Docker Registry и настрою авторизацию для хранения образов."
     },
     {
-      "title": "Настройка PM2 для Node.js",
-      "slug": "nastrojka-pm2-nodejs",
-      "description": "Настрою PM2 для автоматического запуска, перезапуска и контроля Node.js приложений."
+      "title": "Настройка Traefik Reverse Proxy",
+      "slug": "nastrojka-traefik-reverse-proxy",
+      "description": "Разверну Traefik, настрою маршрутизацию контейнеров и автоматическое получение SSL."
     },
     {
-      "title": "Настройка Python virtualenv на сервере",
-      "slug": "nastrojka-python-virtualenv-server",
-      "description": "Настрою виртуальное окружение Python, зависимости проекта и отдельный запуск приложения."
+      "title": "Настройка Caddy веб-сервера",
+      "slug": "nastrojka-caddy-veb-servera",
+      "description": "Установлю Caddy и настрою виртуальные хосты, HTTPS и проксирование приложений."
     },
     {
-      "title": "Автоматизация обработки Excel на Python",
-      "slug": "avtomatizaciya-obrabotki-excel-python",
-      "description": "Создам Python-скрипт для обработки Excel, объединения таблиц и автоматического формирования отчётов."
+      "title": "Настройка HAProxy балансировщика",
+      "slug": "nastrojka-haproxy-balansirovshchika",
+      "description": "Настрою HAProxy для распределения запросов и проверки доступности серверов приложений."
     },
     {
-      "title": "Конвертация CSV XML JSON на Python",
-      "slug": "konvertaciya-csv-xml-json-python",
-      "description": "Настрою преобразование CSV, XML и JSON файлов с проверкой структуры и данных."
+      "title": "Настройка Keepalived VRRP",
+      "slug": "nastrojka-keepalived-vrrp",
+      "description": "Настрою Keepalived и виртуальный IP для отказоустойчивого доступа к сервисам."
     },
     {
-      "title": "Интеграция сайта с внешним REST API",
-      "slug": "integraciya-sajta-vneshnim-rest-api",
-      "description": "Подключу сайт к внешнему REST API, настрою обмен данными и обработку ответов."
+      "title": "Настройка WireGuard Site-to-Site",
+      "slug": "nastrojka-wireguard-site-to-site",
+      "description": "Соединю две сети через WireGuard и настрою маршрутизацию между площадками."
     },
     {
-      "title": "Разработка webhook-интеграции",
-      "slug": "razrabotka-webhook-integracii",
-      "description": "Настрою webhook для передачи событий между сайтом, CRM и внешними сервисами."
+      "title": "Настройка OpenVPN Access Server",
+      "slug": "nastrojka-openvpn-access-server",
+      "description": "Разверну OpenVPN Access Server, создам профили пользователей и проверю подключения."
     },
     {
-      "title": "Интеграция Telegram-бота с CRM",
-      "slug": "integraciya-telegram-bota-crm",
-      "description": "Подключу Telegram-бота к CRM для передачи заявок, сообщений и статусов клиентов."
+      "title": "Настройка IPsec VPN между офисами",
+      "slug": "nastrojka-ipsec-vpn-ofisy",
+      "description": "Настрою IPsec VPN между офисными сетями и проверю защищённый обмен трафиком."
     },
     {
-      "title": "Настройка WooCommerce доставки",
-      "slug": "nastrojka-woocommerce-dostavki",
-      "description": "Настрою способы доставки WooCommerce, зоны, тарифы и отображение вариантов при оформлении заказа."
+      "title": "Настройка VLAN на управляемом коммутаторе",
+      "slug": "nastrojka-vlan-kommutator",
+      "description": "Настрою VLAN, порты доступа и trunk-соединения для разделения корпоративной сети."
     },
     {
-      "title": "Настройка оплаты в WooCommerce",
-      "slug": "nastrojka-oplaty-woocommerce",
-      "description": "Подключу платёжный модуль WooCommerce и проверю сценарии оплаты и уведомления заказов."
+      "title": "Настройка MikroTik маршрутизации",
+      "slug": "nastrojka-mikrotik-marshrutizacii",
+      "description": "Настрою маршрутизацию MikroTik, NAT, правила firewall и подключение провайдера."
     },
     {
-      "title": "Исправление ошибок WordPress после обновления",
-      "slug": "ispravlenie-oshibok-wordpress-posle-obnovleniya",
-      "description": "Найду причину ошибок WordPress после обновления темы, плагинов или версии PHP."
+      "title": "Настройка MikroTik CAPsMAN",
+      "slug": "nastrojka-mikrotik-capsman",
+      "description": "Настрою CAPsMAN для централизованного управления точками Wi-Fi MikroTik."
     },
     {
-      "title": "Перенос сайта WordPress на другой хостинг",
-      "slug": "perenos-wordpress-na-drugoj-hosting",
-      "description": "Перенесу WordPress на новый хостинг, проверю базу данных, домен и работу сайта."
+      "title": "Настройка гостевой Wi-Fi сети",
+      "slug": "nastrojka-gostevoj-wifi-seti",
+      "description": "Создам отдельную гостевую Wi-Fi сеть с изоляцией клиентов и ограничением доступа."
     },
     {
-      "title": "Настройка WordPress staging-среды",
-      "slug": "nastrojka-wordpress-staging-sredy",
-      "description": "Создам тестовую копию WordPress для безопасной проверки обновлений и изменений сайта."
+      "title": "Настройка RADIUS сервера FreeRADIUS",
+      "slug": "nastrojka-freeradius-server",
+      "description": "Разверну FreeRADIUS и настрою централизованную авторизацию сетевых пользователей."
     },
     {
-      "title": "Очистка WordPress от вредоносного кода",
-      "slug": "ochistka-wordpress-vredonosnogo-koda",
-      "description": "Проверю файлы WordPress, удалю обнаруженный вредоносный код и закрою известные уязвимости."
+      "title": "Настройка LDAP сервера OpenLDAP",
+      "slug": "nastrojka-openldap-server",
+      "description": "Установлю OpenLDAP, создам структуру каталога и настрою проверку учётных записей."
     },
     {
-      "title": "Настройка защиты админ-панели WordPress",
-      "slug": "zashchita-admin-paneli-wordpress",
-      "description": "Усилю защиту входа WordPress, настрою ограничения доступа и дополнительные меры безопасности."
+      "title": "Настройка Samba AD DC",
+      "slug": "nastrojka-samba-active-directory",
+      "description": "Разверну Samba Active Directory и подключение рабочих станций к домену."
     },
     {
-      "title": "Ускорение загрузки сайта на WordPress",
-      "slug": "uskorenie-zagruzki-sajta-wordpress",
-      "description": "Проверю скорость WordPress, выявлю узкие места и настрою кеширование и оптимизацию."
+      "title": "Настройка NFSv4 с Kerberos",
+      "slug": "nastrojka-nfs-v4-kerberos",
+      "description": "Настрою NFSv4 с аутентификацией Kerberos для защищённого доступа к файлам."
     },
     {
-      "title": "Настройка кеширования Nginx FastCGI",
-      "slug": "nastrojka-keshirovaniya-nginx-fastcgi",
-      "description": "Настрою FastCGI cache в Nginx для ускорения динамических страниц сайта."
+      "title": "Настройка iSCSI хранилища Linux",
+      "slug": "nastrojka-iscsi-hranilishcha-linux",
+      "description": "Разверну iSCSI target и подключение сетевого блочного хранилища к серверу."
     },
     {
-      "title": "Настройка Uptime Kuma для проверки доступности",
-      "slug": "nastrojka-uptime-kuma-monitoring",
-      "description": "Установлю Uptime Kuma, добавлю проверки сайтов и настрою уведомления о недоступности."
+      "title": "Настройка Samba с ACL правами",
+      "slug": "nastrojka-samba-acl-prava",
+      "description": "Настрою Samba, ACL разрешения и разграничение доступа к сетевым папкам."
     },
     {
-      "title": "Настройка автоматического обновления сертификатов SSL",
-      "slug": "avtomaticheskoe-obnovlenie-ssl-sertifikatov",
-      "description": "Настрою автоматическое продление SSL-сертификатов и проверку корректной работы HTTPS."
+      "title": "Установка и настройка PostgreSQL репликации",
+      "slug": "ustanovka-postgresql-replikacii",
+      "description": "Настрою потоковую репликацию PostgreSQL между основным и резервным серверами."
+    },
+    {
+      "title": "Настройка PostgreSQL PgBouncer",
+      "slug": "nastrojka-postgresql-pgbouncer",
+      "description": "Установлю PgBouncer и настрою пул соединений для PostgreSQL приложений."
+    },
+    {
+      "title": "Настройка PostgreSQL pgBackRest",
+      "slug": "nastrojka-postgresql-pgbackrest",
+      "description": "Настрою pgBackRest для резервного копирования PostgreSQL и восстановления на момент времени."
+    },
+    {
+      "title": "Перенос базы данных PostgreSQL",
+      "slug": "perenos-bazy-postgresql",
+      "description": "Перенесу PostgreSQL базу на новый сервер с проверкой схем, данных и приложений."
+    },
+    {
+      "title": "Настройка MySQL Master Replica",
+      "slug": "nastrojka-mysql-master-replica",
+      "description": "Настрою репликацию MySQL между серверами и проверю согласованность данных."
+    },
+    {
+      "title": "Настройка MariaDB Galera Cluster",
+      "slug": "nastrojka-mariadb-galera-cluster",
+      "description": "Разверну MariaDB Galera Cluster и проверю синхронную репликацию между узлами."
+    },
+    {
+      "title": "Настройка MySQL slow query log",
+      "slug": "nastrojka-mysql-slow-query-log",
+      "description": "Включу журнал медленных запросов MySQL и подготовлю данные для оптимизации."
+    },
+    {
+      "title": "Настройка резервного копирования MongoDB",
+      "slug": "rezervnoe-kopirovanie-mongodb",
+      "description": "Настрою регулярные резервные копии MongoDB и проверю восстановление коллекций."
+    },
+    {
+      "title": "Настройка MongoDB Replica Set",
+      "slug": "nastrojka-mongodb-replica-set",
+      "description": "Разверну MongoDB Replica Set и настрою автоматическое переключение основного узла."
+    },
+    {
+      "title": "Настройка Elasticsearch на VPS",
+      "slug": "nastrojka-elasticsearch-vps",
+      "description": "Установлю Elasticsearch, настрою память, доступ и индексацию данных приложения."
+    },
+    {
+      "title": "Настройка OpenSearch Dashboard",
+      "slug": "nastrojka-opensearch-dashboard",
+      "description": "Разверну OpenSearch Dashboards и подключу интерфейс управления индексами и поиском."
+    },
+    {
+      "title": "Настройка ClickHouse на сервере",
+      "slug": "nastrojka-clickhouse-server",
+      "description": "Установлю ClickHouse, создам базы и настрою подключение аналитических приложений."
+    },
+    {
+      "title": "Настройка RabbitMQ очередей",
+      "slug": "nastrojka-rabbitmq-ocheredej",
+      "description": "Разверну RabbitMQ, настрою пользователей, очереди, обменники и контроль сообщений."
+    },
+    {
+      "title": "Настройка Apache Kafka брокера",
+      "slug": "nastrojka-apache-kafka-brokera",
+      "description": "Разверну Apache Kafka и настрою брокеры, топики и доступ приложений."
+    },
+    {
+      "title": "Настройка MinIO S3 хранилища",
+      "slug": "nastrojka-minio-s3-hranilishcha",
+      "description": "Установлю MinIO, создам S3 buckets и настрою ключи доступа приложений."
+    },
+    {
+      "title": "Настройка Nextcloud на VPS",
+      "slug": "nastrojka-nextcloud-vps",
+      "description": "Разверну Nextcloud на VPS, подключу хранилище и настрою пользователей."
+    },
+    {
+      "title": "Перенос Nextcloud на новый сервер",
+      "slug": "perenos-nextcloud-novyj-server",
+      "description": "Перенесу Nextcloud на новый сервер с сохранением файлов, пользователей и настроек."
+    },
+    {
+      "title": "Настройка Collabora Online для Nextcloud",
+      "slug": "nastrojka-collabora-nextcloud",
+      "description": "Подключу Collabora Online к Nextcloud для совместного редактирования офисных документов."
+    },
+    {
+      "title": "Настройка ONLYOFFICE Document Server",
+      "slug": "nastrojka-onlyoffice-document-server",
+      "description": "Установлю ONLYOFFICE Document Server и подключу его к корпоративному порталу."
+    },
+    {
+      "title": "Настройка Vaultwarden менеджера паролей",
+      "slug": "nastrojka-vaultwarden-server",
+      "description": "Разверну Vaultwarden, настрою HTTPS, регистрацию пользователей и резервное копирование."
+    },
+    {
+      "title": "Настройка Bitwarden Self-Hosted",
+      "slug": "nastrojka-bitwarden-self-hosted",
+      "description": "Разверну собственный Bitwarden сервер и настрою безопасный доступ сотрудников."
+    },
+    {
+      "title": "Настройка Gitea Git сервера",
+      "slug": "nastrojka-gitea-git-server",
+      "description": "Установлю Gitea, настрою репозитории, пользователей, SSH и резервное копирование."
+    },
+    {
+      "title": "Настройка GitLab Runner",
+      "slug": "nastrojka-gitlab-runner",
+      "description": "Установлю GitLab Runner и настрою выполнение CI/CD задач проекта."
+    },
+    {
+      "title": "Настройка Jenkins агента сборки",
+      "slug": "nastrojka-jenkins-agent",
+      "description": "Подключу Jenkins agent и настрою удалённое выполнение сборок и тестов."
+    },
+    {
+      "title": "Настройка автоматического деплоя через GitLab CI",
+      "slug": "avtodeploy-gitlab-ci",
+      "description": "Настрою GitLab CI pipeline для тестирования и автоматического развёртывания приложения."
+    },
+    {
+      "title": "Настройка Ansible AWX",
+      "slug": "nastrojka-ansible-awx",
+      "description": "Разверну Ansible AWX и настрою проекты, inventory и запуск playbook."
+    },
+    {
+      "title": "Настройка Terraform для Yandex Cloud",
+      "slug": "nastrojka-terraform-yandex-cloud",
+      "description": "Подготовлю Terraform конфигурацию для управления ресурсами Yandex Cloud."
+    },
+    {
+      "title": "Настройка Terraform для Selectel",
+      "slug": "nastrojka-terraform-selectel",
+      "description": "Настрою Terraform provider Selectel и автоматическое создание облачной инфраструктуры."
+    },
+    {
+      "title": "Настройка HashiCorp Vault",
+      "slug": "nastrojka-hashicorp-vault",
+      "description": "Разверну HashiCorp Vault и настрою безопасное хранение секретов приложений."
+    },
+    {
+      "title": "Настройка Sentry для мониторинга ошибок",
+      "slug": "nastrojka-sentry-monitoring-oshibok",
+      "description": "Разверну Sentry и подключу сбор ошибок веб-приложения с уведомлениями."
+    },
+    {
+      "title": "Настройка Graylog для централизованных логов",
+      "slug": "nastrojka-graylog-server",
+      "description": "Разверну Graylog, настрою приём системных журналов и поиск по событиям."
+    },
+    {
+      "title": "Настройка Loki и Promtail",
+      "slug": "nastrojka-loki-promtail",
+      "description": "Настрою Loki и Promtail для централизованного хранения логов серверов."
+    },
+    {
+      "title": "Настройка Alertmanager уведомлений",
+      "slug": "nastrojka-alertmanager-uvedomlenij",
+      "description": "Настрою Alertmanager, правила оповещений и доставку уведомлений администраторам."
+    },
+    {
+      "title": "Настройка Blackbox Exporter",
+      "slug": "nastrojka-blackbox-exporter",
+      "description": "Подключу Blackbox Exporter для проверки HTTP, HTTPS, DNS и доступности сервисов."
+    },
+    {
+      "title": "Настройка резервного копирования BorgBackup",
+      "slug": "nastrojka-borgbackup",
+      "description": "Настрою BorgBackup, расписание архивирования и проверку целостности резервных копий."
+    },
+    {
+      "title": "Настройка Restic Backup на VPS",
+      "slug": "nastrojka-restic-backup-vps",
+      "description": "Настрою Restic для шифрованного резервного копирования файлов на удалённое хранилище."
+    },
+    {
+      "title": "Настройка Duplicati для серверов",
+      "slug": "nastrojka-duplicati-serverov",
+      "description": "Установлю Duplicati и настрою резервное копирование каталогов и баз данных."
+    },
+    {
+      "title": "Настройка Rclone синхронизации облака",
+      "slug": "nastrojka-rclone-sinhronizacii",
+      "description": "Настрою Rclone для синхронизации серверных файлов с облачными хранилищами."
+    },
+    {
+      "title": "Восстановление данных из резервной копии Linux",
+      "slug": "vosstanovlenie-dannyh-backup-linux",
+      "description": "Проверю архив резервной копии и восстановлю файлы или каталоги Linux сервера."
+    },
+    {
+      "title": "Настройка автоматического обновления Docker образов",
+      "slug": "avtoobnovlenie-docker-obrazov",
+      "description": "Настрою контролируемое обновление Docker образов с проверкой запуска контейнеров."
+    },
+    {
+      "title": "Диагностика утечки памяти Linux",
+      "slug": "diagnostika-utechki-pamyati-linux",
+      "description": "Найду процессы с растущим потреблением памяти и подготовлю рекомендации по исправлению."
+    },
+    {
+      "title": "Диагностика высокой нагрузки CPU Linux",
+      "slug": "diagnostika-vysokoj-nagruzki-cpu-linux",
+      "description": "Проверю процессы, системные метрики и причины постоянной высокой загрузки CPU."
+    },
+    {
+      "title": "Настройка лимитов ресурсов systemd",
+      "slug": "nastrojka-limitov-systemd",
+      "description": "Настрою лимиты CPU, памяти и процессов для системных служб systemd."
+    },
+    {
+      "title": "Настройка systemd timers",
+      "slug": "nastrojka-systemd-timers",
+      "description": "Настрою systemd timers для периодического запуска задач вместо традиционного cron."
+    },
+    {
+      "title": "Настройка журналирования journald",
+      "slug": "nastrojka-journald-linux",
+      "description": "Настрою journald, лимиты хранения журналов и удобный просмотр системных событий."
+    },
+    {
+      "title": "Настройка auditd для аудита Linux",
+      "slug": "nastrojka-auditd-linux",
+      "description": "Установлю auditd и настрою регистрацию важных действий и изменений системы."
+    },
+    {
+      "title": "Настройка AppArmor на Ubuntu",
+      "slug": "nastrojka-apparmor-ubuntu",
+      "description": "Настрою AppArmor профили для ограничения доступа приложений к системным ресурсам."
+    },
+    {
+      "title": "Настройка SELinux на сервере",
+      "slug": "nastrojka-selinux-server",
+      "description": "Настрою SELinux режимы и контексты безопасности для серверных служб."
+    },
+    {
+      "title": "Настройка ClamAV проверки файлов",
+      "slug": "nastrojka-clamav-linux",
+      "description": "Установлю ClamAV и настрою проверку файлов по расписанию и журналирование результатов."
+    },
+    {
+      "title": "Настройка ModSecurity WAF для сайта",
+      "slug": "nastrojka-modsecurity-waf",
+      "description": "Подключу ModSecurity к веб-серверу и настрою базовые правила защиты приложений."
+    },
+    {
+      "title": "Настройка Failover для веб-приложения",
+      "slug": "nastrojka-failover-veb-prilozheniya",
+      "description": "Настрою резервный сервер и переключение трафика при недоступности основного приложения."
+    },
+    {
+      "title": "Настройка HTTP/2 и HTTP/3 на сервере",
+      "slug": "nastrojka-http2-http3-server",
+      "description": "Включу HTTP/2 или HTTP/3 и проверю совместимость веб-сервера и сайта."
+    },
+    {
+      "title": "Настройка Brotli сжатия сайта",
+      "slug": "nastrojka-brotli-szhatiya-sajta",
+      "description": "Подключу Brotli сжатие статических ресурсов и проверю корректность отдачи файлов."
+    },
+    {
+      "title": "Настройка заголовков безопасности HTTP",
+      "slug": "nastrojka-http-security-headers",
+      "description": "Настрою Content Security Policy, HSTS и другие заголовки безопасности сайта."
+    },
+    {
+      "title": "Настройка CORS для веб-приложения",
+      "slug": "nastrojka-cors-veb-prilozheniya",
+      "description": "Настрою CORS политики для безопасного взаимодействия frontend и backend приложения."
+    },
+    {
+      "title": "Настройка OAuth2 авторизации приложения",
+      "slug": "nastrojka-oauth2-avtorizacii",
+      "description": "Подключу OAuth2 авторизацию и настрою обмен токенами между приложениями."
+    },
+    {
+      "title": "Настройка Keycloak сервера авторизации",
+      "slug": "nastrojka-keycloak-server",
+      "description": "Разверну Keycloak, настрою realm, клиентов и единый вход пользователей."
+    },
+    {
+      "title": "Настройка LDAP авторизации веб-приложения",
+      "slug": "nastrojka-ldap-avtorizacii-prilozheniya",
+      "description": "Подключу веб-приложение к LDAP каталогу и проверю вход корпоративных пользователей."
+    },
+    {
+      "title": "Разработка фоновых задач Celery",
+      "slug": "razrabotka-fonovyh-zadach-celery",
+      "description": "Настрою Celery workers, брокер сообщений и выполнение фоновых задач Python."
+    },
+    {
+      "title": "Настройка Redis Queue для Python",
+      "slug": "nastrojka-rq-python",
+      "description": "Подключу Redis Queue к Python приложению и настрою обработку фоновых заданий."
+    },
+    {
+      "title": "Настройка Gunicorn для Python приложения",
+      "slug": "nastrojka-gunicorn-python",
+      "description": "Настрою Gunicorn workers, параметры запуска и интеграцию Python приложения с Nginx."
+    },
+    {
+      "title": "Настройка Uvicorn для ASGI приложения",
+      "slug": "nastrojka-uvicorn-asgi",
+      "description": "Настрою Uvicorn для запуска ASGI приложения и автоматический перезапуск службы."
+    },
+    {
+      "title": "Развёртывание Django приложения на VPS",
+      "slug": "razvertyvanie-django-vps",
+      "description": "Разверну Django проект на VPS, настрою базу данных, статику и Nginx."
+    },
+    {
+      "title": "Настройка Django Celery Beat",
+      "slug": "nastrojka-django-celery-beat",
+      "description": "Настрою периодические задачи Django через Celery Beat и мониторинг выполнения."
+    },
+    {
+      "title": "Настройка Django Channels WebSocket",
+      "slug": "nastrojka-django-channels-websocket",
+      "description": "Подключу Django Channels и настрою WebSocket соединения для приложения."
+    },
+    {
+      "title": "Разработка Telegram-бота для уведомлений сервера",
+      "slug": "telegram-bot-uvedomlenij-servera",
+      "description": "Создам Telegram-бота для уведомлений о состоянии серверов и системных событиях."
+    },
+    {
+      "title": "Разработка Telegram-бота для приёма заявок",
+      "slug": "telegram-bot-priema-zayavok",
+      "description": "Создам Telegram-бота для приёма заявок, сохранения контактов и передачи менеджеру."
+    },
+    {
+      "title": "Интеграция сайта с SMTP2GO",
+      "slug": "integraciya-sajta-smtp2go",
+      "description": "Подключу SMTP2GO к сайту и проверю отправку системных и транзакционных писем."
+    },
+    {
+      "title": "Настройка почтовой рассылки через Mailgun",
+      "slug": "nastrojka-mailgun-rassylki",
+      "description": "Настрою Mailgun, доменную аутентификацию и отправку писем из веб-приложения."
+    },
+    {
+      "title": "Настройка Amazon SES для сайта",
+      "slug": "nastrojka-amazon-ses-sajta",
+      "description": "Подключу Amazon SES, проверю домен и настрою отправку почты сайта."
+    },
+    {
+      "title": "Настройка DKIM ротации ключей",
+      "slug": "nastrojka-dkim-rotacii-klyuchej",
+      "description": "Обновлю DKIM ключи домена и проверю подпись исходящих корпоративных писем."
+    },
+    {
+      "title": "Миграция сайта между серверами без простоя",
+      "slug": "migraciya-sajta-bez-prostoya",
+      "description": "Подготовлю перенос сайта между серверами с минимальным перерывом доступности."
+    },
+    {
+      "title": "Настройка staging и production окружений",
+      "slug": "nastrojka-staging-production-okruzhenij",
+      "description": "Разделю staging и production окружения и настрою безопасное продвижение релизов."
+    },
+    {
+      "title": "Настройка переменных окружения приложения",
+      "slug": "nastrojka-env-peremennyh-prilozheniya",
+      "description": "Вынесу конфигурацию приложения в переменные окружения и защищённо подключу секреты."
+    },
+    {
+      "title": "Настройка PHP Composer зависимостей",
+      "slug": "nastrojka-php-composer-zavisimostej",
+      "description": "Настрою Composer, установку зависимостей и автозагрузку классов PHP проекта."
+    },
+    {
+      "title": "Настройка Laravel на VPS",
+      "slug": "nastrojka-laravel-vps",
+      "description": "Разверну Laravel на VPS, настрою PHP-FPM, очередь задач и Nginx."
+    },
+    {
+      "title": "Настройка Laravel Queue Worker",
+      "slug": "nastrojka-laravel-queue-worker",
+      "description": "Настрою Laravel queue workers через Supervisor или systemd и проверю обработку задач."
+    },
+    {
+      "title": "Настройка Symfony приложения на сервере",
+      "slug": "nastrojka-symfony-server",
+      "description": "Разверну Symfony приложение, настрою окружение, веб-сервер и фоновые процессы."
+    },
+    {
+      "title": "Настройка Node.js NestJS на VPS",
+      "slug": "nastrojka-nestjs-vps",
+      "description": "Разверну NestJS приложение на VPS и настрою запуск, прокси и логи."
+    },
+    {
+      "title": "Настройка Socket.IO сервера",
+      "slug": "nastrojka-socket-io-server",
+      "description": "Настрою Socket.IO сервер, WebSocket соединения и проксирование через Nginx."
+    },
+    {
+      "title": "Настройка Nuxt приложения на сервере",
+      "slug": "nastrojka-nuxt-server",
+      "description": "Разверну Nuxt приложение на сервере и настрою production запуск через Node.js."
+    },
+    {
+      "title": "Настройка React приложения на хостинге",
+      "slug": "nastrojka-react-prilozheniya-hosting",
+      "description": "Настрою сборку React приложения, размещение статических файлов и маршрутизацию сайта."
+    },
+    {
+      "title": "Настройка Vue.js приложения на VPS",
+      "slug": "nastrojka-vuejs-vps",
+      "description": "Подготовлю Vue.js проект к публикации и настрою раздачу через веб-сервер."
+    },
+    {
+      "title": "Настройка Vite сборки для production",
+      "slug": "nastrojka-vite-production",
+      "description": "Настрою production сборку Vite, переменные окружения и публикацию frontend приложения."
+    },
+    {
+      "title": "Настройка WebSocket прокси в Nginx",
+      "slug": "nastrojka-websocket-proxy-nginx",
+      "description": "Настрою проксирование WebSocket соединений через Nginx и проверю стабильность подключения."
+    },
+    {
+      "title": "Настройка WordPress MultilingualPress",
+      "slug": "nastrojka-multilingualpress",
+      "description": "Настрою MultilingualPress для многоязычного WordPress сайта и проверю переключение языков."
+    },
+    {
+      "title": "Настройка Polylang для WordPress",
+      "slug": "nastrojka-polylang-wordpress",
+      "description": "Настрою Polylang, языковые версии страниц и переключатель языка сайта."
+    },
+    {
+      "title": "Настройка WPML для интернет-магазина",
+      "slug": "nastrojka-wpml-internet-magazina",
+      "description": "Подключу WPML к WooCommerce и настрою переводы товаров, категорий и корзины."
+    },
+    {
+      "title": "Настройка WooCommerce подписок",
+      "slug": "nastrojka-woocommerce-podpiskov",
+      "description": "Настрою товары по подписке WooCommerce и проверю продление платежей."
+    },
+    {
+      "title": "Настройка WooCommerce купонов и скидок",
+      "slug": "nastrojka-woocommerce-kuponov-skidok",
+      "description": "Настрою купоны WooCommerce, условия скидок, ограничения и применение к заказам."
+    },
+    {
+      "title": "Настройка WooCommerce налогов",
+      "slug": "nastrojka-woocommerce-nalogov",
+      "description": "Настрою налоговые ставки WooCommerce и отображение налогов в заказах."
+    },
+    {
+      "title": "Настройка WooCommerce вариативных товаров",
+      "slug": "nastrojka-woocommerce-variativnyh-tovarov",
+      "description": "Настрою атрибуты, вариации и цены товаров в каталоге WooCommerce."
+    },
+    {
+      "title": "Настройка WooCommerce электронных писем",
+      "slug": "nastrojka-woocommerce-email-uvedomlenij",
+      "description": "Настрою шаблоны писем WooCommerce и уведомления покупателям о статусах заказов."
+    },
+    {
+      "title": "Интеграция WooCommerce с МойСклад",
+      "slug": "integraciya-woocommerce-mojsklad",
+      "description": "Настрою обмен товарами, остатками и заказами между WooCommerce и МойСклад."
+    },
+    {
+      "title": "Интеграция WooCommerce с 1С по API",
+      "slug": "integraciya-woocommerce-1c-api",
+      "description": "Настрою обмен заказами и каталогом WooCommerce с 1С через API."
+    },
+    {
+      "title": "Настройка импорта товаров WooCommerce по XML",
+      "slug": "import-tovarov-woocommerce-xml",
+      "description": "Настрою импорт каталога WooCommerce из XML с сопоставлением полей и изображений."
+    },
+    {
+      "title": "Настройка импорта товаров WooCommerce по CSV",
+      "slug": "import-tovarov-woocommerce-csv",
+      "description": "Подготовлю CSV импорт товаров WooCommerce с категориями, ценами и характеристиками."
+    },
+    {
+      "title": "Настройка фильтров товаров WooCommerce",
+      "slug": "nastrojka-filtrov-tovarov-woocommerce",
+      "description": "Настрою фильтрацию каталога WooCommerce по атрибутам, цене и категориям товаров."
+    },
+    {
+      "title": "Настройка поиска по каталогу WooCommerce",
+      "slug": "nastrojka-poiska-kataloga-woocommerce",
+      "description": "Улучшу поиск товаров WooCommerce и настрою релевантную выдачу по каталогу."
+    },
+    {
+      "title": "Настройка Redis Object Cache WordPress",
+      "slug": "nastrojka-redis-object-cache-wordpress",
+      "description": "Подключу Redis Object Cache к WordPress и проверю работу объектного кеширования."
+    },
+    {
+      "title": "Настройка CDN для WordPress сайта",
+      "slug": "nastrojka-cdn-wordpress-sajta",
+      "description": "Подключу CDN для статических файлов WordPress и проверю кеширование ресурсов."
+    },
+    {
+      "title": "Оптимизация изображений WordPress WebP",
+      "slug": "optimizaciya-izobrazhenij-wordpress-webp",
+      "description": "Настрою конвертацию изображений WordPress в WebP и проверю качество отображения."
+    },
+    {
+      "title": "Настройка WP-CLI для управления сайтом",
+      "slug": "nastrojka-wp-cli-upravleniya-sajtom",
+      "description": "Установлю WP-CLI и настрою безопасное управление WordPress через командную строку."
+    },
+    {
+      "title": "Настройка автоматических обновлений WordPress",
+      "slug": "nastrojka-avtoobnovlenij-wordpress",
+      "description": "Настрою автоматические обновления WordPress с резервным копированием и контролем ошибок."
+    },
+    {
+      "title": "Настройка SMTP отправки WordPress через API",
+      "slug": "nastrojka-smtp-wordpress-api",
+      "description": "Подключу отправку почты WordPress через API почтового сервиса и проверю доставку."
+    },
+    {
+      "title": "Настройка журналирования WordPress ошибок",
+      "slug": "nastrojka-logirovaniya-wordpress-oshibok",
+      "description": "Включу журналирование ошибок WordPress и настрою безопасный сбор диагностической информации."
+    },
+    {
+      "title": "Настройка WordPress Multisite доменов",
+      "slug": "nastrojka-wordpress-multisite-domenov",
+      "description": "Настрою домены и сетевые параметры WordPress Multisite для нескольких сайтов."
+    },
+    {
+      "title": "Восстановление WordPress после сбоя базы данных",
+      "slug": "vosstanovlenie-wordpress-sboy-bazy",
+      "description": "Проверю базу данных WordPress и восстановлю работоспособность сайта после сбоя."
+    },
+    {
+      "title": "Перенос интернет-магазина WooCommerce",
+      "slug": "perenos-internet-magazina-woocommerce",
+      "description": "Перенесу WooCommerce на новый сервер с товарами, заказами и настройками."
+    },
+    {
+      "title": "Настройка защиты XML-RPC WordPress",
+      "slug": "zashchita-xmlrpc-wordpress",
+      "description": "Ограничу ненужный доступ XML-RPC WordPress и проверю совместимость подключённых сервисов."
+    },
+    {
+      "title": "Настройка ограничений REST API WordPress",
+      "slug": "ogranichenie-rest-api-wordpress",
+      "description": "Настрою доступ к REST API WordPress и проверю права пользователей и приложений."
+    },
+    {
+      "title": "Настройка Cloudflare Turnstile WordPress",
+      "slug": "nastrojka-cloudflare-turnstile-wordpress",
+      "description": "Подключу Cloudflare Turnstile к формам WordPress и проверю защиту от автоматических заявок."
+    },
+    {
+      "title": "Разработка REST API на FastAPI",
+      "slug": "razrabotka-rest-api-fastapi",
+      "description": "Разработаю REST API на FastAPI с валидацией данных и документацией OpenAPI."
+    },
+    {
+      "title": "Разработка парсера XML на Python",
+      "slug": "razrabotka-parsera-xml-python",
+      "description": "Создам Python парсер XML файлов с проверкой структуры и экспортом результатов."
+    },
+    {
+      "title": "Разработка обработки JSON API на Python",
+      "slug": "obrabotka-json-api-python",
+      "description": "Создам скрипт Python для получения, обработки и сохранения данных внешнего API."
+    },
+    {
+      "title": "Автоматизация загрузки файлов по SFTP",
+      "slug": "avtomatizaciya-zagruzki-sftp",
+      "description": "Настрою автоматическую загрузку и обработку файлов через SFTP по расписанию."
+    },
+    {
+      "title": "Автоматизация отчётов PDF на Python",
+      "slug": "avtomatizaciya-otchetov-pdf-python",
+      "description": "Создам Python генератор PDF отчётов из таблиц, шаблонов и исходных данных."
+    },
+    {
+      "title": "Автоматизация документов Word на Python",
+      "slug": "avtomatizaciya-dokumentov-word-python",
+      "description": "Настрою пакетное формирование документов Word из шаблонов и табличных данных."
+    },
+    {
+      "title": "Автоматизация Excel через openpyxl",
+      "slug": "avtomatizaciya-excel-openpyxl",
+      "description": "Создам скрипт openpyxl для заполнения, форматирования и объединения Excel документов."
+    },
+    {
+      "title": "Настройка Python скрипта как службы Windows",
+      "slug": "python-script-windows-service",
+      "description": "Настрою запуск Python скрипта как службы Windows с журналированием и автоперезапуском."
+    },
+    {
+      "title": "Настройка Python скрипта через systemd",
+      "slug": "python-script-systemd-service",
+      "description": "Оформлю Python скрипт как systemd службу с автозапуском и контролем ошибок."
+    },
+    {
+      "title": "Интеграция Python приложения с PostgreSQL",
+      "slug": "integraciya-python-postgresql",
+      "description": "Подключу Python приложение к PostgreSQL и настрою безопасную работу с данными."
+    },
+    {
+      "title": "Интеграция Python приложения с Redis",
+      "slug": "integraciya-python-redis",
+      "description": "Подключу Redis к Python проекту для кеширования, очередей и временных данных."
+    },
+    {
+      "title": "Разработка парсера HTML на Python",
+      "slug": "razrabotka-html-parser-python",
+      "description": "Создам Python парсер HTML страниц с извлечением нужных полей и сохранением результатов."
+    },
+    {
+      "title": "Разработка Selenium автоматизации браузера",
+      "slug": "razrabotka-selenium-avtomatizacii",
+      "description": "Настрою Selenium для автоматизации браузерных действий и обработки результатов."
+    },
+    {
+      "title": "Настройка Playwright для Python",
+      "slug": "nastrojka-playwright-python",
+      "description": "Настрою Playwright для автоматизированного тестирования и сбора данных веб-страниц."
+    },
+    {
+      "title": "Настройка Celery Flower мониторинга",
+      "slug": "nastrojka-celery-flower",
+      "description": "Подключу Flower для мониторинга очередей Celery, workers и выполнения фоновых задач."
+    },
+    {
+      "title": "Разработка Telegram-бота с оплатой",
+      "slug": "telegram-bot-oplata",
+      "description": "Разработаю Telegram-бота с платёжным сценарием, проверкой статусов и уведомлениями."
+    },
+    {
+      "title": "Разработка Telegram-бота с Google Sheets",
+      "slug": "telegram-bot-google-sheets",
+      "description": "Подключу Telegram-бота к Google Sheets для записи заявок и обновления строк."
+    },
+    {
+      "title": "Интеграция сайта с ЮKassa",
+      "slug": "integraciya-sajta-yookassa",
+      "description": "Подключу ЮKassa к сайту и проверю обработку платежей и webhook уведомлений."
+    },
+    {
+      "title": "Интеграция сайта с CloudPayments",
+      "slug": "integraciya-sajta-cloudpayments",
+      "description": "Настрою CloudPayments на сайте и проверю оплату, возвраты и уведомления."
+    },
+    {
+      "title": "Интеграция сайта с Robokassa",
+      "slug": "integraciya-sajta-robokassa",
+      "description": "Подключу Robokassa к сайту и настрою проверку подписи платёжных уведомлений."
+    },
+    {
+      "title": "Настройка webhook приёма платежей",
+      "slug": "nastrojka-webhook-platezhej",
+      "description": "Настрою обработчик webhook платежей с проверкой подписи и защитой от повторов."
+    },
+    {
+      "title": "Настройка API обмена с МойСклад",
+      "slug": "nastrojka-api-mojsklad",
+      "description": "Подключу API МойСклад для синхронизации товаров, остатков и заказов."
+    },
+    {
+      "title": "Настройка API интеграции с Битрикс24",
+      "slug": "nastrojka-api-bitriks24",
+      "description": "Настрою REST API Битрикс24 для передачи лидов, контактов и сделок."
+    },
+    {
+      "title": "Интеграция сайта с amoCRM API",
+      "slug": "integraciya-sajta-amocrm-api",
+      "description": "Подключу сайт к amoCRM API для автоматической передачи заявок и контактов."
+    },
+    {
+      "title": "Настройка OAuth приложения для Google API",
+      "slug": "nastrojka-oauth-google-api",
+      "description": "Настрою OAuth доступ Google API и безопасное подключение аккаунта пользователя."
+    },
+    {
+      "title": "Интеграция сайта с Google Sheets API",
+      "slug": "integraciya-sajta-google-sheets-api",
+      "description": "Настрою передачу данных сайта в Google Sheets через официальный API."
+    },
+    {
+      "title": "Настройка Яндекс Диска для резервных копий",
+      "slug": "nastrojka-yandex-disk-backup",
+      "description": "Настрою автоматическую отправку резервных копий на Яндекс Диск и проверку архивов."
+    },
+    {
+      "title": "Настройка S3 резервного копирования сайта",
+      "slug": "nastrojka-s3-backup-sajta",
+      "description": "Настрою резервное копирование сайта в S3 хранилище с ротацией архивов."
+    },
+    {
+      "title": "Настройка мониторинга SSL сертификатов",
+      "slug": "monitoring-ssl-sertifikatov",
+      "description": "Настрою мониторинг срока действия SSL сертификатов и уведомления до окончания срока."
+    },
+    {
+      "title": "Настройка мониторинга доменов",
+      "slug": "monitoring-srokov-domenov",
+      "description": "Настрою контроль сроков регистрации доменов и уведомления о продлении."
+    },
+    {
+      "title": "Настройка мониторинга DNS записей",
+      "slug": "monitoring-dns-zapisej",
+      "description": "Настрою проверку DNS записей домена и уведомления об изменениях конфигурации."
+    },
+    {
+      "title": "Аудит безопасности VPS сервера",
+      "slug": "audit-bezopasnosti-vps",
+      "description": "Проведу базовый аудит VPS, проверю доступы, службы, обновления и firewall."
+    },
+    {
+      "title": "Настройка SSH bastion host",
+      "slug": "nastrojka-ssh-bastion-host",
+      "description": "Настрою bastion host для централизованного и контролируемого SSH доступа к серверам."
+    },
+    {
+      "title": "Настройка SSH CA сертификатов",
+      "slug": "nastrojka-ssh-ca-sertifikatov",
+      "description": "Настрою SSH Certificate Authority для централизованной выдачи временных ключей доступа."
+    },
+    {
+      "title": "Настройка DNS over HTTPS сервера",
+      "slug": "nastrojka-dns-over-https",
+      "description": "Разверну DNS over HTTPS сервис и настрою безопасное разрешение доменных имён."
+    },
+    {
+      "title": "Настройка DNS over TLS сервера",
+      "slug": "nastrojka-dns-over-tls",
+      "description": "Настрою DNS over TLS для шифрования DNS запросов клиентов сети."
+    },
+    {
+      "title": "Настройка локального DNS резолвера Unbound",
+      "slug": "nastrojka-unbound-dns-resolver",
+      "description": "Установлю Unbound и настрою локальный DNS резолвер с кешированием запросов."
+    },
+    {
+      "title": "Настройка Pi-hole DNS фильтрации",
+      "slug": "nastrojka-pihole-dns-filtracii",
+      "description": "Разверну Pi-hole для фильтрации DNS запросов и управления списками блокировки."
+    },
+    {
+      "title": "Настройка AdGuard Home на VPS",
+      "slug": "nastrojka-adguard-home-vps",
+      "description": "Установлю AdGuard Home и настрою DNS фильтрацию для домашних устройств."
+    },
+    {
+      "title": "Настройка сетевого сканирования Nmap",
+      "slug": "nastrojka-nmap-setevogo-audita",
+      "description": "Проведу инвентаризацию доступных сетевых узлов и проверку открытых портов Nmap."
+    },
+    {
+      "title": "Настройка WireGuard клиента на роутере",
+      "slug": "nastrojka-wireguard-klienta-router",
+      "description": "Настрою WireGuard клиент на совместимом роутере и проверю маршрутизацию трафика."
+    },
+    {
+      "title": "Настройка резервного канала интернета MikroTik",
+      "slug": "nastrojka-rezervnogo-interneta-mikrotik",
+      "description": "Настрою переключение MikroTik на резервного провайдера при потере основного соединения."
+    },
+    {
+      "title": "Настройка QoS приоритизации трафика",
+      "slug": "nastrojka-qos-prioritetov-trafika",
+      "description": "Настрою QoS правила для приоритизации голосового трафика и рабочих приложений."
+    },
+    {
+      "title": "Настройка NetFlow сбора сетевой статистики",
+      "slug": "nastrojka-netflow-statistiki",
+      "description": "Настрою экспорт NetFlow и сбор статистики использования сетевых каналов."
+    },
+    {
+      "title": "Настройка SNMP мониторинга оборудования",
+      "slug": "nastrojka-snmp-monitoring-oborudovaniya",
+      "description": "Подключу SNMP мониторинг маршрутизаторов, коммутаторов и серверного оборудования."
+    },
+    {
+      "title": "Настройка OpenWrt роутера",
+      "slug": "nastrojka-openwrt-router",
+      "description": "Установлю и настрою OpenWrt, Wi-Fi, маршрутизацию и правила сетевого доступа."
+    },
+    {
+      "title": "Настройка UniFi Controller",
+      "slug": "nastrojka-unifi-controller",
+      "description": "Разверну UniFi Network Application и подключу точки доступа и сетевые устройства."
+    },
+    {
+      "title": "Настройка Proxmox Backup Server",
+      "slug": "nastrojka-proxmox-backup-server",
+      "description": "Разверну Proxmox Backup Server и подключу хранилища резервных копий виртуальных машин."
+    },
+    {
+      "title": "Настройка Ceph хранилища Proxmox",
+      "slug": "nastrojka-ceph-proxmox",
+      "description": "Настрою Ceph в Proxmox для распределённого хранения данных виртуальных машин."
+    },
+    {
+      "title": "Настройка Kubernetes k3s на VPS",
+      "slug": "nastrojka-kubernetes-k3s-vps",
+      "description": "Разверну компактный Kubernetes k3s кластер и подключу тестовые приложения."
+    },
+    {
+      "title": "Настройка Helm для Kubernetes",
+      "slug": "nastrojka-helm-kubernetes",
+      "description": "Настрою Helm charts для установки и обновления приложений в Kubernetes."
+    },
+    {
+      "title": "Настройка Ingress Nginx Kubernetes",
+      "slug": "nastrojka-ingress-nginx-kubernetes",
+      "description": "Установлю Ingress Nginx и настрою маршрутизацию внешнего трафика в Kubernetes."
+    },
+    {
+      "title": "Настройка cert-manager Kubernetes",
+      "slug": "nastrojka-cert-manager-kubernetes",
+      "description": "Подключу cert-manager для автоматического выпуска и продления сертификатов Kubernetes."
+    },
+    {
+      "title": "Настройка Kubernetes Persistent Volumes",
+      "slug": "nastrojka-kubernetes-persistent-volumes",
+      "description": "Настрою Persistent Volumes и StorageClass для хранения данных приложений Kubernetes."
+    },
+    {
+      "title": "Настройка Kubernetes мониторинга",
+      "slug": "nastrojka-kubernetes-monitoring",
+      "description": "Подключу сбор метрик Kubernetes и настрою панели мониторинга состояния кластера."
+    },
+    {
+      "title": "Настройка Docker Swarm кластера",
+      "slug": "nastrojka-docker-swarm-cluster",
+      "description": "Разверну Docker Swarm кластер и настрою размещение контейнерных сервисов."
+    },
+    {
+      "title": "Настройка Portainer для Docker",
+      "slug": "nastrojka-portainer-docker",
+      "description": "Установлю Portainer и подключу Docker окружения для визуального управления контейнерами."
+    },
+    {
+      "title": "Настройка Watchtower уведомлений Docker",
+      "slug": "nastrojka-watchtower-docker",
+      "description": "Настрою Watchtower для контроля новых образов и уведомлений об обновлениях контейнеров."
+    },
+    {
+      "title": "Настройка Grafana Loki алертов",
+      "slug": "nastrojka-grafana-loki-alerts",
+      "description": "Настрою правила оповещений Grafana Loki по событиям и сообщениям журналов."
+    },
+    {
+      "title": "Настройка Prometheus Pushgateway",
+      "slug": "nastrojka-prometheus-pushgateway",
+      "description": "Разверну Pushgateway для передачи метрик краткоживущих задач в Prometheus."
+    },
+    {
+      "title": "Настройка Telegraf сбора метрик",
+      "slug": "nastrojka-telegraf-metrics",
+      "description": "Настрою Telegraf для сбора системных метрик и передачи данных в мониторинг."
+    },
+    {
+      "title": "Настройка InfluxDB на VPS",
+      "slug": "nastrojka-influxdb-vps",
+      "description": "Установлю InfluxDB и настрою хранение временных рядов и подключение клиентов."
+    },
+    {
+      "title": "Настройка VictoriaMetrics мониторинга",
+      "slug": "nastrojka-victoriametrics",
+      "description": "Разверну VictoriaMetrics и подключу сбор метрик Prometheus совместимым способом."
+    },
+    {
+      "title": "Настройка Netdata Cloud агента",
+      "slug": "nastrojka-netdata-cloud-agent",
+      "description": "Подключу Netdata Agent к панели Netdata Cloud и настрою уведомления о проблемах."
+    },
+    {
+      "title": "Настройка SFTPGo файлового сервера",
+      "slug": "nastrojka-sftpgo-server",
+      "description": "Разверну SFTPGo и настрою пользователей, виртуальные папки и права доступа."
+    },
+    {
+      "title": "Настройка Filebrowser на VPS",
+      "slug": "nastrojka-filebrowser-vps",
+      "description": "Установлю Filebrowser для управления серверными файлами через защищённый веб-интерфейс."
+    },
+    {
+      "title": "Настройка Syncthing синхронизации",
+      "slug": "nastrojka-syncthing-sinhronizacii",
+      "description": "Настрою Syncthing для синхронизации файлов между компьютерами и сервером."
+    },
+    {
+      "title": "Настройка rTorrent и ruTorrent",
+      "slug": "nastrojka-rtorrent-rutorrent",
+      "description": "Разверну rTorrent и ruTorrent и настрою доступ через защищённый веб-интерфейс."
+    },
+    {
+      "title": "Настройка Jellyfin медиасервера",
+      "slug": "nastrojka-jellyfin-mediaserver",
+      "description": "Установлю Jellyfin, добавлю медиатеки и настрою доступ к домашнему медиасерверу."
+    },
+    {
+      "title": "Настройка Plex Media Server",
+      "slug": "nastrojka-plex-media-server",
+      "description": "Установлю Plex Media Server и настрою библиотеки, пользователей и удалённый доступ."
+    },
+    {
+      "title": "Настройка Home Assistant на VPS",
+      "slug": "nastrojka-home-assistant-vps",
+      "description": "Разверну Home Assistant и настрою базовые интеграции и резервное копирование."
+    },
+    {
+      "title": "Настройка MQTT брокера Mosquitto",
+      "slug": "nastrojka-mosquitto-mqtt",
+      "description": "Установлю Mosquitto и настрою MQTT пользователей, TLS и доступ устройств."
+    },
+    {
+      "title": "Настройка Node-RED на сервере",
+      "slug": "nastrojka-node-red-server",
+      "description": "Разверну Node-RED и настрою безопасный доступ к редактору потоков автоматизации."
+    },
+    {
+      "title": "Настройка n8n на VPS",
+      "slug": "nastrojka-n8n-vps",
+      "description": "Разверну n8n на VPS, настрою домен, HTTPS и постоянное хранение данных."
+    },
+    {
+      "title": "Настройка Activepieces на сервере",
+      "slug": "nastrojka-activepieces-server",
+      "description": "Разверну Activepieces и настрою подключение сервисов для автоматизации рабочих процессов."
+    },
+    {
+      "title": "Настройка Metabase для аналитики",
+      "slug": "nastrojka-metabase-analitika",
+      "description": "Разверну Metabase, подключу базу данных и настрою аналитические панели."
+    },
+    {
+      "title": "Настройка Apache Superset",
+      "slug": "nastrojka-apache-superset",
+      "description": "Установлю Apache Superset и подключу источники данных для бизнес-аналитики."
+    },
+    {
+      "title": "Настройка Grafana отчетов для бизнеса",
+      "slug": "nastrojka-grafana-biznes-otchetov",
+      "description": "Создам панели Grafana для отображения ключевых показателей и бизнес-отчётов."
+    },
+    {
+      "title": "Настройка PostgreSQL доступа через SSL",
+      "slug": "nastrojka-postgresql-ssl-dostupa",
+      "description": "Настрою SSL соединения PostgreSQL и проверю защищённый доступ клиентов."
+    },
+    {
+      "title": "Настройка MySQL TLS соединений",
+      "slug": "nastrojka-mysql-tls-soedinenij",
+      "description": "Включу TLS для соединений MySQL и настрою проверку сертификатов клиентов."
+    },
+    {
+      "title": "Настройка MongoDB TLS",
+      "slug": "nastrojka-mongodb-tls",
+      "description": "Настрою TLS шифрование MongoDB и проверю подключение приложений по сертификатам."
+    },
+    {
+      "title": "Настройка Redis ACL пользователей",
+      "slug": "nastrojka-redis-acl",
+      "description": "Настрою Redis ACL пользователей, пароли и ограничения команд для приложений."
+    },
+    {
+      "title": "Настройка Redis Sentinel",
+      "slug": "nastrojka-redis-sentinel",
+      "description": "Разверну Redis Sentinel и настрою контроль доступности и переключение master узла."
+    },
+    {
+      "title": "Настройка RabbitMQ кластеризации",
+      "slug": "nastrojka-rabbitmq-cluster",
+      "description": "Настрою кластер RabbitMQ, пользователей и распределение очередей между узлами."
+    },
+    {
+      "title": "Настройка RabbitMQ Federation",
+      "slug": "nastrojka-rabbitmq-federation",
+      "description": "Настрою RabbitMQ Federation для обмена сообщениями между удалёнными брокерами."
+    },
+    {
+      "title": "Настройка Kafka Connect",
+      "slug": "nastrojka-kafka-connect",
+      "description": "Настрою Kafka Connect для передачи данных между брокером и внешними системами."
+    },
+    {
+      "title": "Настройка Kafka UI",
+      "slug": "nastrojka-kafka-ui",
+      "description": "Разверну Kafka UI для просмотра топиков, сообщений и состояния брокеров."
+    },
+    {
+      "title": "Настройка Elasticsearch snapshots",
+      "slug": "nastrojka-elasticsearch-snapshots",
+      "description": "Настрою snapshots Elasticsearch в удалённое хранилище и проверю восстановление индексов."
+    },
+    {
+      "title": "Настройка OpenSearch резервных копий",
+      "slug": "nastrojka-opensearch-backup",
+      "description": "Настрою резервное копирование OpenSearch snapshots и проверю восстановление индексов."
+    },
+    {
+      "title": "Настройка ClickHouse резервного копирования",
+      "slug": "nastrojka-clickhouse-backup",
+      "description": "Настрою резервное копирование ClickHouse таблиц и проверю восстановление данных."
+    },
+    {
+      "title": "Настройка ClickHouse репликации",
+      "slug": "nastrojka-clickhouse-replication",
+      "description": "Настрою репликацию ClickHouse и проверю синхронизацию таблиц между серверами."
+    },
+    {
+      "title": "Настройка MinIO репликации",
+      "slug": "nastrojka-minio-replication",
+      "description": "Настрою репликацию MinIO buckets между хранилищами и проверю передачу объектов."
+    },
+    {
+      "title": "Настройка S3 lifecycle правил",
+      "slug": "nastrojka-s3-lifecycle",
+      "description": "Настрою lifecycle правила S3 для автоматического перемещения и удаления старых объектов."
+    },
+    {
+      "title": "Настройка S3 presigned URL",
+      "slug": "nastrojka-s3-presigned-url",
+      "description": "Настрою временные ссылки S3 для безопасной загрузки и скачивания файлов."
+    },
+    {
+      "title": "Настройка PHP OPcache",
+      "slug": "nastrojka-php-opcache",
+      "description": "Настрою PHP OPcache и проверю влияние кеширования байткода на скорость сайта."
+    },
+    {
+      "title": "Настройка PHP Xdebug для отладки",
+      "slug": "nastrojka-php-xdebug",
+      "description": "Подключу Xdebug и настрою удалённую отладку PHP приложения в IDE."
+    },
+    {
+      "title": "Настройка PHP Imagick на сервере",
+      "slug": "nastrojka-php-imagick",
+      "description": "Установлю Imagick для PHP и проверю обработку изображений в приложении."
+    },
+    {
+      "title": "Настройка PHP расширений на VPS",
+      "slug": "nastrojka-php-rasshirenij-vps",
+      "description": "Установлю необходимые PHP расширения и проверю совместимость с сайтом."
+    },
+    {
+      "title": "Настройка Apache mod_rewrite",
+      "slug": "nastrojka-apache-mod-rewrite",
+      "description": "Настрою mod_rewrite и правила перенаправления URL для веб-сайта."
+    },
+    {
+      "title": "Настройка Nginx rate limiting",
+      "slug": "nastrojka-nginx-rate-limiting",
+      "description": "Настрою ограничения частоты запросов Nginx для защиты форм и API."
+    },
+    {
+      "title": "Настройка Nginx geo блокировок",
+      "slug": "nastrojka-nginx-geo-blokirovok",
+      "description": "Настрою географические правила доступа Nginx с проверкой влияния на посетителей."
+    },
+    {
+      "title": "Настройка Nginx upstream балансировки",
+      "slug": "nastrojka-nginx-upstream-balancing",
+      "description": "Настрою upstream балансировку Nginx между несколькими экземплярами приложения."
+    },
+    {
+      "title": "Настройка Nginx Brotli и gzip",
+      "slug": "nastrojka-nginx-brotli-gzip",
+      "description": "Настрою gzip и Brotli в Nginx и проверю сжатие ответов сервера."
+    },
+    {
+      "title": "Настройка DNSSEC для домена",
+      "slug": "nastrojka-dnssec-domena",
+      "description": "Настрою DNSSEC для домена и проверю корректность цепочки доверия DNS."
+    },
+    {
+      "title": "Настройка reverse DNS PTR записи",
+      "slug": "nastrojka-reverse-dns-ptr",
+      "description": "Настрою PTR запись для IP адреса и проверю обратное разрешение DNS."
+    },
+    {
+      "title": "Настройка почтового сервера Postfix",
+      "slug": "nastrojka-postfix-mail-server",
+      "description": "Установлю Postfix и настрою отправку почты с проверкой доменной аутентификации."
+    },
+    {
+      "title": "Настройка Dovecot IMAP сервера",
+      "slug": "nastrojka-dovecot-imap",
+      "description": "Установлю Dovecot и настрою IMAP доступ к почтовым ящикам пользователей."
+    },
+    {
+      "title": "Настройка Rspamd фильтрации почты",
+      "slug": "nastrojka-rspamd-mail-filter",
+      "description": "Подключу Rspamd к почтовому серверу и настрою базовую фильтрацию спама."
+    },
+    {
+      "title": "Настройка Roundcube веб-почты",
+      "slug": "nastrojka-roundcube-webmail",
+      "description": "Установлю Roundcube и подключу веб-интерфейс к существующему почтовому серверу."
+    },
+    {
+      "title": "Настройка почтового домена на VPS",
+      "slug": "nastrojka-mail-domain-vps",
+      "description": "Подготовлю почтовый домен на VPS, DNS записи и проверку доставки писем."
+    },
+    {
+      "title": "Перенос почтовых ящиков IMAP",
+      "slug": "perenos-pochtovyh-yashchikov-imap",
+      "description": "Перенесу почтовые ящики между серверами IMAP с сохранением папок и писем."
+    },
+    {
+      "title": "Настройка почтового шлюза",
+      "slug": "nastrojka-pochtovogo-shlyuza",
+      "description": "Настрою почтовый шлюз для маршрутизации входящей и исходящей корпоративной почты."
+    },
+    {
+      "title": "Настройка DKIM DMARC отчётов",
+      "slug": "nastrojka-dmarc-otchetov",
+      "description": "Настрою сбор и анализ DMARC отчётов для выявления проблем отправки почты."
+    },
+    {
+      "title": "Настройка WordPress cron через системный cron",
+      "slug": "wordpress-cron-system-cron",
+      "description": "Перенесу задачи WordPress на системный cron и проверю выполнение запланированных событий."
+    },
+    {
+      "title": "Настройка WordPress object cache диагностики",
+      "slug": "diagnostika-object-cache-wordpress",
+      "description": "Проверю работу object cache WordPress и устраню ошибки подключения кеширующего сервиса."
+    },
+    {
+      "title": "Настройка WordPress REST API интеграции",
+      "slug": "wordpress-rest-api-integracii",
+      "description": "Настрою REST API WordPress для обмена данными с внешним приложением."
+    },
+    {
+      "title": "Настройка WordPress пользовательских ролей",
+      "slug": "nastrojka-rolей-wordpress",
+      "description": "Настрою роли и capabilities WordPress для разделения прав сотрудников сайта."
+    },
+    {
+      "title": "Настройка WooCommerce складских остатков",
+      "slug": "nastrojka-woocommerce-skladskih-ostatkov",
+      "description": "Настрою учёт остатков WooCommerce и уведомления о низком количестве товаров."
+    },
+    {
+      "title": "Настройка WooCommerce статусов заказов",
+      "slug": "nastrojka-woocommerce-statusov-zakazov",
+      "description": "Настрою статусы заказов WooCommerce и автоматические действия при изменении статуса."
+    },
+    {
+      "title": "Настройка WooCommerce PDF счетов",
+      "slug": "nastrojka-woocommerce-pdf-schetov",
+      "description": "Настрою автоматическое формирование PDF счетов и документов для заказов WooCommerce."
+    },
+    {
+      "title": "Настройка WooCommerce экспорта заказов",
+      "slug": "nastrojka-woocommerce-eksporta-zakazov",
+      "description": "Настрою выгрузку заказов WooCommerce в CSV или Excel для обработки менеджерами."
+    },
+    {
+      "title": "Настройка WordPress Redis сессий",
+      "slug": "nastrojka-wordpress-redis-sessij",
+      "description": "Настрою Redis для хранения сессий и проверю совместимость с установленными плагинами."
+    },
+    {
+      "title": "Настройка WordPress защиты wp-login",
+      "slug": "zashchita-wp-login-wordpress",
+      "description": "Ограничу попытки входа WordPress и настрою дополнительные проверки страницы авторизации."
+    },
+    {
+      "title": "Настройка WordPress SMTP логов",
+      "slug": "nastrojka-wordpress-smtp-logov",
+      "description": "Настрою журналирование отправки писем WordPress для диагностики проблем доставки."
+    },
+    {
+      "title": "Настройка WordPress импорта пользователей",
+      "slug": "import-polzovatelej-wordpress",
+      "description": "Подготовлю массовый импорт пользователей WordPress с сопоставлением ролей и полей."
+    },
+    {
+      "title": "Настройка WordPress экспорта записей",
+      "slug": "eksport-zapisej-wordpress",
+      "description": "Выгружу записи WordPress с метаданными и подготовлю файл для переноса."
+    },
+    {
+      "title": "Настройка WordPress резервной копии базы",
+      "slug": "backup-bazy-wordpress",
+      "description": "Настрою отдельное резервное копирование базы WordPress с ротацией и проверкой архива."
+    },
+    {
+      "title": "Настройка WordPress базы данных оптимизации",
+      "slug": "optimizaciya-bazy-wordpress",
+      "description": "Проверю таблицы WordPress и оптимизирую базу данных без удаления нужного контента."
+    },
+    {
+      "title": "Настройка WooCommerce REST API",
+      "slug": "nastrojka-woocommerce-rest-api",
+      "description": "Настрою ключи WooCommerce REST API и проверю безопасный обмен данными."
+    },
+    {
+      "title": "Интеграция WooCommerce с доставкой СДЭК API",
+      "slug": "integraciya-woocommerce-cdek-api",
+      "description": "Подключу СДЭК API к WooCommerce для расчёта доставки и оформления отправлений."
+    },
+    {
+      "title": "Интеграция WooCommerce с Почтой России API",
+      "slug": "integraciya-woocommerce-pochta-api",
+      "description": "Настрою расчёт и передачу данных доставки через API Почты России."
+    },
+    {
+      "title": "Настройка WooCommerce мультивалютности",
+      "slug": "nastrojka-woocommerce-multivalyutnosti",
+      "description": "Настрою отображение цен WooCommerce в нескольких валютах и проверю конвертацию."
+    },
+    {
+      "title": "Настройка WooCommerce B2B каталога",
+      "slug": "nastrojka-woocommerce-b2b-kataloga",
+      "description": "Настрою B2B каталог WooCommerce с оптовыми ценами и ограничениями доступа."
+    },
+    {
+      "title": "Настройка WooCommerce личного кабинета",
+      "slug": "nastrojka-woocommerce-lichnogo-kabineta",
+      "description": "Настрою личный кабинет WooCommerce и отображение истории заказов покупателей."
+    },
+    {
+      "title": "Разработка Python API интеграции с CRM",
+      "slug": "python-api-integraciya-crm",
+      "description": "Разработаю Python интеграцию CRM через API с логированием и обработкой ошибок."
+    },
+    {
+      "title": "Разработка Python сервиса синхронизации данных",
+      "slug": "python-servis-sinhronizacii-dannyh",
+      "description": "Создам Python сервис для регулярной синхронизации данных между двумя системами."
+    },
+    {
+      "title": "Настройка Python логирования проекта",
+      "slug": "nastrojka-python-logirovaniya",
+      "description": "Настрою структурированные логи Python приложения, ротацию файлов и уровни сообщений."
+    },
+    {
+      "title": "Настройка Python конфигурации через Pydantic",
+      "slug": "python-pydantic-settings",
+      "description": "Настрою Pydantic Settings для проверки конфигурации и переменных окружения приложения."
+    },
+    {
+      "title": "Разработка планировщика задач Python APScheduler",
+      "slug": "python-apscheduler",
+      "description": "Подключу APScheduler для запуска периодических задач Python приложения."
+    },
+    {
+      "title": "Разработка Python CLI утилиты",
+      "slug": "razrabotka-python-cli",
+      "description": "Создам консольную Python утилиту с аргументами, настройками и обработкой ошибок."
+    },
+    {
+      "title": "Упаковка Python приложения в Docker",
+      "slug": "upakovka-python-prilozheniya-docker",
+      "description": "Подготовлю Docker образ Python приложения и настрою запуск через Compose."
+    },
+    {
+      "title": "Настройка Python тестов pytest",
+      "slug": "nastrojka-pytest-python",
+      "description": "Настрою pytest, тестовую структуру и автоматический запуск проверок проекта."
+    },
+    {
+      "title": "Настройка pre-commit для Python проекта",
+      "slug": "nastrojka-pre-commit-python",
+      "description": "Подключу pre-commit и автоматические проверки качества кода перед коммитом."
+    },
+    {
+      "title": "Настройка Ruff и Black для Python",
+      "slug": "nastrojka-ruff-black-python",
+      "description": "Настрою Ruff и Black для проверки и форматирования исходного кода Python."
+    },
+    {
+      "title": "Настройка mypy проверки типов Python",
+      "slug": "nastrojka-mypy-python",
+      "description": "Подключу mypy и настрою статическую проверку типов Python проекта."
+    },
+    {
+      "title": "Разработка обработчика Excel файлов на сервере",
+      "slug": "obrabotchik-excel-fajlov-server",
+      "description": "Создам серверный обработчик Excel файлов с проверкой данных и выдачей результата."
+    },
+    {
+      "title": "Автоматизация сверки двух Excel таблиц",
+      "slug": "avtomatizaciya-sverki-excel-tablic",
+      "description": "Создам скрипт для сравнения Excel таблиц и формирования списка различий."
+    },
+    {
+      "title": "Автоматизация очистки CSV данных",
+      "slug": "avtomatizaciya-ochistki-csv",
+      "description": "Настрою очистку CSV файлов, нормализацию значений и проверку обязательных полей."
+    },
+    {
+      "title": "Автоматизация загрузки данных из API",
+      "slug": "avtomatizaciya-zagruzki-api-dannyh",
+      "description": "Создам планировщик загрузки данных API и сохранения результатов в базе данных."
+    },
+    {
+      "title": "Разработка сервиса конвертации файлов",
+      "slug": "razrabotka-servisa-konvertacii-fajlov",
+      "description": "Создам сервис конвертации файлов с очередью задач и журналом обработки."
+    },
+    {
+      "title": "Настройка SFTP обмена файлами между компаниями",
+      "slug": "sftp-obmen-fajlami-kompanii",
+      "description": "Настрою защищённый SFTP обмен файлами между информационными системами организаций."
+    },
+    {
+      "title": "Разработка интеграции с API маркетплейса",
+      "slug": "integraciya-api-marketplejsa",
+      "description": "Подключу API маркетплейса для получения товаров, заказов и статусов поставок."
+    },
+    {
+      "title": "Разработка интеграции с API службы доставки",
+      "slug": "integraciya-api-sluzhby-dostavki",
+      "description": "Подключу API службы доставки для расчёта тарифов и отслеживания отправлений."
+    },
+    {
+      "title": "Настройка API авторизации JWT",
+      "slug": "nastrojka-api-jwt-avtorizacii",
+      "description": "Настрою JWT авторизацию API, срок действия токенов и проверку доступа."
+    },
+    {
+      "title": "Настройка API документации Swagger",
+      "slug": "nastrojka-api-swagger-dokumentacii",
+      "description": "Подготовлю Swagger документацию API и проверю описание доступных методов."
+    },
+    {
+      "title": "Настройка API ограничения запросов",
+      "slug": "nastrojka-api-rate-limit",
+      "description": "Добавлю rate limiting API для ограничения частоты запросов и защиты сервиса."
+    },
+    {
+      "title": "Настройка API логирования запросов",
+      "slug": "nastrojka-api-logirovaniya-zaprosov",
+      "description": "Настрою логирование API запросов и ответов с исключением конфиденциальных данных."
+    },
+    {
+      "title": "Настройка API мониторинга доступности",
+      "slug": "nastrojka-api-monitoring-dostupnosti",
+      "description": "Настрою регулярную проверку API endpoints и уведомления при ошибках ответа."
+    },
+    {
+      "title": "Настройка интеграции с 1С через HTTP сервисы",
+      "slug": "integraciya-1c-http-servisy",
+      "description": "Настрою обмен данными с 1С через HTTP сервисы и проверю структуру запросов."
+    },
+    {
+      "title": "Настройка обмена 1С с PostgreSQL",
+      "slug": "obmen-1c-postgresql",
+      "description": "Настрою интеграционный обмен между 1С и PostgreSQL для согласованной передачи данных."
+    },
+    {
+      "title": "Настройка обмена 1С с Excel",
+      "slug": "obmen-1c-excel",
+      "description": "Настрою выгрузку и загрузку данных между 1С и Excel таблицами."
+    },
+    {
+      "title": "Настройка резервного копирования 1С базы",
+      "slug": "rezervnoe-kopirovanie-1c-bazy",
+      "description": "Настрою резервное копирование базы 1С и проверю возможность восстановления данных."
+    },
+    {
+      "title": "Настройка публикации базы 1С на веб-сервере",
+      "slug": "publikaciya-1c-veb-server",
+      "description": "Настрою публикацию информационной базы 1С на веб-сервере для удалённого доступа."
+    },
+    {
+      "title": "Настройка RDP доступа к 1С",
+      "slug": "nastrojka-rdp-dostupa-1c",
+      "description": "Настрою удалённый доступ пользователей к рабочей базе 1С через RDP."
+    },
+    {
+      "title": "Настройка терминального доступа Linux xrdp",
+      "slug": "nastrojka-xrdp-linux",
+      "description": "Установлю xrdp на Linux сервере и настрою удалённые графические сеансы пользователей."
+    },
+    {
+      "title": "Настройка Guacamole удалённого доступа",
+      "slug": "nastrojka-apache-guacamole",
+      "description": "Разверну Apache Guacamole для доступа к RDP, SSH и VNC через браузер."
+    },
+    {
+      "title": "Настройка VNC удалённого рабочего стола Linux",
+      "slug": "nastrojka-vnc-linux",
+      "description": "Настрою VNC сервер на Linux и защищённое удалённое подключение к рабочему столу."
+    },
+    {
+      "title": "Настройка MeshCentral удалённого управления",
+      "slug": "nastrojka-meshcentral",
+      "description": "Разверну MeshCentral для удалённого управления компьютерами и контроля устройств."
+    },
+    {
+      "title": "Настройка RustDesk собственного сервера",
+      "slug": "nastrojka-rustdesk-server",
+      "description": "Разверну собственный сервер RustDesk и настрою ID и relay соединения."
+    },
+    {
+      "title": "Настройка Tactical RMM сервера",
+      "slug": "nastrojka-tactical-rmm",
+      "description": "Разверну Tactical RMM для удалённого мониторинга и обслуживания рабочих станций."
+    },
+    {
+      "title": "Настройка GLPI инвентаризации оборудования",
+      "slug": "nastrojka-glpi-inventarizacii",
+      "description": "Разверну GLPI и настрою учёт компьютеров, программ и IT оборудования."
+    },
+    {
+      "title": "Настройка Zammad helpdesk",
+      "slug": "nastrojka-zammad-helpdesk",
+      "description": "Разверну Zammad и настрою приём обращений, очереди и уведомления поддержки."
+    },
+    {
+      "title": "Настройка osTicket системы заявок",
+      "slug": "nastrojka-osticket",
+      "description": "Установлю osTicket и настрою категории обращений, сотрудников и шаблоны ответов."
+    },
+    {
+      "title": "Настройка Wiki.js базы знаний",
+      "slug": "nastrojka-wikijs",
+      "description": "Разверну Wiki.js и настрою базу знаний для сотрудников организации."
+    },
+    {
+      "title": "Настройка BookStack документации",
+      "slug": "nastrojka-bookstack",
+      "description": "Установлю BookStack и организую разделы технической документации и инструкций."
+    },
+    {
+      "title": "Настройка Outline Wiki сервера",
+      "slug": "nastrojka-outline-wiki",
+      "description": "Разверну Outline Wiki и настрою авторизацию и совместную работу с документами."
+    },
+    {
+      "title": "Настройка Mattermost корпоративного чата",
+      "slug": "nastrojka-mattermost",
+      "description": "Разверну Mattermost и настрою каналы, пользователей и уведомления корпоративного чата."
+    },
+    {
+      "title": "Настройка Matrix Synapse сервера",
+      "slug": "nastrojka-matrix-synapse",
+      "description": "Разверну Matrix Synapse и настрою регистрацию пользователей и федерацию сообщений."
+    },
+    {
+      "title": "Настройка Element корпоративного мессенджера",
+      "slug": "nastrojka-element-messenger",
+      "description": "Подключу Element к Matrix серверу и настрою рабочее пространство пользователей."
+    },
+    {
+      "title": "Настройка Jitsi Meet видеоконференций",
+      "slug": "nastrojka-jitsi-meet",
+      "description": "Разверну Jitsi Meet и настрою защищённые видеоконференции для команды."
+    },
+    {
+      "title": "Настройка BigBlueButton вебинаров",
+      "slug": "nastrojka-bigbluebutton",
+      "description": "Разверну BigBlueButton и настрою сервер онлайн-встреч и учебных вебинаров."
+    },
+    {
+      "title": "Настройка Asterisk IP телефонии",
+      "slug": "nastrojka-asterisk-ip-telefonii",
+      "description": "Установлю Asterisk и настрою внутренние номера, SIP подключение и маршруты вызовов."
+    },
+    {
+      "title": "Настройка FreePBX телефонии",
+      "slug": "nastrojka-freepbx",
+      "description": "Разверну FreePBX и настрою внутренние номера, очереди и голосовое меню."
+    },
+    {
+      "title": "Настройка SIP транка",
+      "slug": "nastrojka-sip-tranka",
+      "description": "Подключу SIP транк и проверю входящие и исходящие вызовы IP телефонии."
+    },
+    {
+      "title": "Настройка 3CX виртуальной АТС",
+      "slug": "nastrojka-3cx-ats",
+      "description": "Настрою 3CX виртуальную АТС, пользователей, номера и маршрутизацию звонков."
+    },
+    {
+      "title": "Настройка VPN доступа сотрудников к 1С",
+      "slug": "vpn-dostup-sotrudnikov-1c",
+      "description": "Настрою защищённый VPN доступ сотрудников к серверу и базе 1С."
+    },
+    {
+      "title": "Настройка резервного интернета для офиса",
+      "slug": "nastrojka-rezervnogo-interneta-ofis",
+      "description": "Настрою автоматическое переключение офисной сети на резервный интернет канал."
+    },
+    {
+      "title": "Настройка сегментации офисной сети",
+      "slug": "nastrojka-segmentacii-ofisnoj-seti",
+      "description": "Разделю офисную сеть на сегменты и настрою правила взаимодействия устройств."
+    },
+    {
+      "title": "Настройка мониторинга сетевого оборудования",
+      "slug": "monitoring-setevogo-oborudovaniya",
+      "description": "Подключу сетевое оборудование к мониторингу и настрою оповещения о сбоях."
+    },
+    {
+      "title": "Настройка инвентаризации IP адресов",
+      "slug": "nastrojka-inventarizacii-ip",
+      "description": "Настрою учёт IP адресов и обнаружение новых устройств в локальной сети."
+    },
+    {
+      "title": "Настройка DHCP сервера Linux",
+      "slug": "nastrojka-dhcp-server-linux",
+      "description": "Разверну DHCP сервер Linux и настрою диапазоны, резервации и параметры клиентов."
+    },
+    {
+      "title": "Настройка DNS сервера BIND9",
+      "slug": "nastrojka-bind9-dns-server",
+      "description": "Установлю BIND9 и настрою DNS зоны, записи и пересылку запросов."
+    },
+    {
+      "title": "Настройка PowerDNS авторитетного сервера",
+      "slug": "nastrojka-powerdns-authoritative",
+      "description": "Разверну PowerDNS Authoritative и настрою управление DNS зонами доменов."
+    },
+    {
+      "title": "Настройка DNS панели управления доменами",
+      "slug": "nastrojka-dns-paneli-upravleniya",
+      "description": "Установлю панель управления DNS зонами и настрою разграничение прав пользователей."
+    },
+    {
+      "title": "Настройка SSL для нескольких доменов Nginx",
+      "slug": "ssl-neskolkih-domenov-nginx",
+      "description": "Настрою отдельные SSL сертификаты и виртуальные хосты для нескольких доменов Nginx."
+    },
+    {
+      "title": "Настройка автоматической проверки резервных копий",
+      "slug": "avtoproverka-rezervnyh-kopij",
+      "description": "Настрою автоматическую проверку архивов резервных копий и уведомления об ошибках."
+    },
+    {
+      "title": "Настройка ротации резервных копий",
+      "slug": "nastrojka-rotacii-rezervnyh-kopij",
+      "description": "Настрою хранение ежедневных, недельных и месячных резервных копий с ротацией."
+    },
+    {
+      "title": "Настройка резервного копирования Docker volumes",
+      "slug": "backup-docker-volumes",
+      "description": "Настрою резервное копирование Docker volumes и проверю восстановление данных контейнеров."
+    },
+    {
+      "title": "Настройка резервного копирования Git репозиториев",
+      "slug": "backup-git-repozitoriev",
+      "description": "Настрою автоматическое резервное копирование Git репозиториев на отдельное хранилище."
+    },
+    {
+      "title": "Настройка резервного копирования облачных серверов",
+      "slug": "backup-oblachnyh-serverov",
+      "description": "Настрою резервные копии облачных серверов и проверю сценарий восстановления."
+    },
+    {
+      "title": "Настройка миграции VPS между провайдерами",
+      "slug": "migraciya-vps-mezhdu-provajderami",
+      "description": "Перенесу VPS между провайдерами с проверкой сети, служб и доступности сайтов."
+    },
+    {
+      "title": "Настройка облачного сервера для базы данных",
+      "slug": "oblachnyj-server-bazy-dannyh",
+      "description": "Подготовлю облачный сервер для базы данных с настройкой дисков и доступа."
+    },
+    {
+      "title": "Настройка облачного сервера для веб-приложения",
+      "slug": "oblachnyj-server-veb-prilozheniya",
+      "description": "Подготовлю облачный сервер для веб-приложения и настрою публикацию через домен."
+    },
+    {
+      "title": "Настройка Yandex Cloud Object Storage",
+      "slug": "nastrojka-yandex-cloud-object-storage",
+      "description": "Подключу Object Storage Yandex Cloud и настрою бакеты и ключи доступа."
+    },
+    {
+      "title": "Настройка Yandex Cloud Load Balancer",
+      "slug": "nastrojka-yandex-cloud-load-balancer",
+      "description": "Настрою Yandex Cloud Load Balancer и проверку доступности целевых серверов."
+    },
+    {
+      "title": "Настройка Yandex Cloud Managed PostgreSQL",
+      "slug": "nastrojka-yandex-managed-postgresql",
+      "description": "Подключу Managed PostgreSQL Yandex Cloud и настрою пользователей и параметры доступа."
+    },
+    {
+      "title": "Настройка Yandex Cloud Managed Redis",
+      "slug": "nastrojka-yandex-managed-redis",
+      "description": "Подключу Managed Redis Yandex Cloud и настрою доступ приложения к кешу."
+    },
+    {
+      "title": "Настройка Yandex Cloud Container Registry",
+      "slug": "nastrojka-yandex-container-registry",
+      "description": "Настрою Container Registry Yandex Cloud для хранения и публикации Docker образов."
+    },
+    {
+      "title": "Настройка Selectel Managed Kubernetes",
+      "slug": "nastrojka-selectel-managed-kubernetes",
+      "description": "Подключу Managed Kubernetes Selectel и настрою доступ к кластеру и приложениям."
+    },
+    {
+      "title": "Настройка облачного firewall Yandex Cloud",
+      "slug": "nastrojka-yandex-cloud-firewall",
+      "description": "Настрою security groups Yandex Cloud для ограничения сетевого доступа к ресурсам."
+    },
+    {
+      "title": "Настройка облачного firewall Selectel",
+      "slug": "nastrojka-selectel-cloud-firewall",
+      "description": "Настрою сетевые правила облачного firewall Selectel для защиты серверов."
+    },
+    {
+      "title": "Настройка мониторинга облачных ресурсов",
+      "slug": "monitoring-oblachnyh-resursov",
+      "description": "Настрою мониторинг облачных ресурсов, метрик использования и уведомления о сбоях."
+    },
+    {
+      "title": "Настройка CDN Yandex Cloud",
+      "slug": "nastrojka-yandex-cloud-cdn",
+      "description": "Подключу CDN Yandex Cloud для ускоренной доставки статических файлов сайта."
+    },
+    {
+      "title": "Настройка Object Storage для сайта",
+      "slug": "object-storage-dlya-sajta",
+      "description": "Перенесу статические файлы сайта в Object Storage и настрою публичный доступ."
+    },
+    {
+      "title": "Настройка приватного Docker Registry на VPS",
+      "slug": "private-docker-registry-vps",
+      "description": "Разверну приватный Docker Registry на VPS и настрою защищённый доступ."
+    },
+    {
+      "title": "Настройка обновления контейнеров без простоя",
+      "slug": "obnovlenie-kontejnerov-bez-prostoya",
+      "description": "Настрою последовательное обновление контейнеров с проверкой доступности приложения."
+    },
+    {
+      "title": "Настройка healthcheck Docker контейнеров",
+      "slug": "nastrojka-healthcheck-docker",
+      "description": "Добавлю Docker healthcheck и настрою контроль состояния контейнеров приложения."
+    },
+    {
+      "title": "Настройка Docker logging драйверов",
+      "slug": "nastrojka-docker-logging",
+      "description": "Настрою Docker logging drivers и ротацию журналов контейнеров."
+    },
+    {
+      "title": "Настройка Docker сетей и bridge",
+      "slug": "nastrojka-docker-setej-bridge",
+      "description": "Настрою Docker networks, bridge сети и взаимодействие контейнеров проекта."
+    },
+    {
+      "title": "Настройка Docker secrets",
+      "slug": "nastrojka-docker-secrets",
+      "description": "Настрою Docker secrets для безопасной передачи паролей и ключей контейнерам."
+    },
+    {
+      "title": "Настройка Kubernetes Secrets",
+      "slug": "nastrojka-kubernetes-secrets",
+      "description": "Настрою Kubernetes Secrets и подключение конфиденциальных параметров к приложениям."
+    },
+    {
+      "title": "Настройка Kubernetes RBAC",
+      "slug": "nastrojka-kubernetes-rbac",
+      "description": "Настрою Kubernetes RBAC роли и ограничение доступа пользователей к ресурсам кластера."
+    },
+    {
+      "title": "Настройка Kubernetes Network Policies",
+      "slug": "nastrojka-kubernetes-network-policies",
+      "description": "Настрою Network Policies для ограничения сетевого взаимодействия Kubernetes приложений."
+    },
+    {
+      "title": "Настройка Kubernetes CronJob",
+      "slug": "nastrojka-kubernetes-cronjob",
+      "description": "Настрою Kubernetes CronJob для регулярного выполнения фоновых задач приложения."
+    },
+    {
+      "title": "Настройка Kubernetes backup etcd",
+      "slug": "nastrojka-kubernetes-etcd-backup",
+      "description": "Настрою резервное копирование etcd и проверку восстановления состояния Kubernetes кластера."
+    },
+    {
+      "title": "Настройка Kubernetes autoscaling",
+      "slug": "nastrojka-kubernetes-autoscaling",
+      "description": "Настрою Horizontal Pod Autoscaler для масштабирования приложений по нагрузке."
+    },
+    {
+      "title": "Настройка Helm автоматического обновления",
+      "slug": "nastrojka-helm-avtoobnovleniya",
+      "description": "Настрою обновление Helm релизов и контроль успешного развёртывания приложений."
+    },
+    {
+      "title": "Настройка GitOps через Argo CD",
+      "slug": "nastrojka-argocd-gitops",
+      "description": "Разверну Argo CD и настрою GitOps синхронизацию конфигураций Kubernetes."
+    },
+    {
+      "title": "Настройка Flux CD для Kubernetes",
+      "slug": "nastrojka-fluxcd-kubernetes",
+      "description": "Подключу Flux CD для автоматического применения изменений из Git репозитория."
+    },
+    {
+      "title": "Настройка Harbor Container Registry",
+      "slug": "nastrojka-harbor-registry",
+      "description": "Разверну Harbor Registry и настрою проекты, пользователей и сканирование образов."
+    },
+    {
+      "title": "Настройка Trivy сканирования Docker образов",
+      "slug": "nastrojka-trivy-docker",
+      "description": "Подключу Trivy для проверки Docker образов на известные уязвимости."
+    },
+    {
+      "title": "Настройка SonarQube анализа кода",
+      "slug": "nastrojka-sonarqube",
+      "description": "Разверну SonarQube и настрою статический анализ исходного кода проектов."
+    },
+    {
+      "title": "Настройка Renovate обновления зависимостей",
+      "slug": "nastrojka-renovate-dependencies",
+      "description": "Подключу Renovate для автоматического создания pull request на обновление зависимостей."
+    },
+    {
+      "title": "Настройка Dependabot для репозитория",
+      "slug": "nastrojka-dependabot",
+      "description": "Настрою Dependabot alerts и автоматические обновления зависимостей GitHub проекта."
+    },
+    {
+      "title": "Настройка GitHub Actions тестирования Python",
+      "slug": "github-actions-test-python",
+      "description": "Настрою GitHub Actions для автоматического запуска тестов Python при изменениях."
+    },
+    {
+      "title": "Настройка GitHub Actions публикации Docker",
+      "slug": "github-actions-publish-docker",
+      "description": "Настрою GitHub Actions для сборки и публикации Docker образов проекта."
+    },
+    {
+      "title": "Настройка GitHub Actions деплоя WordPress",
+      "slug": "github-actions-deploy-wordpress",
+      "description": "Настрою GitHub Actions для безопасной доставки изменений WordPress сайта."
+    },
+    {
+      "title": "Настройка GitHub Actions деплоя PHP",
+      "slug": "github-actions-deploy-php",
+      "description": "Настрою автоматический деплой PHP проекта на сервер после успешной сборки."
+    },
+    {
+      "title": "Настройка GitHub Actions деплоя Node.js",
+      "slug": "github-actions-deploy-nodejs",
+      "description": "Настрою GitHub Actions для тестирования и публикации Node.js приложения."
+    },
+    {
+      "title": "Настройка GitHub Actions деплоя Python",
+      "slug": "github-actions-deploy-python",
+      "description": "Настрою GitHub Actions для тестирования и развёртывания Python приложения."
+    },
+    {
+      "title": "Настройка GitHub Actions секретов",
+      "slug": "github-actions-secrets",
+      "description": "Настрою GitHub Actions secrets и безопасную передачу ключей в workflow."
+    },
+    {
+      "title": "Настройка GitHub Pages для проекта",
+      "slug": "nastrojka-github-pages-proekta",
+      "description": "Опубликую статический сайт через GitHub Pages и настрою собственный домен."
+    },
+    {
+      "title": "Настройка GitHub webhook на сервере",
+      "slug": "nastrojka-github-webhook-server",
+      "description": "Настрою GitHub webhook для запуска серверного деплоя после обновления репозитория."
+    },
+    {
+      "title": "Настройка Git SSH доступа к репозиторию",
+      "slug": "nastrojka-git-ssh-dostupa",
+      "description": "Настрою SSH ключи Git и проверю безопасное подключение к удалённому репозиторию."
+    },
+    {
+      "title": "Восстановление Git репозитория",
+      "slug": "vosstanovlenie-git-repozitoriya",
+      "description": "Восстановлю удалённые коммиты или ветки Git при наличии доступных ссылок и объектов."
+    },
+    {
+      "title": "Настройка Git веток для командной разработки",
+      "slug": "nastrojka-git-vetok-komandnaya-razrabotka",
+      "description": "Настрою структуру веток Git и правила слияния изменений для команды."
+    },
+    {
+      "title": "Настройка Git hooks проекта",
+      "slug": "nastrojka-git-hooks-proekta",
+      "description": "Настрою Git hooks для автоматических проверок перед коммитом и отправкой изменений."
+    },
+    {
+      "title": "Настройка автоматического выпуска релизов GitHub",
+      "slug": "avtovypusk-relizov-github",
+      "description": "Настрою автоматическое создание GitHub Releases и архивов после успешной сборки."
+    },
+    {
+      "title": "Настройка мониторинга GitHub Actions",
+      "slug": "monitoring-github-actions",
+      "description": "Настрою уведомления о сбоях GitHub Actions и контроль выполнения workflow."
+    },
+    {
+      "title": "Настройка webhook уведомлений GitHub в Telegram",
+      "slug": "github-webhook-telegram-uvedomleniya",
+      "description": "Подключу GitHub webhook к Telegram для уведомлений о коммитах и ошибках сборки."
+    },
+    {
+      "title": "Настройка локального сервера разработки",
+      "slug": "nastrojka-lokalnogo-servera-razrabotki",
+      "description": "Подготовлю локальный сервер разработки с PHP, Python, базой данных и Git."
+    },
+    {
+      "title": "Настройка тестового сервера для сайта",
+      "slug": "nastrojka-testovogo-servera-sajta",
+      "description": "Подготовлю отдельный тестовый сервер для проверки обновлений и новых функций сайта."
+    },
+    {
+      "title": "Настройка домена для нескольких сайтов VPS",
+      "slug": "domen-neskolko-sajtov-vps",
+      "description": "Настрою несколько доменов на одном VPS с отдельными сайтами и SSL."
+    },
+    {
+      "title": "Настройка автоматического выпуска Let's Encrypt wildcard",
+      "slug": "letsencrypt-wildcard-ssl",
+      "description": "Настрою wildcard SSL сертификат Let's Encrypt через DNS challenge для поддоменов."
+    },
+    {
+      "title": "Настройка перенаправлений домена HTTP HTTPS",
+      "slug": "redirect-http-https-domena",
+      "description": "Настрою перенаправление HTTP на HTTPS и проверю отсутствие циклических редиректов."
+    },
+    {
+      "title": "Настройка перенаправления www без www",
+      "slug": "redirect-www-bez-www",
+      "description": "Настрою единый вариант домена с перенаправлением www и проверкой canonical URL."
+    },
+    {
+      "title": "Настройка DNS миграции домена",
+      "slug": "migraciya-dns-domena",
+      "description": "Перенесу DNS зону к новому провайдеру и проверю распространение записей."
+    },
+    {
+      "title": "Настройка мониторинга доступности сайта",
+      "slug": "monitoring-dostupnosti-sajta",
+      "description": "Настрою внешние проверки доступности сайта и уведомления при сбоях."
+    },
+    {
+      "title": "Диагностика ошибок 500 на сайте",
+      "slug": "diagnostika-oshibok-500-sajta",
+      "description": "Найду причину HTTP 500 по логам сервера и проверю исправление ошибки."
+    },
+    {
+      "title": "Диагностика ошибок 403 Forbidden",
+      "slug": "diagnostika-403-forbidden",
+      "description": "Проверю права файлов, правила веб-сервера и причины ответа 403 Forbidden."
+    },
+    {
+      "title": "Диагностика ошибок 404 на сайте",
+      "slug": "diagnostika-404-sajta",
+      "description": "Проверю маршрутизацию, правила rewrite и причины появления страниц 404."
+    },
+    {
+      "title": "Настройка лимитов загрузки файлов PHP",
+      "slug": "nastrojka-limitov-zagruzki-php",
+      "description": "Настрою upload_max_filesize, post_max_size и лимиты выполнения PHP скриптов."
+    },
+    {
+      "title": "Настройка PHP-FPM пулов для сайтов",
+      "slug": "nastrojka-php-fpm-pulov-sajtov",
+      "description": "Настрою отдельные PHP-FPM pools для сайтов с разными лимитами и пользователями."
+    },
+    {
+      "title": "Настройка изоляции сайтов на VPS",
+      "slug": "izolyaciya-sajtov-vps",
+      "description": "Разделю сайты на VPS по системным пользователям и ограничу доступ к файлам."
+    },
+    {
+      "title": "Настройка chroot окружения SFTP",
+      "slug": "nastrojka-chroot-sftp",
+      "description": "Настрою chroot окружение SFTP для изоляции пользователей в отдельных каталогах."
+    },
+    {
+      "title": "Настройка прав файлов WordPress Linux",
+      "slug": "prava-fajlov-wordpress-linux",
+      "description": "Исправлю владельцев и права файлов WordPress для безопасной работы сайта."
+    },
+    {
+      "title": "Настройка защиты сервера от brute force",
+      "slug": "zashchita-servera-bruteforce",
+      "description": "Настрою ограничения попыток входа и блокировку подозрительных подключений к серверу."
+    },
+    {
+      "title": "Настройка SSH двухфакторной аутентификации",
+      "slug": "ssh-dvuhfaktornaya-avtorizaciya",
+      "description": "Настрою двухфакторную аутентификацию SSH и проверю резервный способ доступа."
+    },
+    {
+      "title": "Настройка автоматического обновления Ubuntu",
+      "slug": "avtoobnovlenie-ubuntu-server",
+      "description": "Настрою автоматическую установку обновлений безопасности Ubuntu и уведомления администратора."
+    },
+    {
+      "title": "Настройка unattended-upgrades Debian",
+      "slug": "nastrojka-unattended-upgrades-debian",
+      "description": "Настрою unattended-upgrades на Debian для своевременной установки обновлений безопасности."
+    },
+    {
+      "title": "Настройка ядра Linux sysctl",
+      "slug": "nastrojka-sysctl-linux",
+      "description": "Настрою параметры sysctl под сетевые и системные требования серверного приложения."
+    },
+    {
+      "title": "Настройка swap файла Linux",
+      "slug": "nastrojka-swap-linux",
+      "description": "Создам swap файл Linux и настрою параметры использования виртуальной памяти."
+    },
+    {
+      "title": "Настройка дисков и LVM Linux",
+      "slug": "nastrojka-lvm-linux",
+      "description": "Настрою LVM тома, расширение файловых систем и контроль свободного места."
+    },
+    {
+      "title": "Настройка RAID программного Linux",
+      "slug": "nastrojka-software-raid-linux",
+      "description": "Настрою программный RAID Linux и проверю состояние массива и дисков."
+    },
+    {
+      "title": "Диагностика дисков SMART Linux",
+      "slug": "diagnostika-smart-diskov-linux",
+      "description": "Проверю SMART показатели дисков и настрою уведомления о признаках неисправности."
+    },
+    {
+      "title": "Настройка автоматического SMART мониторинга",
+      "slug": "avtomaticheskij-smart-monitoring",
+      "description": "Настрою регулярную проверку SMART атрибутов и отправку предупреждений администратору."
+    },
+    {
+      "title": "Настройка файловой системы ZFS",
+      "slug": "nastrojka-zfs-linux",
+      "description": "Настрою ZFS pool, datasets, snapshots и контроль состояния хранилища."
+    },
+    {
+      "title": "Настройка Btrfs snapshots",
+      "slug": "nastrojka-btrfs-snapshots",
+      "description": "Настрою Btrfs snapshots и автоматическое хранение точек восстановления системы."
+    },
+    {
+      "title": "Настройка LUKS шифрования диска Linux",
+      "slug": "nastrojka-luks-linux",
+      "description": "Настрою LUKS шифрование диска и безопасную процедуру разблокировки при загрузке."
+    },
+    {
+      "title": "Настройка автоматического монтирования дисков",
+      "slug": "avtomontirovanie-diskov-linux",
+      "description": "Настрою fstab и systemd automount для надёжного подключения дисковых разделов."
+    },
+    {
+      "title": "Настройка NTP синхронизации времени Linux",
+      "slug": "nastrojka-ntp-linux",
+      "description": "Настрою chrony или systemd-timesyncd для точной синхронизации времени сервера."
+    },
+    {
+      "title": "Настройка часового пояса Linux сервера",
+      "slug": "nastrojka-chasovogo-poyasa-linux",
+      "description": "Настрою часовой пояс Linux и проверю время системных служб и журналов."
+    },
+    {
+      "title": "Настройка локали и кодировок Linux",
+      "slug": "nastrojka-lokali-linux",
+      "description": "Настрою локаль UTF-8 и проверю корректное отображение русского текста в системе."
+    },
+    {
+      "title": "Настройка Supervisor процессов Python",
+      "slug": "nastrojka-supervisor-python",
+      "description": "Настрою Supervisor для автозапуска Python процессов и контроля их состояния."
+    },
+    {
+      "title": "Настройка PM2 ecosystem конфигурации",
+      "slug": "nastrojka-pm2-ecosystem",
+      "description": "Подготовлю PM2 ecosystem конфигурацию для нескольких Node.js процессов приложения."
+    },
+    {
+      "title": "Настройка Node.js NVM на сервере",
+      "slug": "nastrojka-nvm-nodejs-server",
+      "description": "Установлю NVM и настрою несколько версий Node.js для серверных проектов."
+    },
+    {
+      "title": "Настройка npm приватного registry",
+      "slug": "nastrojka-npm-private-registry",
+      "description": "Настрою приватный npm registry и доступ разработчиков к внутренним пакетам."
+    },
+    {
+      "title": "Настройка pnpm для Node.js проекта",
+      "slug": "nastrojka-pnpm-nodejs",
+      "description": "Настрою pnpm, lockfile и установку зависимостей Node.js проекта на сервере."
+    },
+    {
+      "title": "Настройка Yarn Berry проекта",
+      "slug": "nastrojka-yarn-berry",
+      "description": "Настрою Yarn Berry и проверю сборку проекта с фиксированными зависимостями."
+    },
+    {
+      "title": "Настройка PostgreSQL pg_stat_statements",
+      "slug": "nastrojka-pg-stat-statements",
+      "description": "Подключу pg_stat_statements для анализа нагрузки и статистики запросов PostgreSQL."
+    },
+    {
+      "title": "Настройка PostgreSQL connection pooling",
+      "slug": "nastrojka-postgresql-connection-pooling",
+      "description": "Настрою пул соединений PostgreSQL и проверю стабильность подключений приложения."
+    },
+    {
+      "title": "Настройка PostgreSQL vacuum и autovacuum",
+      "slug": "nastrojka-postgresql-vacuum",
+      "description": "Проверю autovacuum PostgreSQL и настрою обслуживание таблиц под нагрузку базы."
+    },
+    {
+      "title": "Настройка PostgreSQL индексов",
+      "slug": "nastrojka-postgresql-indeksov",
+      "description": "Проверю планы запросов и настрою индексы PostgreSQL для ускорения выборок."
+    },
+    {
+      "title": "Настройка MySQL InnoDB параметров",
+      "slug": "nastrojka-mysql-innodb",
+      "description": "Настрою параметры InnoDB MySQL с учётом объёма памяти и нагрузки сервера."
+    },
+    {
+      "title": "Настройка MySQL пользователей и привилегий",
+      "slug": "nastrojka-mysql-polzovatelej",
+      "description": "Создам пользователей MySQL и настрою минимально необходимые права доступа."
+    },
+    {
+      "title": "Настройка MariaDB резервной реплики",
+      "slug": "nastrojka-mariadb-replica",
+      "description": "Настрою резервную реплику MariaDB и проверю синхронизацию изменений базы."
+    },
+    {
+      "title": "Настройка Redis persistence AOF RDB",
+      "slug": "nastrojka-redis-persistence",
+      "description": "Настрою Redis persistence AOF и RDB с проверкой сохранения данных."
+    },
+    {
+      "title": "Настройка Redis memory policy",
+      "slug": "nastrojka-redis-memory-policy",
+      "description": "Настрою Redis maxmemory и eviction policy под особенности приложения."
+    },
+    {
+      "title": "Настройка MongoDB пользователей и ролей",
+      "slug": "nastrojka-mongodb-roles",
+      "description": "Настрою роли MongoDB и разграничу права доступа приложений к коллекциям."
+    },
+    {
+      "title": "Настройка MongoDB индексов",
+      "slug": "nastrojka-mongodb-indeksov",
+      "description": "Проверю запросы MongoDB и создам индексы для ускорения поиска документов."
+    },
+    {
+      "title": "Настройка ClickHouse пользователей и прав",
+      "slug": "nastrojka-clickhouse-prav",
+      "description": "Настрою пользователей ClickHouse, профили и права доступа к базам данных."
+    },
+    {
+      "title": "Настройка ClickHouse TTL таблиц",
+      "slug": "nastrojka-clickhouse-ttl",
+      "description": "Настрою TTL для автоматического удаления или перемещения устаревших данных ClickHouse."
+    },
+    {
+      "title": "Настройка Elasticsearch ILM политик",
+      "slug": "nastrojka-elasticsearch-ilm",
+      "description": "Настрою Index Lifecycle Management для автоматического обслуживания индексов Elasticsearch."
+    },
+    {
+      "title": "Настройка RabbitMQ dead letter queue",
+      "slug": "nastrojka-rabbitmq-dead-letter",
+      "description": "Настрою Dead Letter Exchange и обработку сообщений RabbitMQ с ошибками."
+    },
+    {
+      "title": "Настройка Kafka retention политики",
+      "slug": "nastrojka-kafka-retention",
+      "description": "Настрою Kafka retention и очистку старых сообщений по сроку или объёму."
+    },
+    {
+      "title": "Настройка MinIO пользователей и политик",
+      "slug": "nastrojka-minio-polices",
+      "description": "Настрою MinIO пользователей, access keys и политики доступа к buckets."
+    },
+    {
+      "title": "Настройка S3 совместимого клиента",
+      "slug": "nastrojka-s3-klienta",
+      "description": "Подключу приложение к S3 совместимому хранилищу и проверю операции с объектами."
+    },
+    {
+      "title": "Настройка Nextcloud внешнего хранилища",
+      "slug": "nastrojka-nextcloud-vneshnego-hranilishcha",
+      "description": "Подключу внешнее S3 или SMB хранилище к Nextcloud и проверю доступ."
+    },
+    {
+      "title": "Настройка Nextcloud LDAP интеграции",
+      "slug": "nastrojka-nextcloud-ldap",
+      "description": "Подключу Nextcloud к LDAP каталогу и настрою синхронизацию пользователей."
+    },
+    {
+      "title": "Настройка Nextcloud Talk",
+      "slug": "nastrojka-nextcloud-talk",
+      "description": "Подключу Nextcloud Talk и настрою базовые функции аудио и видеосвязи."
+    },
+    {
+      "title": "Настройка OnlyOffice интеграции Nextcloud",
+      "slug": "nastrojka-onlyoffice-nextcloud",
+      "description": "Соединю OnlyOffice Document Server с Nextcloud и проверю совместное редактирование."
+    },
+    {
+      "title": "Настройка Mattermost LDAP авторизации",
+      "slug": "nastrojka-mattermost-ldap",
+      "description": "Подключу Mattermost к LDAP и настрою вход сотрудников через корпоративные учётные записи."
+    },
+    {
+      "title": "Настройка Mattermost SMTP уведомлений",
+      "slug": "nastrojka-mattermost-smtp",
+      "description": "Настрою SMTP уведомления Mattermost и проверю доставку системных писем."
+    },
+    {
+      "title": "Настройка Zabbix Agent 2 на серверах",
+      "slug": "nastrojka-zabbix-agent2",
+      "description": "Установлю Zabbix Agent 2 и подключу серверы к системе мониторинга."
+    },
+    {
+      "title": "Настройка Zabbix шаблонов мониторинга",
+      "slug": "nastrojka-zabbix-template",
+      "description": "Настрою шаблоны Zabbix для контроля ресурсов и служб серверов."
+    },
+    {
+      "title": "Настройка Grafana LDAP авторизации",
+      "slug": "nastrojka-grafana-ldap",
+      "description": "Подключу Grafana к LDAP и настрою роли доступа для сотрудников."
+    },
+    {
+      "title": "Настройка Grafana SMTP уведомлений",
+      "slug": "nastrojka-grafana-smtp",
+      "description": "Настрою SMTP для Grafana и проверю отправку уведомлений о событиях."
+    },
+    {
+      "title": "Настройка Prometheus remote write",
+      "slug": "nastrojka-prometheus-remote-write",
+      "description": "Настрою Prometheus remote write для передачи метрик во внешнее хранилище."
+    },
+    {
+      "title": "Настройка Prometheus recording rules",
+      "slug": "nastrojka-prometheus-recording-rules",
+      "description": "Создам recording rules Prometheus для предварительного расчёта часто используемых метрик."
+    },
+    {
+      "title": "Настройка Loki retention",
+      "slug": "nastrojka-loki-retention",
+      "description": "Настрою срок хранения логов Loki и автоматическое удаление устаревших данных."
+    },
+    {
+      "title": "Настройка Graylog inputs",
+      "slug": "nastrojka-graylog-inputs",
+      "description": "Настрою Graylog inputs для приёма логов Linux, Windows и приложений."
+    },
+    {
+      "title": "Настройка Sentry SMTP и уведомлений",
+      "slug": "nastrojka-sentry-uvedomlenij",
+      "description": "Настрою уведомления Sentry о новых ошибках и назначение ответственных разработчиков."
+    },
+    {
+      "title": "Настройка Uptime Kuma Telegram уведомлений",
+      "slug": "uptime-kuma-telegram-uvedomleniya",
+      "description": "Подключу Telegram уведомления Uptime Kuma о сбоях и восстановлении сервисов."
+    },
+    {
+      "title": "Настройка резервного копирования конфигураций MikroTik",
+      "slug": "backup-konfiguracii-mikrotik",
+      "description": "Настрою автоматическое сохранение конфигураций MikroTik и архивирование резервных копий."
+    },
+    {
+      "title": "Настройка резервного копирования сетевого оборудования",
+      "slug": "backup-setevogo-oborudovaniya",
+      "description": "Настрою регулярное сохранение конфигураций маршрутизаторов и коммутаторов в архив."
+    },
+    {
+      "title": "Настройка LibreNMS мониторинга сети",
+      "slug": "nastrojka-librenms",
+      "description": "Разверну LibreNMS и подключу сетевые устройства для мониторинга состояния оборудования."
+    },
+    {
+      "title": "Настройка Observium мониторинга",
+      "slug": "nastrojka-observium",
+      "description": "Установлю Observium и настрою сбор SNMP метрик сетевого оборудования."
+    },
+    {
+      "title": "Настройка NetBox IPAM",
+      "slug": "nastrojka-netbox-ipam",
+      "description": "Разверну NetBox для учёта IP адресов, стоек, устройств и сетевых связей."
+    },
+    {
+      "title": "Настройка phpIPAM учёта адресов",
+      "slug": "nastrojka-phpipam",
+      "description": "Установлю phpIPAM и настрою управление подсетями и IP адресами организации."
+    },
+    {
+      "title": "Настройка Snipe-IT учёта техники",
+      "slug": "nastrojka-snipe-it",
+      "description": "Разверну Snipe-IT и настрою учёт компьютеров, лицензий и оборудования сотрудников."
+    },
+    {
+      "title": "Настройка GLPI инвентаризации через Agent",
+      "slug": "nastrojka-glpi-agent",
+      "description": "Подключу GLPI Agent к серверу инвентаризации и настрою сбор данных компьютеров."
+    },
+    {
+      "title": "Настройка OCS Inventory NG",
+      "slug": "nastrojka-ocs-inventory",
+      "description": "Разверну OCS Inventory NG и настрою автоматический сбор инвентаризации рабочих станций."
+    },
+    {
+      "title": "Настройка FleetDM управления устройствами",
+      "slug": "nastrojka-fleetdm",
+      "description": "Разверну FleetDM и настрою инвентаризацию устройств и выполнение osquery запросов."
+    },
+    {
+      "title": "Настройка osquery мониторинга рабочих станций",
+      "slug": "nastrojka-osquery",
+      "description": "Подключу osquery для сбора системной информации и контроля состояния компьютеров."
+    },
+    {
+      "title": "Настройка Wazuh SIEM сервера",
+      "slug": "nastrojka-wazuh-siem",
+      "description": "Разверну Wazuh и подключу агенты для сбора событий безопасности серверов."
+    },
+    {
+      "title": "Настройка Wazuh агентов Windows",
+      "slug": "nastrojka-wazuh-agent-windows",
+      "description": "Установлю Wazuh Agent на Windows компьютеры и настрою передачу событий безопасности."
+    },
+    {
+      "title": "Настройка OpenVAS сканирования уязвимостей",
+      "slug": "nastrojka-openvas",
+      "description": "Разверну OpenVAS и настрою плановые проверки серверов на известные уязвимости."
+    },
+    {
+      "title": "Настройка Greenbone Vulnerability Manager",
+      "slug": "nastrojka-greenbone-gvm",
+      "description": "Установлю Greenbone Vulnerability Manager и подготовлю расписание сканирования инфраструктуры."
+    },
+    {
+      "title": "Настройка CrowdSec защиты сервера",
+      "slug": "nastrojka-crowdsec",
+      "description": "Установлю CrowdSec и настрою обнаружение подозрительных подключений к серверу."
+    },
+    {
+      "title": "Настройка централизованного управления SSH ключами",
+      "slug": "centralizovannoe-upravlenie-ssh-klyuchami",
+      "description": "Настрою единый порядок выдачи, ротации и отзыва SSH ключей доступа."
+    },
+    {
+      "title": "Настройка ротации паролей серверных пользователей",
+      "slug": "rotaciya-parolej-servernyh-polzovatelej",
+      "description": "Настрою регламент смены паролей и контроль доступа серверных пользователей."
+    },
+    {
+      "title": "Настройка резервного администратора Linux",
+      "slug": "rezervnyj-administrator-linux",
+      "description": "Создам резервную административную учётную запись и проверю восстановление доступа."
+    },
+    {
+      "title": "Настройка политики sudo Linux",
+      "slug": "nastrojka-sudo-linux",
+      "description": "Настрою sudoers правила и ограничу административные команды для пользователей."
+    },
+    {
+      "title": "Настройка Linux PAM аутентификации",
+      "slug": "nastrojka-pam-linux",
+      "description": "Настрою PAM модули аутентификации и проверю требования доступа к системе."
+    },
+    {
+      "title": "Настройка централизованного входа Linux через LDAP",
+      "slug": "linux-ldap-login",
+      "description": "Подключу Linux серверы к LDAP каталогу для централизованной авторизации пользователей."
+    },
+    {
+      "title": "Настройка Kerberos аутентификации Linux",
+      "slug": "nastrojka-kerberos-linux",
+      "description": "Настрою Kerberos аутентификацию для Linux сервисов и корпоративных пользователей."
+    },
+    {
+      "title": "Настройка Samba интеграции с AD",
+      "slug": "samba-integraciya-active-directory",
+      "description": "Подключу Samba к Active Directory и настрою доступ к доменным ресурсам."
+    },
+    {
+      "title": "Настройка Linux audit логов",
+      "slug": "nastrojka-linux-audit-logov",
+      "description": "Настрою сбор audit логов и контроль важных системных действий Linux."
+    },
+    {
+      "title": "Настройка rsyslog централизованных логов",
+      "slug": "nastrojka-rsyslog-server",
+      "description": "Разверну rsyslog сервер и настрою приём журналов от удалённых Linux машин."
+    },
+    {
+      "title": "Настройка Logstash обработки логов",
+      "slug": "nastrojka-logstash",
+      "description": "Разверну Logstash и настрою фильтрацию и передачу логов в хранилище."
+    },
+    {
+      "title": "Настройка Filebeat отправки логов",
+      "slug": "nastrojka-filebeat",
+      "description": "Установлю Filebeat и настрою доставку системных журналов на сервер логирования."
+    },
+    {
+      "title": "Настройка Fluent Bit сбора логов",
+      "slug": "nastrojka-fluent-bit",
+      "description": "Настрою Fluent Bit для сбора, фильтрации и передачи журналов приложений."
+    },
+    {
+      "title": "Настройка Vector логирования",
+      "slug": "nastrojka-vector-log-agent",
+      "description": "Подключу Vector для обработки логов и отправки событий в централизованное хранилище."
+    },
+    {
+      "title": "Настройка S3 Glacier архивирования",
+      "slug": "nastrojka-s3-glacier-arhivirovaniya",
+      "description": "Настрою архивирование старых файлов в S3 Glacier с проверкой политики хранения."
+    },
+    {
+      "title": "Настройка Wasabi облачного хранилища",
+      "slug": "nastrojka-wasabi-storage",
+      "description": "Подключу Wasabi S3 хранилище и настрою передачу резервных копий серверов."
+    },
+    {
+      "title": "Настройка Backblaze B2 резервных копий",
+      "slug": "nastrojka-backblaze-b2-backup",
+      "description": "Подключу Backblaze B2 и настрою шифрованное резервное копирование данных сервера."
+    },
+    {
+      "title": "Настройка Synology NAS удалённого доступа",
+      "slug": "nastrojka-synology-nas",
+      "description": "Настрою Synology NAS, пользователей, общие папки и защищённый удалённый доступ."
+    },
+    {
+      "title": "Настройка TrueNAS хранилища",
+      "slug": "nastrojka-truenas",
+      "description": "Установлю TrueNAS и настрою storage pools, datasets и доступ к файлам."
+    },
+    {
+      "title": "Настройка TrueNAS SMB доступа",
+      "slug": "nastrojka-truenas-smb",
+      "description": "Настрою SMB общие папки TrueNAS и права доступа пользователей локальной сети."
+    },
+    {
+      "title": "Настройка TrueNAS репликации ZFS",
+      "slug": "nastrojka-truenas-zfs-replication",
+      "description": "Настрою ZFS replication между TrueNAS системами и проверю передачу snapshots."
+    },
+    {
+      "title": "Настройка OpenMediaVault NAS",
+      "slug": "nastrojka-openmediavault",
+      "description": "Установлю OpenMediaVault и настрою сетевые папки и дисковые массивы."
+    },
+    {
+      "title": "Настройка NUT мониторинга UPS",
+      "slug": "nastrojka-nut-ups",
+      "description": "Настрою NUT для мониторинга ИБП и автоматического завершения работы серверов."
+    },
+    {
+      "title": "Настройка apcupsd мониторинга ИБП",
+      "slug": "nastrojka-apcupsd-ups",
+      "description": "Подключу apcupsd к ИБП и настрою уведомления и безопасное выключение сервера."
+    },
+    {
+      "title": "Настройка IPMI удалённого управления сервером",
+      "slug": "nastrojka-ipmi-server",
+      "description": "Настрою IPMI доступ для удалённого контроля питания и консоли физического сервера."
+    },
+    {
+      "title": "Настройка iDRAC сервера Dell",
+      "slug": "nastrojka-idrac-dell",
+      "description": "Настрою iDRAC Dell для удалённого управления сервером и мониторинга аппаратного состояния."
+    },
+    {
+      "title": "Настройка iLO сервера HPE",
+      "slug": "nastrojka-ilo-hpe",
+      "description": "Настрою HPE iLO для удалённой консоли, контроля питания и аппаратных датчиков."
+    },
+    {
+      "title": "Настройка виртуального коммутатора Hyper-V",
+      "slug": "nastrojka-hyperv-virtual-switch",
+      "description": "Настрою Hyper-V Virtual Switch и сетевые подключения виртуальных машин."
+    },
+    {
+      "title": "Настройка Hyper-V Replica",
+      "slug": "nastrojka-hyperv-replica",
+      "description": "Настрою Hyper-V Replica для репликации виртуальных машин на резервный сервер."
+    },
+    {
+      "title": "Настройка Hyper-V checkpoints",
+      "slug": "nastrojka-hyperv-checkpoints",
+      "description": "Настрою контрольные точки Hyper-V и проверю безопасное восстановление состояния виртуальной машины."
+    },
+    {
+      "title": "Настройка VMware vCenter",
+      "slug": "nastrojka-vmware-vcenter",
+      "description": "Настрою VMware vCenter для централизованного управления ESXi хостами и виртуальными машинами."
+    },
+    {
+      "title": "Настройка VMware vMotion",
+      "slug": "nastrojka-vmware-vmotion",
+      "description": "Настрою vMotion для переноса работающих виртуальных машин между ESXi хостами."
+    },
+    {
+      "title": "Настройка VMware datastore",
+      "slug": "nastrojka-vmware-datastore",
+      "description": "Настрою VMware datastore и подключение хранилища к ESXi хостам."
+    },
+    {
+      "title": "Настройка VMware snapshots и консолидации",
+      "slug": "nastrojka-vmware-snapshots",
+      "description": "Проверю VMware snapshots и настрою корректную консолидацию дисков виртуальных машин."
+    },
+    {
+      "title": "Настройка Proxmox VLAN сети",
+      "slug": "nastrojka-proxmox-vlan",
+      "description": "Настрою VLAN сеть Proxmox и подключение виртуальных машин к нужным сегментам."
+    },
+    {
+      "title": "Настройка Proxmox Ceph сети",
+      "slug": "nastrojka-proxmox-ceph-network",
+      "description": "Настрою отдельные сетевые интерфейсы Proxmox для Ceph и управления кластером."
+    },
+    {
+      "title": "Настройка Proxmox HA группы",
+      "slug": "nastrojka-proxmox-ha-group",
+      "description": "Настрою HA группу Proxmox и проверю автоматический перезапуск виртуальных машин."
+    },
+    {
+      "title": "Настройка Proxmox уведомлений",
+      "slug": "nastrojka-proxmox-notifications",
+      "description": "Настрою уведомления Proxmox о резервном копировании, ошибках и состоянии узлов."
+    },
+    {
+      "title": "Настройка Proxmox storage migration",
+      "slug": "nastrojka-proxmox-storage-migration",
+      "description": "Перенесу диски виртуальных машин Proxmox между хранилищами с проверкой запуска."
+    },
+    {
+      "title": "Настройка Proxmox firewall",
+      "slug": "nastrojka-proxmox-firewall",
+      "description": "Настрою Proxmox Firewall для ограничения доступа к узлам и виртуальным машинам."
+    },
+    {
+      "title": "Настройка Proxmox cloud-init шаблонов",
+      "slug": "nastrojka-proxmox-cloud-init",
+      "description": "Подготовлю cloud-init шаблоны Proxmox для быстрого создания виртуальных серверов."
+    },
+    {
+      "title": "Настройка Proxmox автоматического клонирования",
+      "slug": "nastrojka-proxmox-cloning",
+      "description": "Настрою шаблоны и клонирование виртуальных машин Proxmox для типовых серверов."
+    },
+    {
+      "title": "Настройка мониторинга Proxmox через Prometheus",
+      "slug": "monitoring-proxmox-prometheus",
+      "description": "Подключу метрики Proxmox к Prometheus и создам панели контроля узлов."
+    },
+    {
+      "title": "Настройка резервного копирования виртуальных машин VMware",
+      "slug": "backup-vmware-virtual-machines",
+      "description": "Настрою резервное копирование VMware виртуальных машин и проверю восстановление."
+    },
+    {
+      "title": "Настройка миграции виртуальных машин VMware в Proxmox",
+      "slug": "migraciya-vmware-v-proxmox",
+      "description": "Подготовлю перенос виртуальных машин VMware в Proxmox и проверю работу систем."
+    },
+    {
+      "title": "Настройка миграции Hyper-V в Proxmox",
+      "slug": "migraciya-hyperv-v-proxmox",
+      "description": "Перенесу виртуальные машины Hyper-V в Proxmox с проверкой дисков и сети."
+    },
+    {
+      "title": "Настройка облачного VPS для Git сервера",
+      "slug": "oblachnyj-vps-git-server",
+      "description": "Подготовлю VPS для Git сервера и настрою доступ разработчиков по SSH."
+    },
+    {
+      "title": "Настройка приватного PyPI сервера",
+      "slug": "nastrojka-private-pypi",
+      "description": "Разверну приватный PyPI registry для хранения внутренних Python пакетов."
+    },
+    {
+      "title": "Настройка Verdaccio npm registry",
+      "slug": "nastrojka-verdaccio-npm",
+      "description": "Разверну Verdaccio и настрою приватный npm registry для команды разработчиков."
+    },
+    {
+      "title": "Настройка Sonatype Nexus Repository",
+      "slug": "nastrojka-nexus-repository",
+      "description": "Разверну Nexus Repository для хранения Docker, Maven, npm и других артефактов."
+    },
+    {
+      "title": "Настройка JFrog Artifactory",
+      "slug": "nastrojka-jfrog-artifactory",
+      "description": "Настрою JFrog Artifactory для хранения сборок и управления пакетами проекта."
+    },
+    {
+      "title": "Настройка MinIO для хранения медиа WordPress",
+      "slug": "minio-media-wordpress",
+      "description": "Подключу MinIO для хранения медиафайлов WordPress и проверю загрузку изображений."
+    },
+    {
+      "title": "Настройка внешнего S3 хранилища WooCommerce",
+      "slug": "s3-hranilishche-woocommerce",
+      "description": "Настрою внешнее S3 хранилище для файлов и цифровых товаров WooCommerce."
+    },
+    {
+      "title": "Настройка CDN Cloudflare R2",
+      "slug": "nastrojka-cloudflare-r2",
+      "description": "Подключу Cloudflare R2 для хранения файлов и выдачи объектов через CDN."
+    },
+    {
+      "title": "Настройка Cloudflare Workers для API",
+      "slug": "nastrojka-cloudflare-workers-api",
+      "description": "Настрою Cloudflare Workers для обработки API запросов и простых серверных функций."
+    },
+    {
+      "title": "Настройка Cloudflare Pages для сайта",
+      "slug": "nastrojka-cloudflare-pages",
+      "description": "Опубликую статический сайт через Cloudflare Pages и подключу пользовательский домен."
+    },
+    {
+      "title": "Настройка Cloudflare Tunnel для сервера",
+      "slug": "nastrojka-cloudflare-tunnel",
+      "description": "Настрою Cloudflare Tunnel для безопасной публикации локального сервиса без открытых портов."
+    },
+    {
+      "title": "Настройка Cloudflare Access для панели",
+      "slug": "nastrojka-cloudflare-access",
+      "description": "Настрою Cloudflare Access для защиты административной панели дополнительной авторизацией."
+    },
+    {
+      "title": "Настройка Cloudflare WAF правил",
+      "slug": "nastrojka-cloudflare-waf",
+      "description": "Настрою WAF правила Cloudflare для фильтрации нежелательных запросов к сайту."
+    },
+    {
+      "title": "Настройка Cloudflare Cache Rules",
+      "slug": "nastrojka-cloudflare-cache-rules",
+      "description": "Настрою Cache Rules Cloudflare для разных типов страниц и статических ресурсов."
+    },
+    {
+      "title": "Настройка Cloudflare Page Rules перенаправлений",
+      "slug": "nastrojka-cloudflare-redirect-rules",
+      "description": "Настрою правила перенаправления Cloudflare для доменов, путей и старых URL."
+    },
+    {
+      "title": "Настройка Cloudflare DNSSEC",
+      "slug": "nastrojka-cloudflare-dnssec",
+      "description": "Включу DNSSEC Cloudflare и проверю корректность подписания DNS зоны."
+    },
+    {
+      "title": "Настройка Cloudflare Load Balancing",
+      "slug": "nastrojka-cloudflare-load-balancing",
+      "description": "Настрою Cloudflare Load Balancing и проверки состояния серверов приложения."
+    },
+    {
+      "title": "Настройка Cloudflare Email Routing",
+      "slug": "nastrojka-cloudflare-email-routing",
+      "description": "Настрою Cloudflare Email Routing для пересылки писем на рабочие адреса."
+    },
+    {
+      "title": "Настройка доменной почты Google Workspace",
+      "slug": "nastrojka-google-workspace-mail-domain",
+      "description": "Подключу домен к Google Workspace и настрою почтовые записи и пользователей."
+    },
+    {
+      "title": "Настройка Google Workspace групп",
+      "slug": "nastrojka-google-workspace-groups",
+      "description": "Создам группы Google Workspace и настрою распределение писем между сотрудниками."
+    },
+    {
+      "title": "Настройка Google Drive общего доступа",
+      "slug": "nastrojka-google-drive-shared-access",
+      "description": "Настрою общие диски Google Drive и права доступа сотрудников организации."
+    },
+    {
+      "title": "Настройка Google Workspace миграции почты",
+      "slug": "migraciya-pochty-google-workspace",
+      "description": "Перенесу корпоративную почту в Google Workspace и проверю сохранность писем."
+    },
+    {
+      "title": "Настройка резервного копирования Google Drive",
+      "slug": "backup-google-drive",
+      "description": "Настрою резервное копирование Google Drive и проверю восстановление файлов."
+    },
+    {
+      "title": "Настройка OAuth доступа Google Workspace",
+      "slug": "nastrojka-oauth-google-workspace",
+      "description": "Настрою OAuth приложение и доступ к API Google Workspace для интеграции."
+    },
+    {
+      "title": "Настройка SMTP relay Google Workspace",
+      "slug": "nastrojka-google-smtp-relay",
+      "description": "Настрою SMTP relay Google Workspace для отправки уведомлений с сайта и сервера."
+    },
+    {
+      "title": "Настройка Microsoft Teams уведомлений",
+      "slug": "nastrojka-teams-uvedomlenij",
+      "description": "Подключу уведомления Microsoft Teams от сайта, сервера или системы мониторинга."
+    },
+    {
+      "title": "Настройка SharePoint прав доступа",
+      "slug": "nastrojka-sharepoint-prav-dostupa",
+      "description": "Настрою библиотеки SharePoint и разграничение прав доступа групп сотрудников."
+    },
+    {
+      "title": "Настройка OneDrive синхронизации Windows",
+      "slug": "nastrojka-onedrive-windows-sync",
+      "description": "Настрою клиент OneDrive на Windows и проверю синхронизацию рабочих файлов."
+    },
+    {
+      "title": "Настройка Microsoft 365 DKIM",
+      "slug": "nastrojka-microsoft365-dkim",
+      "description": "Включу DKIM для домена Microsoft 365 и проверю подпись исходящей почты."
+    },
+    {
+      "title": "Настройка Microsoft 365 SPF и DMARC",
+      "slug": "nastrojka-microsoft365-spf-dmarc",
+      "description": "Настрою SPF и DMARC для Microsoft 365 и проверю почтовую аутентификацию."
+    },
+    {
+      "title": "Настройка Microsoft 365 архивирования почты",
+      "slug": "nastrojka-microsoft365-archive",
+      "description": "Настрою архивирование почтовых ящиков Microsoft 365 и политику хранения сообщений."
+    },
+    {
+      "title": "Настройка Microsoft 365 общих почтовых ящиков",
+      "slug": "nastrojka-microsoft365-shared-mailbox",
+      "description": "Создам shared mailboxes Microsoft 365 и настрою делегированный доступ сотрудников."
+    },
+    {
+      "title": "Настройка Microsoft 365 групп безопасности",
+      "slug": "nastrojka-microsoft365-security-groups",
+      "description": "Создам группы безопасности Microsoft 365 и настрою назначение прав пользователям."
+    },
+    {
+      "title": "Настройка Microsoft 365 журналов аудита",
+      "slug": "nastrojka-microsoft365-audit-logs",
+      "description": "Включу аудит Microsoft 365 и настрою поиск событий действий пользователей."
+    },
+    {
+      "title": "Настройка Microsoft 365 политики хранения",
+      "slug": "nastrojka-microsoft365-retention",
+      "description": "Настрою политики хранения Microsoft 365 для почты и корпоративных документов."
+    },
+    {
+      "title": "Настройка Microsoft 365 DKIM ротации",
+      "slug": "nastrojka-microsoft365-dkim-rotation",
+      "description": "Обновлю DKIM конфигурацию Microsoft 365 и проверю публикацию DNS селекторов."
+    },
+    {
+      "title": "Настройка Microsoft Defender for Office 365",
+      "slug": "nastrojka-defender-office365",
+      "description": "Настрою базовые политики Microsoft Defender for Office 365 для защиты почты."
+    },
+    {
+      "title": "Настройка Microsoft Defender Endpoint",
+      "slug": "nastrojka-defender-endpoint",
+      "description": "Подключу устройства к Microsoft Defender for Endpoint и проверю статусы защиты."
+    },
+    {
+      "title": "Настройка Microsoft 365 устройств и лицензий",
+      "slug": "nastrojka-microsoft365-licenzii",
+      "description": "Проверю лицензии Microsoft 365 и настрою назначение сервисов пользователям организации."
+    },
+    {
+      "title": "Настройка удалённой поддержки Windows через Quick Assist",
+      "slug": "nastrojka-quick-assist-windows",
+      "description": "Настрою использование Quick Assist для удалённой помощи пользователям Windows."
+    },
+    {
+      "title": "Настройка Windows Sandbox",
+      "slug": "nastrojka-windows-sandbox",
+      "description": "Включу Windows Sandbox и проверю изолированный запуск тестовых приложений."
+    },
+    {
+      "title": "Настройка Hyper-V виртуального рабочего места",
+      "slug": "nastrojka-hyperv-workstation",
+      "description": "Настрою Hyper-V на рабочей станции и подготовлю виртуальное окружение для тестирования."
+    },
+    {
+      "title": "Настройка WSL2 для разработчиков",
+      "slug": "nastrojka-wsl2-razrabotchikov",
+      "description": "Настрою WSL2, Linux дистрибутив и интеграцию с инструментами разработки Windows."
+    },
+    {
+      "title": "Настройка Windows OpenSSH Server",
+      "slug": "nastrojka-windows-openssh-server",
+      "description": "Включу OpenSSH Server Windows и настрою ключевую аутентификацию и доступ."
+    },
+    {
+      "title": "Настройка PowerShell скриптов по расписанию",
+      "slug": "powershell-scripts-schedule",
+      "description": "Настрою запуск PowerShell скриптов по расписанию через Task Scheduler Windows."
+    },
+    {
+      "title": "Автоматизация Windows задач PowerShell",
+      "slug": "avtomatizaciya-windows-powershell",
+      "description": "Создам PowerShell сценарии для автоматизации администрирования и обработки файлов Windows."
+    },
+    {
+      "title": "Настройка Windows Event Forwarding",
+      "slug": "nastrojka-windows-event-forwarding",
+      "description": "Настрою централизованный сбор событий Windows через Windows Event Forwarding."
+    },
+    {
+      "title": "Настройка Windows LAPS",
+      "slug": "nastrojka-windows-laps",
+      "description": "Настрою Windows LAPS для автоматического управления локальными паролями администраторов."
+    },
+    {
+      "title": "Настройка BitLocker централизованно",
+      "slug": "nastrojka-bitlocker-centralno",
+      "description": "Настрою BitLocker и централизованное хранение ключей восстановления устройств."
+    },
+    {
+      "title": "Настройка Windows Defender Firewall политик",
+      "slug": "nastrojka-windows-defender-firewall",
+      "description": "Настрою политики Windows Defender Firewall для рабочих станций и серверов организации."
+    },
+    {
+      "title": "Настройка Windows Performance Monitor",
+      "slug": "nastrojka-windows-performance-monitor",
+      "description": "Настрою сбор счётчиков Performance Monitor для диагностики нагрузки Windows Server."
+    },
+    {
+      "title": "Настройка Windows Task Scheduler служб",
+      "slug": "nastrojka-windows-task-scheduler",
+      "description": "Настрою планировщик задач Windows для регулярного запуска административных скриптов."
+    },
+    {
+      "title": "Настройка Windows Server Storage Spaces",
+      "slug": "nastrojka-windows-storage-spaces",
+      "description": "Настрою Storage Spaces Windows Server и проверю состояние виртуальных дисков."
+    },
+    {
+      "title": "Настройка Windows Server Deduplication",
+      "slug": "nastrojka-windows-deduplication",
+      "description": "Включу дедупликацию данных Windows Server и проверю экономию дискового пространства."
+    },
+    {
+      "title": "Настройка Windows Server Failover Cluster",
+      "slug": "nastrojka-windows-failover-cluster",
+      "description": "Настрою Failover Cluster Windows Server для повышения доступности серверных ролей."
+    },
+    {
+      "title": "Настройка Windows Server Hyper-V Replica Broker",
+      "slug": "nastrojka-hyperv-replica-broker",
+      "description": "Настрою Hyper-V Replica Broker для управления репликацией виртуальных машин."
+    },
+    {
+      "title": "Настройка Windows Server NPS RADIUS",
+      "slug": "nastrojka-windows-nps-radius",
+      "description": "Настрою Network Policy Server Windows для централизованной RADIUS авторизации."
+    },
+    {
+      "title": "Настройка Windows Server Remote Desktop Gateway",
+      "slug": "nastrojka-rd-gateway",
+      "description": "Настрою RD Gateway для защищённого доступа к удалённым рабочим столам через HTTPS."
+    },
+    {
+      "title": "Настройка Windows Server Remote Desktop Licensing",
+      "slug": "nastrojka-rds-licensing",
+      "description": "Настрою RDS Licensing и проверю корректную выдачу лицензий удалённым пользователям."
+    },
+    {
+      "title": "Настройка Windows Server Print Server",
+      "slug": "nastrojka-windows-print-server",
+      "description": "Разверну Print Server Windows и настрою публикацию сетевых принтеров для сотрудников."
+    },
+    {
+      "title": "Настройка Windows Server IIS сайтов",
+      "slug": "nastrojka-windows-iis-sites",
+      "description": "Настрою IIS сайты, пулы приложений, домены и SSL сертификаты Windows Server."
+    },
+    {
+      "title": "Настройка IIS Application Pool",
+      "slug": "nastrojka-iis-application-pool",
+      "description": "Настрою IIS Application Pool, параметры запуска и изоляцию веб-приложений."
+    },
+    {
+      "title": "Настройка IIS URL Rewrite",
+      "slug": "nastrojka-iis-url-rewrite",
+      "description": "Настрою URL Rewrite в IIS для перенаправлений и правил маршрутизации сайта."
+    },
+    {
+      "title": "Настройка IIS reverse proxy ARR",
+      "slug": "nastrojka-iis-arr-reverse-proxy",
+      "description": "Настрою IIS ARR в качестве reverse proxy для внутренних веб-приложений."
+    },
+    {
+      "title": "Настройка SQL Server Express",
+      "slug": "nastrojka-sql-server-express",
+      "description": "Установлю SQL Server Express и настрою базу данных для приложения."
+    },
+    {
+      "title": "Настройка Microsoft SQL Server резервного копирования",
+      "slug": "backup-microsoft-sql-server",
+      "description": "Настрою резервное копирование Microsoft SQL Server и проверю восстановление базы."
+    },
+    {
+      "title": "Настройка SQL Server пользователей и ролей",
+      "slug": "nastrojka-sql-server-roles",
+      "description": "Создам пользователей SQL Server и настрою роли и права доступа."
+    },
+    {
+      "title": "Настройка SQL Server удалённых подключений",
+      "slug": "nastrojka-sql-server-remote-access",
+      "description": "Настрою удалённые подключения SQL Server и проверю сетевой доступ приложений."
+    },
+    {
+      "title": "Настройка SQL Server Agent заданий",
+      "slug": "nastrojka-sql-server-agent",
+      "description": "Настрою SQL Server Agent jobs для автоматического выполнения задач обслуживания базы."
+    },
+    {
+      "title": "Настройка SQL Server индексов",
+      "slug": "nastrojka-sql-server-indeksov",
+      "description": "Проверю запросы SQL Server и настрою индексы для ускорения выборок."
+    },
+    {
+      "title": "Настройка SQL Server мониторинга",
+      "slug": "nastrojka-sql-server-monitoring",
+      "description": "Настрою мониторинг SQL Server и сбор показателей производительности базы данных."
+    },
+    {
+      "title": "Перенос базы Microsoft SQL Server",
+      "slug": "perenos-microsoft-sql-server",
+      "description": "Перенесу базу Microsoft SQL Server на другой сервер с проверкой целостности."
+    },
+    {
+      "title": "Настройка SQLite для веб-приложения",
+      "slug": "nastrojka-sqlite-veb-prilozheniya",
+      "description": "Настрою SQLite базу для веб-приложения и проверю хранение и резервирование данных."
+    },
+    {
+      "title": "Миграция SQLite в PostgreSQL",
+      "slug": "migraciya-sqlite-postgresql",
+      "description": "Перенесу данные SQLite в PostgreSQL с преобразованием схемы и проверкой записей."
+    },
+    {
+      "title": "Настройка базы данных для Django",
+      "slug": "nastrojka-bazy-dannyh-django",
+      "description": "Подключу базу данных к Django и настрою миграции и пользователя приложения."
+    },
+    {
+      "title": "Настройка базы данных для Laravel",
+      "slug": "nastrojka-bazy-dannyh-laravel",
+      "description": "Подключу MySQL или PostgreSQL к Laravel и проверю миграции приложения."
+    },
+    {
+      "title": "Настройка базы данных для Node.js",
+      "slug": "nastrojka-bazy-dannyh-nodejs",
+      "description": "Подключу PostgreSQL или MySQL к Node.js приложению и настрою пул соединений."
+    },
+    {
+      "title": "Настройка базы данных для WordPress",
+      "slug": "nastrojka-bazy-dannyh-wordpress",
+      "description": "Проверю подключение WordPress к базе данных и настрою параметры соединения."
+    },
+    {
+      "title": "Настройка базы данных для 1С",
+      "slug": "nastrojka-bazy-dannyh-1c",
+      "description": "Подготовлю SQL сервер для базы 1С и проверю параметры подключения."
+    },
+    {
+      "title": "Оптимизация запросов Microsoft SQL Server",
+      "slug": "optimizaciya-zaprosov-mssql",
+      "description": "Проанализирую планы выполнения SQL Server и оптимизирую медленные запросы базы."
+    },
+    {
+      "title": "Настройка PostgreSQL логической репликации",
+      "slug": "nastrojka-postgresql-logicheskaya-replikaciya",
+      "description": "Настрою логическую репликацию PostgreSQL для передачи выбранных таблиц между базами."
+    },
+    {
+      "title": "Настройка PostgreSQL pgBouncer TLS",
+      "slug": "nastrojka-pgbouncer-tls",
+      "description": "Настрою TLS соединения PgBouncer и проверю защищённое подключение приложений."
+    },
+    {
+      "title": "Настройка Redis TLS доступа",
+      "slug": "nastrojka-redis-tls",
+      "description": "Включу TLS для Redis и проверю шифрованное подключение клиентов приложения."
+    },
+    {
+      "title": "Настройка MongoDB Atlas подключения",
+      "slug": "nastrojka-mongodb-atlas",
+      "description": "Подключу приложение к MongoDB Atlas и настрою сетевые правила и пользователей."
+    },
+    {
+      "title": "Настройка MongoDB Atlas резервных копий",
+      "slug": "nastrojka-mongodb-atlas-backup",
+      "description": "Настрою политики резервного копирования MongoDB Atlas и проверю восстановление данных."
+    },
+    {
+      "title": "Настройка ClickHouse интеграции с Grafana",
+      "slug": "nastrojka-clickhouse-grafana",
+      "description": "Подключу ClickHouse к Grafana и подготовлю панели аналитики по данным."
+    },
+    {
+      "title": "Настройка Metabase подключения PostgreSQL",
+      "slug": "metabase-postgresql",
+      "description": "Подключу PostgreSQL к Metabase и настрою права просмотра аналитических данных."
+    },
+    {
+      "title": "Настройка Superset подключения ClickHouse",
+      "slug": "superset-clickhouse",
+      "description": "Подключу ClickHouse к Apache Superset и настрою датасеты для отчётов."
+    },
+    {
+      "title": "Настройка Airflow на VPS",
+      "slug": "nastrojka-apache-airflow-vps",
+      "description": "Разверну Apache Airflow и настрою расписание выполнения ETL задач."
+    },
+    {
+      "title": "Настройка Prefect оркестрации Python",
+      "slug": "nastrojka-prefect-python",
+      "description": "Разверну Prefect и настрою управление и мониторинг Python workflow."
+    },
+    {
+      "title": "Настройка Dagster для ETL процессов",
+      "slug": "nastrojka-dagster-etl",
+      "description": "Настрою Dagster для оркестрации ETL процессов и контроля выполнения задач."
+    },
+    {
+      "title": "Настройка Apache NiFi потоков данных",
+      "slug": "nastrojka-apache-nifi",
+      "description": "Разверну Apache NiFi и настрою потоки передачи и преобразования данных."
+    },
+    {
+      "title": "Настройка ETL загрузки данных в PostgreSQL",
+      "slug": "etl-zagruzka-postgresql",
+      "description": "Создам ETL процесс загрузки данных в PostgreSQL с проверкой и журналированием."
+    },
+    {
+      "title": "Настройка импорта XML каталога на сайт",
+      "slug": "import-xml-kataloga-sajta",
+      "description": "Настрою регулярный импорт XML каталога на сайт с обновлением товаров и цен."
+    },
+    {
+      "title": "Настройка синхронизации остатков товаров",
+      "slug": "sinhronizaciya-ostatkov-tovarov",
+      "description": "Настрою синхронизацию товарных остатков между сайтом, складом и учётной системой."
+    },
+    {
+      "title": "Настройка автоматической выгрузки прайсов",
+      "slug": "avtomaticheskaya-vygruzka-prajsov",
+      "description": "Настрою автоматическое формирование и отправку прайс-листов в CSV или Excel."
+    },
+    {
+      "title": "Разработка сервиса мониторинга цен поставщиков",
+      "slug": "servis-monitoringa-cen-postavshchikov",
+      "description": "Создам сервис сравнения прайсов поставщиков и уведомления об изменениях стоимости."
+    },
+    {
+      "title": "Настройка автоматической обработки заказов сайта",
+      "slug": "avtoobrabotka-zakazov-sajta",
+      "description": "Настрою автоматическую обработку заказов сайта и передачу данных ответственным сотрудникам."
+    },
+    {
+      "title": "Настройка интеграции сайта с ERP",
+      "slug": "integraciya-sajta-erp",
+      "description": "Подключу сайт к ERP системе для обмена заказами, товарами и остатками."
+    },
+    {
+      "title": "Настройка интеграции сайта с WMS",
+      "slug": "integraciya-sajta-wms",
+      "description": "Настрою обмен сайта с WMS системой для синхронизации складских операций."
+    },
+    {
+      "title": "Настройка интеграции сайта с TMS",
+      "slug": "integraciya-sajta-tms",
+      "description": "Подключу сайт к TMS для передачи данных доставки и статусов перевозки."
+    },
+    {
+      "title": "Настройка интеграции с API банка",
+      "slug": "integraciya-api-banka",
+      "description": "Настрою обмен с банковским API для получения статусов платежей и выписок."
+    },
+    {
+      "title": "Настройка интеграции с API онлайн-кассы",
+      "slug": "integraciya-api-onlajn-kassy",
+      "description": "Подключу API онлайн-кассы и проверю передачу чеков по операциям сайта."
+    },
+    {
+      "title": "Настройка интеграции с API телефонии",
+      "slug": "integraciya-api-telefonii",
+      "description": "Подключу API телефонии для передачи звонков и контактов в CRM."
+    },
+    {
+      "title": "Настройка интеграции с API службы SMS",
+      "slug": "integraciya-api-sms",
+      "description": "Подключу SMS API для отправки уведомлений и кодов подтверждения пользователям."
+    },
+    {
+      "title": "Настройка интеграции с API мессенджера",
+      "slug": "integraciya-api-messengera",
+      "description": "Настрою API мессенджера для отправки сообщений и получения событий приложения."
+    },
+    {
+      "title": "Настройка очереди заявок сайта",
+      "slug": "nastrojka-ocheredi-zayavok-sajta",
+      "description": "Настрою очередь обработки заявок сайта и распределение обращений между менеджерами."
+    },
+    {
+      "title": "Настройка уведомлений о новых заказах",
+      "slug": "uvedomleniya-novyh-zakazov",
+      "description": "Настрою уведомления о новых заказах сайта по электронной почте и Telegram."
+    },
+    {
+      "title": "Настройка экспорта заказов в Excel",
+      "slug": "eksport-zakazov-excel",
+      "description": "Настрою выгрузку заказов в Excel с нужными полями и фильтрами."
+    },
+    {
+      "title": "Настройка экспорта каталога товаров CSV",
+      "slug": "eksport-kataloga-tovarov-csv",
+      "description": "Подготовлю экспорт каталога товаров в CSV для передачи партнёрам и площадкам."
+    },
+    {
+      "title": "Настройка импорта прайс-листов поставщиков",
+      "slug": "import-prajs-listov-postavshchikov",
+      "description": "Настрою импорт прайс-листов поставщиков и сопоставление артикулов и цен."
+    },
+    {
+      "title": "Настройка автоматического обновления цен сайта",
+      "slug": "avtoobnovlenie-cen-sajta",
+      "description": "Настрою автоматическое обновление цен сайта из внешнего источника данных."
+    },
+    {
+      "title": "Настройка автоматической синхронизации каталога",
+      "slug": "avtosinhronizaciya-kataloga",
+      "description": "Настрою синхронизацию каталога между сайтом и внешней системой учёта."
+    },
+    {
+      "title": "Настройка проверки целостности данных API",
+      "slug": "proverka-celостnosti-api-dannyh",
+      "description": "Добавлю проверки целостности данных при обмене между сайтом и внешними API."
+    },
+    {
+      "title": "Настройка очереди RabbitMQ для интеграций",
+      "slug": "rabbitmq-ochered-integracii",
+      "description": "Настрою RabbitMQ очередь для надёжной передачи данных между интегрируемыми системами."
+    },
+    {
+      "title": "Настройка повторной отправки webhook",
+      "slug": "povtornaya-otpravka-webhook",
+      "description": "Настрою повторную отправку webhook при временных ошибках и журналирование доставки."
+    },
+    {
+      "title": "Настройка защиты API ключей",
+      "slug": "zashchita-api-klyuchej",
+      "description": "Настрою безопасное хранение API ключей и ограничение прав интеграционных пользователей."
+    },
+    {
+      "title": "Настройка ротации API токенов",
+      "slug": "rotaciya-api-tokenov",
+      "description": "Настрою ротацию API токенов и обновление секретов без остановки сервиса."
+    },
+    {
+      "title": "Настройка мониторинга API ошибок",
+      "slug": "monitoring-api-oshibok",
+      "description": "Настрою мониторинг HTTP ошибок API и уведомления при росте отказов."
+    },
+    {
+      "title": "Настройка документации интеграции API",
+      "slug": "dokumentaciya-integracii-api",
+      "description": "Подготовлю техническую документацию интеграции API с примерами запросов и ответов."
+    },
+    {
+      "title": "Настройка тестового API стенда",
+      "slug": "nastrojka-testovogo-api-stenda",
+      "description": "Подготовлю тестовый API стенд для проверки интеграций до запуска в production."
+    },
+    {
+      "title": "Настройка sandbox платёжного шлюза",
+      "slug": "nastrojka-sandbox-platezhnogo-shlyuza",
+      "description": "Подключу sandbox платёжного шлюза и проверю тестовые сценарии оплаты."
+    },
+    {
+      "title": "Настройка вебхуков WooCommerce",
+      "slug": "nastrojka-webhook-woocommerce",
+      "description": "Настрою webhook WooCommerce для передачи событий заказов во внешние системы."
+    },
+    {
+      "title": "Настройка автоматизации Make webhook",
+      "slug": "nastrojka-make-webhook",
+      "description": "Подключу webhook Make к сайту и настрою передачу данных в сценарии автоматизации."
+    },
+    {
+      "title": "Настройка интеграции Zapier с сайтом",
+      "slug": "integraciya-zapier-sajta",
+      "description": "Подключу Zapier к сайту и настрою автоматическую передачу новых заявок."
+    },
+    {
+      "title": "Настройка n8n интеграции с CRM",
+      "slug": "n8n-integraciya-crm",
+      "description": "Настрою workflow n8n для передачи лидов и обновления данных в CRM."
+    },
+    {
+      "title": "Настройка n8n обработки почты",
+      "slug": "n8n-obrabotka-pochty",
+      "description": "Создам workflow n8n для обработки входящих писем и маршрутизации обращений."
+    },
+    {
+      "title": "Настройка n8n синхронизации таблиц",
+      "slug": "n8n-sinhronizaciya-tablic",
+      "description": "Настрою n8n для регулярной синхронизации данных между таблицами и сервисами."
+    },
+    {
+      "title": "Настройка n8n резервных копий",
+      "slug": "n8n-rezervnye-kopii",
+      "description": "Настрою автоматический workflow n8n для создания и отправки резервных копий."
+    },
+    {
+      "title": "Настройка Node-RED интеграции MQTT",
+      "slug": "node-red-mqtt-integraciya",
+      "description": "Подключу Node-RED к MQTT брокеру и настрою обработку событий устройств."
+    },
+    {
+      "title": "Настройка Node-RED Telegram уведомлений",
+      "slug": "node-red-telegram-uvedomleniya",
+      "description": "Настрою Node-RED для отправки Telegram уведомлений по заданным событиям."
+    },
+    {
+      "title": "Настройка Home Assistant MQTT интеграции",
+      "slug": "home-assistant-mqtt",
+      "description": "Подключу MQTT устройства к Home Assistant и проверю получение состояний."
+    },
+    {
+      "title": "Настройка Home Assistant резервного копирования",
+      "slug": "home-assistant-backup",
+      "description": "Настрою автоматические резервные копии Home Assistant и проверку восстановления конфигурации."
+    },
+    {
+      "title": "Настройка Home Assistant удалённого доступа",
+      "slug": "home-assistant-remote-access",
+      "description": "Настрою безопасный удалённый доступ к Home Assistant через домен и HTTPS."
+    },
+    {
+      "title": "Настройка Mosquitto TLS и пользователей",
+      "slug": "mosquitto-tls-users",
+      "description": "Настрою TLS, пароли и права пользователей Mosquitto MQTT брокера."
+    },
+    {
+      "title": "Настройка Zigbee2MQTT на сервере",
+      "slug": "nastrojka-zigbee2mqtt-server",
+      "description": "Разверну Zigbee2MQTT и подключу координатор для управления устройствами умного дома."
+    },
+    {
+      "title": "Настройка Z-Wave JS UI",
+      "slug": "nastrojka-zwave-js-ui",
+      "description": "Разверну Z-Wave JS UI и настрою подключение контроллера и устройств."
+    },
+    {
+      "title": "Настройка Frigate видеонаблюдения",
+      "slug": "nastrojka-frigate-nvr",
+      "description": "Разверну Frigate NVR и настрою запись и обнаружение событий видеонаблюдения."
+    },
+    {
+      "title": "Настройка Shinobi видеонаблюдения",
+      "slug": "nastrojka-shinobi-nvr",
+      "description": "Установлю Shinobi NVR и настрою камеры, хранение записей и уведомления."
+    },
+    {
+      "title": "Настройка MotionEye камер",
+      "slug": "nastrojka-motioneye",
+      "description": "Разверну MotionEye и подключу сетевые камеры для наблюдения и записи."
+    },
+    {
+      "title": "Настройка Scrypted сервера камер",
+      "slug": "nastrojka-scrypted-server",
+      "description": "Разверну Scrypted и настрою интеграцию IP камер с домашней системой."
+    },
+    {
+      "title": "Настройка RTSP прокси сервера",
+      "slug": "nastrojka-rtsp-proxy",
+      "description": "Настрою RTSP proxy для стабильной передачи видеопотоков с IP камер."
+    },
+    {
+      "title": "Настройка Nginx RTMP сервера",
+      "slug": "nastrojka-nginx-rtmp",
+      "description": "Разверну Nginx RTMP и настрою приём и трансляцию видеопотоков."
+    },
+    {
+      "title": "Настройка SRT видеотрансляции",
+      "slug": "nastrojka-srt-streaming",
+      "description": "Настрою SRT передачу видеопотока и проверю соединение между источником и сервером."
+    },
+    {
+      "title": "Настройка FFmpeg обработки видео",
+      "slug": "nastrojka-ffmpeg-video",
+      "description": "Настрою FFmpeg для автоматической обработки, конвертации и нарезки видеофайлов."
+    },
+    {
+      "title": "Настройка медиа сервера для трансляций",
+      "slug": "nastrojka-media-server-translyacij",
+      "description": "Подготовлю сервер для видеотрансляций и настрою обработку входящих потоков."
+    },
+    {
+      "title": "Настройка сервера для игровых проектов",
+      "slug": "nastrojka-servera-igrovyh-proektov",
+      "description": "Подготовлю VPS или выделенный сервер для размещения многопользовательского игрового проекта."
+    },
+    {
+      "title": "Настройка SteamCMD выделенного сервера",
+      "slug": "nastrojka-steamcmd-server",
+      "description": "Установлю SteamCMD и настрою обновление выделенного игрового сервера."
+    },
+    {
+      "title": "Настройка Minecraft сервера",
+      "slug": "nastrojka-minecraft-server",
+      "description": "Разверну Minecraft сервер, настрою мир, плагины и резервное копирование."
+    },
+    {
+      "title": "Настройка Valheim Dedicated Server",
+      "slug": "nastrojka-valheim-dedicated-server",
+      "description": "Установлю Valheim Dedicated Server и настрою доступ игроков и автозапуск."
+    },
+    {
+      "title": "Настройка Counter-Strike 2 Dedicated Server",
+      "slug": "nastrojka-cs2-dedicated-server",
+      "description": "Разверну CS2 Dedicated Server и настрою параметры запуска и администрирования."
+    },
+    {
+      "title": "Настройка голосового сервера Mumble",
+      "slug": "nastrojka-mumble-server",
+      "description": "Установлю Mumble сервер и настрою каналы, пользователей и права доступа."
+    },
+    {
+      "title": "Настройка TeamSpeak 3 сервера",
+      "slug": "nastrojka-teamspeak3-server",
+      "description": "Разверну TeamSpeak 3 сервер и настрою каналы и администраторские права."
+    },
+    {
+      "title": "Настройка игрового сервера Linux firewall",
+      "slug": "nastrojka-game-server-firewall",
+      "description": "Настрою firewall игрового сервера и открою только необходимые сетевые порты."
+    },
+    {
+      "title": "Настройка автоматического обновления игрового сервера",
+      "slug": "avtoobnovlenie-game-server",
+      "description": "Настрою автоматическое обновление игрового сервера и резервное копирование файлов."
+    },
+    {
+      "title": "Настройка мониторинга игрового сервера",
+      "slug": "monitoring-game-server",
+      "description": "Настрою мониторинг игрового сервера и уведомления о недоступности или перегрузке."
     }
   ]
 }
