@@ -77,97 +77,27 @@ final class KSEF_Util {
     }
 
     /**
-     * Сумма cost из Yandex Cloud Billing (до применения кредитов/бонусов).
-     * Хранится как ручная сверка; API-оценки после этой даты добавляются консервативно.
+     * Локальный предохранитель бюджета без ручной сверки Billing.
+     * Суммирует все зарезервированные оценки запросов и учитывает стоимость
+     * следующего запроса до его отправки. Это внутренний лимит, не баланс Yandex.
      */
-    public static function reported_cost() {
-        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
-        if (!isset($settings['billing_reported_cost']) || $settings['billing_reported_cost'] === '' || !is_numeric($settings['billing_reported_cost'])) {
-            return null;
-        }
-        return (float) $settings['billing_reported_cost'];
-    }
-
-    public static function billing_checked_at() {
-        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
-        return isset($settings['billing_checked_at']) ? (int) $settings['billing_checked_at'] : 0;
-    }
-
-    /**
-     * Оценка платных попыток после ручной сверки. Учитываем и неуспешные HTTP-вызовы:
-     * провайдер мог принять запрос, даже если клиент получил ошибку/тайм-аут.
-     */
-    public static function pending_estimated_cost($checked_at) {
+    public static function check_budget($next_cost = 0.0) {
         global $wpdb;
         $table = $wpdb->prefix . 'ksef_api_usage';
-        $since = gmdate('Y-m-d H:i:s', (int) $checked_at);
-        $value = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(estimated_cost), 0) FROM {$table} WHERE created_at >= %s",
-            $since
-        ));
+        $used = $wpdb->get_var("SELECT COALESCE(SUM(estimated_cost), 0) FROM {$table}");
         if ($wpdb->last_error !== '') {
-            return new WP_Error('ksef_billing_estimate_read_failed', 'Не удалось проверить резерв оценочных расходов; платные запросы заблокированы.');
+            return new WP_Error('ksef_budget_read_failed', 'Не удалось прочитать локальный учёт расходов; запрос не отправлен.');
         }
-        return max(0, (float) $value);
-    }
-
-    /**
-     * Fail-closed. Сверяется gross cost до кредитов; локальные оценки после сверки
-     * добавляются как резерв. Это консервативная оценка, а не точное списание.
-     */
-    public static function check_budget() {
-        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
+        $used = max(0, (float) $used);
+        $next_cost = max(0, (float) $next_cost);
         $stop = 3800.0;
-        $spent = self::reported_cost();
-        $checked_at = self::billing_checked_at();
-
-        if ($spent === null || $checked_at <= 0) {
-            return new WP_Error('ksef_billing_data_missing', 'Платные запросы заблокированы: требуется полная ручная сверка Billing и гранта.');
-        }
-        if ($checked_at < time() - DAY_IN_SECONDS || $checked_at > time() + 300) {
-            return new WP_Error('ksef_billing_data_stale', 'Платные запросы заблокированы: сверка Billing устарела. Обновите все показатели.');
-        }
-
-        $consumed = isset($settings['billing_grant_consumed']) && is_numeric($settings['billing_grant_consumed']) ? (float) $settings['billing_grant_consumed'] : null;
-        $grant_credit = isset($settings['billing_grant_credit']) && is_numeric($settings['billing_grant_credit']) ? (float) $settings['billing_grant_credit'] : null;
-        $total_credit = isset($settings['billing_credit']) && is_numeric($settings['billing_credit']) ? (float) $settings['billing_credit'] : null;
-        $expense = ($total_credit !== null && $spent !== null) ? ($spent - $total_credit) : null;
-        $end_utc = isset($settings['billing_grant_end_utc']) ? (string) $settings['billing_grant_end_utc'] : '';
-        $end_ts = $end_utc !== '' ? strtotime($end_utc) : false;
-
-        if ($consumed === null || $grant_credit === null || $total_credit === null || $expense === null || !$end_ts) {
-            return new WP_Error('ksef_billing_grant_data_missing', 'Платные запросы заблокированы: отсутствуют данные остатка, кредита, expense или срока гранта.');
-        }
-        if (time() >= $end_ts) {
-            return new WP_Error('ksef_grant_expired', 'Платные запросы заблокированы: срок подарочного гранта истёк.');
-        }
-        if ($total_credit < 0 || $total_credit > $spent + 0.01 || $expense > 0.0001) {
-            return new WP_Error('ksef_cash_expense_detected', 'Платные запросы заблокированы: расчётный expense (cost − credit) больше нуля либо кредит некорректен; оплата с лицевого счёта не разрешена.');
-        }
-        if (abs($consumed - $grant_credit) > 0.05) {
-            return new WP_Error('ksef_grant_reconciliation_mismatch', 'Платные запросы заблокированы: consumedAmount гранта и monetary_grant_credit не совпадают. Дождитесь обновления Billing и повторите сверку.');
-        }
-        if ($consumed < 0 || $consumed > 4000 || $grant_credit < 0 || $grant_credit > 4000 || $spent < 0) {
-            return new WP_Error('ksef_billing_values_invalid', 'Платные запросы заблокированы: значения Billing выходят за допустимые пределы гранта.');
-        }
-
-        $pending = self::pending_estimated_cost($checked_at);
-        if (is_wp_error($pending)) return $pending;
-
-        // Учитываем большую из двух подтверждённых величин, чтобы задержка одного отчёта
-        // не завысила доступный остаток. Локальные резервы уменьшают доступный остаток заранее.
-        $grant_used = max($consumed, $grant_credit);
-        $grant_reserved_total = $grant_used + $pending;
-        if ($grant_reserved_total >= $stop) {
+        if (($used + $next_cost) >= $stop) {
             return new WP_Error(
-                'ksef_grant_budget_stop',
-                'Порог использования гранта достигнут: использовано ' . number_format_i18n($grant_used, 2) .
-                ' ₽ + резерв запросов ' . number_format_i18n($pending, 2) .
-                ' ₽ ≥ 3 800 ₽. Платные запросы отключены.'
+                'ksef_local_budget_stop',
+                'Достигнут внутренний предел оценочных расходов: ' .
+                number_format_i18n($used, 2) . ' ₽ + следующий запрос ' .
+                number_format_i18n($next_cost, 2) . ' ₽. Порог остановки — 3 800 ₽.'
             );
-        }
-        if (($spent + $pending) >= $stop) {
-            return new WP_Error('ksef_budget_stop', 'Достигнут порог общей стоимости потребления Billing (cost) 3 800 ₽. Платные запросы отключены.');
         }
         return true;
     }
