@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check FTP secrets
         env:
@@ -39,7 +39,7 @@ jobs:
           test -n "$FTP_PASSWORD" || { echo "::error::Missing FTP_PASSWORD"; exit 1; }
 
       - name: Deploy theme by FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
