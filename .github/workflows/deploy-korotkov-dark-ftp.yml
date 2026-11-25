@@ -13,7 +13,6 @@ on:
       - design/portfolio-refresh
     paths:
       - "wp-content/themes/korotkov-dark/**"
-      - ".github/workflows/deploy-korotkov-dark-ftp.yml"
 
 permissions:
   contents: read
