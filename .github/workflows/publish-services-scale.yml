@@ -39,20 +39,21 @@ jobs:
               raise SystemExit("Queue must contain a non-empty services array.")
           if len(services) > 15000:
               raise SystemExit("Queue exceeds the 15,000 service safety limit.")
-          required = ("title", "slug", "focus_keyword", "seo_title", "seo_description", "description", "content")
+          required = ("title", "slug", "description")
+          phone = str(data.get("contact_phone", "")).strip()
           seen = set()
           for item in services:
               missing = [k for k in required if not str(item.get(k, "")).strip()]
               if missing:
                   raise SystemExit(f"{item.get('slug', '<unknown>')}: missing {', '.join(missing)}")
+              if not str(item.get("phone", phone)).strip():
+                  raise SystemExit(f"{item.get('slug', '<unknown>')}: phone missing (set contact_phone or item.phone)")
+              if len(item["description"].split()) < 8:
+                  raise SystemExit(f"Description too short: {item['slug']}")
               slug = item["slug"]
               if slug in seen:
                   raise SystemExit(f"Duplicate slug: {slug}")
               seen.add(slug)
-              if len(item["content"].split()) < 250:
-                  raise SystemExit(f"Content under 250 words: {slug}")
-              if "Частые вопросы" not in item["content"]:
-                  raise SystemExit(f"FAQ missing: {slug}")
           chunks = (len(services) + 99) // 100
           matrix = {"chunk": list(range(chunks))}
           import json as j
@@ -115,15 +116,25 @@ jobs:
           created = updated = 0
           for n, service in enumerate(part, 1):
               slug = service["slug"]
+              phone = str(service.get("phone", queue.get("contact_phone", ""))).strip()
+              description = service["description"].strip()
+              seo_title = str(service.get("seo_title") or service["title"]).strip()
+              seo_description = str(service.get("seo_description") or description).strip()
+              focus_keyword = str(service.get("focus_keyword") or service["title"]).strip()
+              content = (
+                  '<article class="service-page"><h2>' + html.escape(service["title"]) + '</h2>'
+                  + '<p>' + html.escape(description) + '</p>'
+                  + '<p><strong>Заказать услугу:</strong> ' + html.escape(phone) + '</p></article>'
+              )
               query = urllib.parse.urlencode({"slug": slug, "context": "edit", "per_page": 1})
               found = request(f"/wp-json/wp/v2/pages?{query}")
               payload = {
-                  "title": service["title"], "slug": slug, "content": service["content"],
-                  "excerpt": service["description"], "status": "publish", "parent": 92,
+                  "title": service["title"], "slug": slug, "content": content,
+                  "excerpt": description, "status": "publish", "parent": 92,
                   "meta": {
-                      "_yoast_wpseo_title": service["seo_title"],
-                      "_yoast_wpseo_metadesc": service["seo_description"],
-                      "_yoast_wpseo_focuskw": service["focus_keyword"]
+                      "_yoast_wpseo_title": seo_title,
+                      "_yoast_wpseo_metadesc": seo_description,
+                      "_yoast_wpseo_focuskw": focus_keyword
                   }
               }
               if found:
