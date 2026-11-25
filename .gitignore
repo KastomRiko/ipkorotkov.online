@@ -1,15 +1,30 @@
-wp-config.php
+# Конфиденциальные файлы и локальная конфигурация
+/wp-config.php
+/wp-config-local.php
+/.env
+/.env.*
+!/.env.example
 *.sql
-wp-content/uploads/
-wp-content/cache/
-wp-content/upgrade/
-.DS_Store
-# Конфиденциальные файлы
-wp-config.php
-*.sql
+*.sql.gz
+*.dump
+*.log
+/error_log
 
-# Временные и кэш-файлы
-wp-content/uploads/
-wp-content/cache/
-wp-content/upgrade/
-.DS_Store
+# Генерируемые файлы WordPress
+/wp-content/uploads/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/backup*/
+/wp-content/ai1wm-backups/
+/wp-content/updraft/
+/wp-content/wflogs/
+/wp-content/debug.log
+
+# Локальные инструменты и временные файлы
+/node_modules/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.DS_Store
+/Thumbs.db
+/.idea/
+/.vscode/
