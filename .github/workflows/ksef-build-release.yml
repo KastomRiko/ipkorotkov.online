@@ -21,6 +21,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
       - name: Validate plugin and PHP syntax
         shell: bash
         run: |
