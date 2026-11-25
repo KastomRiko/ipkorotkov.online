@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.3
+ * Version: 0.8.4
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.3');
+define('KSEF_VERSION', '0.8.4');
 require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
@@ -395,7 +395,7 @@ final class Korotkov_SEO_Factory {
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
             <div class="notice notice-warning inline"><p><strong>Ограничение Wordstat:</strong> по уведомлению Яндекса статистика API недоступна за даты после 7 октября 2026 года. GetTop продолжает отвечать, но данные являются архивными и не отражают текущую частотность. Для актуального анализа конкурентов используй Search API.</p></div>
-            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы без KSEF_BILLING_VERIFIED и свежей ручной сверки cost из Yandex Cloud Billing. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
+            <div class="notice notice-info inline"><p><strong>Режим Wordstat:</strong> ручная сверка Billing отключена по решению администратора. Перед каждым запросом действует внутренний предел оценочных расходов 3 800 ₽, дневной лимит и интервал. Это не проверка фактического баланса Yandex Cloud и не гарантия отсутствия списаний с лицевого счёта. Wordstat запускается вручную; данные GetTop могут быть архивными.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
                 <h2>Исследование и ограничения</h2>
@@ -418,7 +418,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Общий бюджет</th>
-                        <td><strong>4 000 ₽</strong><p class="description">Бюджет зафиксирован. Перед включением платных запросов потребуется проверить покрытие бонусами каждого метода и фактический тариф.</p></td>
+                        <td><strong>4 000 ₽</strong><p class="description">Внутренний предел оценочных расходов — 3 800 ₽. Он считается по журналу запросов плагина и не сверяется с фактическим Billing Yandex Cloud.</p></td>
                     </tr>
                     <tr>
                         <th scope="row">Сверка гранта и Billing</th>
@@ -429,8 +429,8 @@ final class Korotkov_SEO_Factory {
                             <p><label>credit из CSV (сумма кредитов/скидок, положительное число), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_credit]" value="<?php echo esc_attr($settings['billing_credit'] ?? ''); ?>"></label></p>
                             <p><label>Окончание гранта (точное время UTC, формат 2027-01-19T21:59:59Z)<br><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_end_utc]" value="<?php echo esc_attr($settings['billing_grant_end_utc'] ?? ''); ?>" placeholder="2027-01-19T21:59:59Z"></label></p>
                             <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что сверил все пять значений с актуальными данными Billing и гранта</label>
-                            <p class="description">Грант 4 000 ₽. Остаток рассчитывается консервативно: 4 000 ₽ минус большее из consumedAmount и monetary_grant_credit. Эти два значения должны совпадать с допуском 0,05 ₽; при расхождении запросы блокируются. expense рассчитывается как cost − credit; любое значение больше 0 ₽ блокирует платные запросы. Сверка действует 24 часа. Время окончания вводится строго в UTC. Не вводите предполагаемые значения: берите их из свежих данных. Автоматического Billing API здесь нет.</p>
-                            <p class="description"><strong>Порог остановки: 3 800 ₽. Резерв: 200 ₽.</strong> Дополнительно к фактическому потреблению учитывается резерв локальных запросов после сверки.</p>
+                            <p class="description">Поля оставлены для справки и больше не участвуют в разрешении запросов. Фактические расходы и покрытие грантом автоматически не проверяются.</p>
+                            <p class="description"><strong>Порог остановки: 3 800 ₽.</strong> Учитываются только локальные оценочные стоимости, записанные плагином.</p>
                             <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
                         </td>
                     </tr>
@@ -464,7 +464,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
-                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении очередь запускается сразу после добавления фраз и далее каждую минуту: до 5 заданий за один запуск с интервалом не менее 2 секунд. Для реальных платных запросов дополнительно требуется KSEF_BILLING_VERIFIED=true в wp-config.php и действующая проверка Billing. Wordstat и публикация этим переключателем не запускаются.</p></td>
+                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении очередь запускается сразу после добавления фраз и далее каждую минуту: до 5 заданий за один запуск с интервалом не менее 2 секунд. Search API остаётся под собственными ограничениями клиента; Wordstat и публикация этим переключателем не запускаются.</p></td>
                     </tr>
                 </table>
                 <?php submit_button('Сохранить настройки'); ?>
