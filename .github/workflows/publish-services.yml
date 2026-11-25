@@ -1,0 +1,120 @@
+name: Publish commercial IT service pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/services-batch.json'
+      - '.github/workflows/publish-services.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-commercial-services
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Publish pages and update service indexes
+        env:
+          WP_URL: https://ipkorotkov.online
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$WP_USER" || { echo "::error::Missing KWC_WP_USERNAME"; exit 1; }
+          test -n "$WP_APP_PASSWORD" || { echo "::error::Missing KWC_WP_APP_PASSWORD"; exit 1; }
+          python3 - <<'PY'
+          import base64, json, os, sys, urllib.parse, urllib.request, urllib.error
+          from pathlib import Path
+
+          base = os.environ["WP_URL"].rstrip("/")
+          user = os.environ["WP_USER"]
+          password = os.environ["WP_APP_PASSWORD"].replace(" ", "")
+          token = base64.b64encode(f"{user}:{password}".encode()).decode()
+          headers = {
+              "Authorization": f"Basic {token}",
+              "Content-Type": "application/json; charset=utf-8",
+              "Accept": "application/json",
+              "User-Agent": "Korotkov-Service-Publisher/1.0"
+          }
+
+          def request(path, method="GET", payload=None):
+              data = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
+              req = urllib.request.Request(base + path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as response:
+                      raw = response.read()
+                      return json.loads(raw.decode("utf-8")) if raw else {}
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode("utf-8", "replace")
+                  print(f"HTTP {e.code} {method} {path}: {body[:1500]}", file=sys.stderr)
+                  raise
+
+          batch = json.loads(Path("content/services-batch.json").read_text(encoding="utf-8"))
+          services = batch["services"]
+          created = updated = 0
+          links = []
+
+          for service in services:
+              slug = service["slug"]
+              query = urllib.parse.urlencode({"slug": slug, "context": "edit", "per_page": 1})
+              existing = request(f"/wp-json/wp/v2/pages?{query}")
+              payload = {
+                  "title": service["title"],
+                  "slug": slug,
+                  "content": service["content"],
+                  "excerpt": service["description"],
+                  "status": "publish",
+                  "parent": 92,
+                  "meta": {
+                      "_yoast_wpseo_title": service["seo_title"],
+                      "_yoast_wpseo_metadesc": service["seo_description"],
+                      "_yoast_wpseo_focuskw": service["focus_keyword"]
+                  }
+              }
+              if existing:
+                  page = request(f"/wp-json/wp/v2/pages/{existing[0]['id']}?context=edit", "POST", payload)
+                  updated += 1
+                  action = "UPDATED"
+              else:
+                  page = request("/wp-json/wp/v2/pages", "POST", payload)
+                  created += 1
+                  action = "CREATED"
+              link = page.get("link") or f"{base}/services/{slug}/"
+              links.append((service["title"], link))
+              print(f"{action}: {service['title']} | {link} | id={page.get('id')}")
+              meta = page.get("meta") or {}
+              if meta.get("_yoast_wpseo_title") != service["seo_title"] or meta.get("_yoast_wpseo_metadesc") != service["seo_description"]:
+                  print(f"SEO_META_CHECK: Yoast fields were not confirmed by REST for {slug}; verify in SEO plugin UI.")
+
+          def append_section(page_id, marker, html):
+              page = request(f"/wp-json/wp/v2/pages/{page_id}?context=edit")
+              content = page.get("content") or {}
+              raw = content.get("raw") if isinstance(content, dict) else content
+              raw = raw or ""
+              if marker in raw:
+                  print(f"INDEX_ALREADY_UPDATED: page {page_id}")
+                  return
+              updated_content = raw.rstrip() + "\n\n" + marker + "\n" + html + "\n"
+              request(f"/wp-json/wp/v2/pages/{page_id}", "POST", {"content": updated_content})
+              print(f"INDEX_UPDATED: page {page_id}")
+
+          catalog_html = '<section class="korotkov-new-services"><h2>Дополнительные услуги программиста</h2><ul>' + "".join(
+              f'<li><a href="{link}">{title}</a></li>' for title, link in links
+          ) + '</ul></section>'
+          sitemap_html = '<h2>Дополнительные услуги</h2><ul>' + "".join(
+              f'<li><a href="{link}">{title}</a></li>' for title, link in links
+          ) + '</ul>'
+
+          append_section(92, "<!-- KOROTKOV_SERVICES_BATCH_20261125 -->", catalog_html)
+          append_section(775, "<!-- KOROTKOV_SITEMAP_BATCH_20261125 -->", sitemap_html)
+          print(f"SUMMARY: created={created} updated={updated} indexed={len(links)}")
+          PY
