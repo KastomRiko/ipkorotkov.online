@@ -1,0 +1,140 @@
+name: Publish large IT services queue
+
+on:
+  workflow_dispatch:
+    inputs:
+      queue_file:
+        description: "JSON-файл очереди услуг в репозитории"
+        required: true
+        default: "content/services-queue-15000.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-large-services-queue
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      chunks: ${{ steps.plan.outputs.chunks }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          QUEUE_FILE: ${{ inputs.queue_file }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path(os.environ["QUEUE_FILE"])
+          if not p.is_file():
+              raise SystemExit(f"Queue file not found: {p}")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          services = data.get("services")
+          if not isinstance(services, list) or not services:
+              raise SystemExit("Queue must contain a non-empty services array.")
+          if len(services) > 15000:
+              raise SystemExit("Queue exceeds the 15,000 service safety limit.")
+          required = ("title", "slug", "focus_keyword", "seo_title", "seo_description", "description", "content")
+          seen = set()
+          for item in services:
+              missing = [k for k in required if not str(item.get(k, "")).strip()]
+              if missing:
+                  raise SystemExit(f"{item.get('slug', '<unknown>')}: missing {', '.join(missing)}")
+              slug = item["slug"]
+              if slug in seen:
+                  raise SystemExit(f"Duplicate slug: {slug}")
+              seen.add(slug)
+              if len(item["content"].split()) < 250:
+                  raise SystemExit(f"Content under 250 words: {slug}")
+              if "Частые вопросы" not in item["content"]:
+                  raise SystemExit(f"FAQ missing: {slug}")
+          chunks = (len(services) + 99) // 100
+          matrix = {"chunk": list(range(chunks))}
+          import json as j
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("matrix=" + j.dumps(matrix) + "\\n")
+              f.write(f"chunks={chunks}\\n")
+          print(f"Validated {len(services)} services in {chunks} chunks of up to 100.")
+          PY
+
+  publish:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish assigned chunk to WordPress
+        env:
+          WP_URL: https://ipkorotkov.online
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+          QUEUE_FILE: ${{ inputs.queue_file }}
+          CHUNK_INDEX: ${{ matrix.chunk }}
+        run: |
+          set -euo pipefail
+          test -n "$WP_USER" || { echo "::error::Missing KWC_WP_USERNAME"; exit 1; }
+          test -n "$WP_APP_PASSWORD" || { echo "::error::Missing KWC_WP_APP_PASSWORD"; exit 1; }
+          python3 - <<'PY'
+          import base64, html, json, os, re, sys, time, urllib.parse, urllib.request, urllib.error
+          from pathlib import Path
+          base = os.environ["WP_URL"].rstrip("/")
+          user = os.environ["WP_USER"]
+          password = os.environ["WP_APP_PASSWORD"].replace(" ", "")
+          token = base64.b64encode(f"{user}:{password}".encode()).decode()
+          headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json; charset=utf-8", "Accept": "application/json", "User-Agent": "Korotkov-Scale-Publisher/1.0"}
+          def request(path, method="GET", payload=None):
+              data = None if payload is None else json.dumps(payload, ensure_ascii=False).encode()
+              for attempt in range(5):
+                  req = urllib.request.Request(base + path, data=data, headers=headers, method=method)
+                  try:
+                      with urllib.request.urlopen(req, timeout=90) as response:
+                          raw = response.read()
+                          return json.loads(raw.decode()) if raw else {}
+                  except urllib.error.HTTPError as e:
+                      body = e.read().decode("utf-8", "replace")
+                      if e.code in (429, 500, 502, 503, 504) and attempt < 4:
+                          time.sleep(2 ** attempt)
+                          continue
+                      print(f"HTTP {e.code} {method} {path}: {body[:1200]}", file=sys.stderr)
+                      raise
+                  except Exception:
+                      if attempt == 4: raise
+                      time.sleep(2 ** attempt)
+          queue = json.loads(Path(os.environ["QUEUE_FILE"]).read_text(encoding="utf-8"))
+          services = queue["services"]
+          chunk = int(os.environ["CHUNK_INDEX"])
+          part = services[chunk * 100:(chunk + 1) * 100]
+          created = updated = 0
+          for n, service in enumerate(part, 1):
+              slug = service["slug"]
+              query = urllib.parse.urlencode({"slug": slug, "context": "edit", "per_page": 1})
+              found = request(f"/wp-json/wp/v2/pages?{query}")
+              payload = {
+                  "title": service["title"], "slug": slug, "content": service["content"],
+                  "excerpt": service["description"], "status": "publish", "parent": 92,
+                  "meta": {
+                      "_yoast_wpseo_title": service["seo_title"],
+                      "_yoast_wpseo_metadesc": service["seo_description"],
+                      "_yoast_wpseo_focuskw": service["focus_keyword"]
+                  }
+              }
+              if found:
+                  page = request(f"/wp-json/wp/v2/pages/{found[0]['id']}?context=edit", "POST", payload)
+                  updated += 1
+                  action = "UPDATED"
+              else:
+                  page = request("/wp-json/wp/v2/pages", "POST", payload)
+                  created += 1
+                  action = "CREATED"
+              print(f"{action}: {slug} | id={page.get('id')} | {n}/{len(part)}")
+              time.sleep(0.15)
+          print(f"CHUNK_SUMMARY: chunk={chunk} created={created} updated={updated} total={len(part)}")
+          PY
