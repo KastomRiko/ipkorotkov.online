@@ -1,0 +1,118 @@
+name: SEO and favicon live audit
+
+on:
+  push:
+    branches:
+      - design/portfolio-refresh
+    paths:
+      - '.github/workflows/seo-site-audit.yml'
+      - 'wp-content/themes/korotkov-dark/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-site-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check live favicon and SEO signals
+        env:
+          SITE_URL: https://ipkorotkov.online
+        run: |
+          python - <<'PY'
+          import re
+          import struct
+          import sys
+          from html.parser import HTMLParser
+          from urllib.parse import urljoin, urlparse
+          from urllib.request import Request, urlopen
+
+          BASE = "https://ipkorotkov.online/"
+          class HeadParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = []
+                  self.meta = []
+                  self.title = False
+                  self.title_text = []
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if tag.lower() == "link":
+                      self.links.append(a)
+                  elif tag.lower() == "meta":
+                      self.meta.append(a)
+                  elif tag.lower() == "title":
+                      self.title = True
+              def handle_endtag(self, tag):
+                  if tag.lower() == "title":
+                      self.title = False
+              def handle_data(self, data):
+                  if self.title:
+                      self.title_text.append(data)
+
+          def get(url):
+              req = Request(url, headers={"User-Agent": "Korotkov-SEO-Audit/1.0"})
+              with urlopen(req, timeout=25) as r:
+                  return r.status, r.headers, r.read()
+
+          def fail(message):
+              print("::error::" + message)
+              sys.exit(1)
+
+          status, headers, body = get(BASE)
+          if status != 200:
+              fail(f"Главная страница вернула HTTP {status}")
+          html = body.decode(headers.get_content_charset() or "utf-8", "replace")
+          parser = HeadParser()
+          parser.feed(html)
+          title = "".join(parser.title_text).strip()
+          metas = {m.get("name", "").lower(): m.get("content", "").strip() for m in parser.meta}
+          canonical = [l.get("href") for l in parser.links if "canonical" in l.get("rel", "").lower().split()]
+          icons = [l for l in parser.links if "icon" in l.get("rel", "").lower().split() and l.get("href")]
+          if not title:
+              fail("На главной странице отсутствует title")
+          if not metas.get("description"):
+              fail("На главной странице отсутствует meta description — проверь Yoast/42flows SEO Meta")
+          if not canonical:
+              fail("На главной странице отсутствует canonical")
+          print(f"OK: title ({len(title)} символов), meta description ({len(metas['description'])} символов), canonical {canonical[0]}")
+
+          if not icons:
+              fail("В HTML главной страницы нет link rel=icon. Google не получает явный URL фавикона.")
+          def icon_size(item):
+              sizes = item.get("sizes", "")
+              nums = [int(x.split("x")[0]) for x in sizes.split() if re.match(r"^\\d+x\\d+$", x)]
+              return max(nums, default=0)
+          icon = sorted(icons, key=icon_size, reverse=True)[0]
+          icon_url = urljoin(BASE, icon["href"])
+          if urlparse(icon_url).netloc != urlparse(BASE).netloc:
+              fail(f"Фавикон размещён на другом домене: {icon_url}")
+          icon_status, icon_headers, icon_data = get(icon_url)
+          if icon_status != 200 or not icon_headers.get_content_type().startswith("image/"):
+              fail(f"Фавикон недоступен или имеет неверный Content-Type: HTTP {icon_status}, {icon_headers.get('Content-Type')}")
+          if icon_data.startswith(b"\\x89PNG\\r\\n\\x1a\\n") and len(icon_data) >= 24:
+              width, height = struct.unpack(">II", icon_data[16:24])
+              if width != height or width < 48:
+                  fail(f"PNG фавикон должен быть квадратным и не меньше 48x48; получено {width}x{height}")
+              print(f"OK: PNG favicon {width}x{height}, HTTP {icon_status}, {icon_url}")
+          else:
+              print(f"OK: favicon доступен ({icon_headers.get('Content-Type')}), HTTP {icon_status}, {icon_url}")
+
+          for path in ("robots.txt", "sitemap_index.xml"):
+              s, h, data = get(urljoin(BASE, path))
+              if s != 200:
+                  fail(f"{path}: HTTP {s}")
+              print(f"OK: {path} доступен, HTTP {s}")
+          robots = get(urljoin(BASE, "robots.txt"))[2].decode("utf-8", "replace").lower()
+          if "disallow: /wp-content/uploads/" in robots or "disallow: /" in robots:
+              print("::warning::Проверь robots.txt: правило Disallow может блокировать фавикон или сайт.")
+          print("AUDIT PASSED: favicon + homepage SEO + robots.txt + XML sitemap.")
+          PY
