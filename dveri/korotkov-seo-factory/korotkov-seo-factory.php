@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.0
+ * Version: 0.9.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.0');
+define('KSEF_VERSION', '0.9.0');
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
@@ -22,6 +22,7 @@ require_once __DIR__ . '/includes/class-qwen-exchange.php';
 require_once __DIR__ . '/includes/class-clusterer.php';
 require_once __DIR__ . '/includes/class-publisher.php';
 require_once __DIR__ . '/includes/class-frontend.php';
+require_once __DIR__ . '/includes/class-knowledge-base.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -45,6 +46,7 @@ final class Korotkov_SEO_Factory {
         KSEF_Clusterer::register_hooks();
         KSEF_Publisher::register_hooks();
         KSEF_Frontend::register_hooks();
+        KSEF_Knowledge_Base::register_hooks();
         add_action('plugins_loaded', array($this, 'maybe_upgrade'));
         add_action('admin_post_ksef_wordstat_fetch', array($this, 'handle_wordstat_fetch'));
     }
@@ -195,6 +197,7 @@ final class Korotkov_SEO_Factory {
         foreach ($sql as $statement) {
             dbDelta($statement);
         }
+        KSEF_Knowledge_Base::create_table();
     }
 
     public static function activate() {
@@ -219,6 +222,7 @@ final class Korotkov_SEO_Factory {
     public static function deactivate() {
         wp_clear_scheduled_hook('ksef_daily_tick');
         wp_clear_scheduled_hook('ksef_queue_tick');
+        wp_clear_scheduled_hook('ksef_kb_publish_tick');
     }
 
     public static function default_settings() {
@@ -507,6 +511,9 @@ final class Korotkov_SEO_Factory {
             <?php else : ?>
                 <p>Импортированных материалов пока нет.</p>
             <?php endif; ?>
+            <h2>База знаний</h2>
+            <?php KSEF_Knowledge_Base::render_admin_section(); ?>
+            <hr>
             <h2>Страницы WordPress</h2>
             <?php KSEF_Publisher::render_admin_section(); ?>
             <h2>Wordstat по фразам</h2>
