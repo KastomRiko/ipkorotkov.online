@@ -210,7 +210,11 @@ final class KSEF_Knowledge_Base {
             $rights = sanitize_key($shot['rights'] ?? '');
             if (!$media_id || get_post_type($media_id) !== 'attachment') return new WP_Error('kb_screenshot_media_missing', 'Каждый скриншот должен быть загружен в медиатеку WordPress.');
             if (!in_array($rights, array('own','recreated','permission','license','public_domain'), true)) return new WP_Error('kb_screenshot_rights_missing', 'У скриншота не указано допустимое основание использования.');
-            if (in_array($rights, array('permission','license','public_domain'), true) && empty($shot['origin_url'])) return new WP_Error('kb_screenshot_origin_missing', 'Для стороннего скриншота укажите исходный URL и основание использования.');
+            if (in_array($rights, array('permission','license','public_domain'), true)) {
+                $origin = esc_url_raw($shot['origin_url'] ?? '');
+                $note = sanitize_text_field($shot['rights_note'] ?? '');
+                if (!$origin || !in_array(wp_parse_url($origin, PHP_URL_SCHEME), array('http','https'), true) || $note === '') return new WP_Error('kb_screenshot_origin_missing', 'Для стороннего скриншота укажите исходный URL и пояснение о лицензии/разрешении.');
+            }
             if (empty($shot['alt'])) return new WP_Error('kb_screenshot_alt_missing', 'Для каждого скриншота заполните alt.');
         }
         return true;
