@@ -1,0 +1,47 @@
+name: Audit commercial service page titles
+
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-commercial-titles.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find published service pages with informational titles
+        env:
+          WP_URL: https://ipkorotkov.online
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re, urllib.request
+          base=os.environ["WP_URL"].rstrip("/")
+          token=base64.b64encode((os.environ["WP_USER"]+":"+os.environ["WP_APP_PASSWORD"].replace(" ","")).encode()).decode()
+          bad=re.compile(r"как\\s+(настроить|установить|подключить)|инструкция|пошагов|что такое|почему не работает|руководство|обзор",re.I)
+          page=1
+          total=0
+          flagged=[]
+          while True:
+              req=urllib.request.Request(base+f"/wp-json/wp/v2/pages?parent=92&status=publish&per_page=100&page={page}&_fields=id,slug,link,title",headers={"Authorization":"Basic "+token,"Accept":"application/json"})
+              try:
+                  with urllib.request.urlopen(req,timeout=60) as r: rows=json.load(r)
+              except Exception as e:
+                  print("AUDIT_ERROR:",repr(e)); raise
+              if not rows: break
+              total+=len(rows)
+              for row in rows:
+                  title=row.get("title",{}).get("rendered","")
+                  if bad.search(title):
+                      flagged.append({"id":row["id"],"title":title,"slug":row["slug"],"link":row["link"]})
+              if len(rows)<100: break
+              page+=1
+          print("PUBLISHED_SERVICE_PAGES:",total)
+          print("INFORMATIONAL_TITLE_MATCHES:",len(flagged))
+          for item in flagged: print("FLAGGED:",json.dumps(item,ensure_ascii=False))
+          PY
