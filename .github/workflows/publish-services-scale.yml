@@ -1,6 +1,10 @@
 name: Publish large IT services queue
 
 on:
+  push:
+    paths:
+      - 'content/services-queue-15000.json'
+      - '.github/workflows/publish-services-scale.yml'
   workflow_dispatch:
     inputs:
       queue_file:
@@ -25,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - id: plan
         env:
-          QUEUE_FILE: ${{ inputs.queue_file }}
+          QUEUE_FILE: ${{ inputs.queue_file || 'content/services-queue-15000.json' }}
         run: |
           python3 - <<'PY'
           import json, os
