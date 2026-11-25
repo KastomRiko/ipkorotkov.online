@@ -127,7 +127,6 @@ final class KSEF_Queue {
     public static function process_batch() {
         $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
         if (empty($settings['automation_enabled'])) return false;
-        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) return false;
         if (get_transient('ksef_api_circuit_open')) return false;
 
         for ($i = 0; $i < 5; $i++) {
