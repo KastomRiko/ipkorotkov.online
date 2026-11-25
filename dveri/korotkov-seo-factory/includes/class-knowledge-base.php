@@ -116,7 +116,7 @@ final class KSEF_Knowledge_Base {
         fwrite($out, "\xEF\xBB\xBF");
         fputcsv($out, array('kb_id','title','slug','category','tested_versions','verified_on','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json'));
         foreach ($rows as $row) {
-            fputcsv($out, array((int)$row['id'], $row['title'], $row['slug'], $row['category'], '', '', '', '', '[]', '[]'));
+            fputcsv($out, array((int)$row['id'], $row['title'], $row['slug'], $row['category'], '', '', '', '', '', '', '[]', '[]'));
         }
         fclose($out);
         exit;
