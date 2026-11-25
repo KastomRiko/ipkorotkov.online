@@ -197,7 +197,7 @@ final class KSEF_Knowledge_Base {
         }
         preg_match_all('/[\p{L}\p{N}]+/u', wp_strip_all_tags($d['article_html'] . ' ' . $d['faq_html']), $m);
         if (count($m[0]) < self::MIN_WORDS) return new WP_Error('kb_too_short', 'Статья короче ' . self::MIN_WORDS . ' слов.');
-        if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $d['verified_on']) || !checkdate((int)substr($d['verified_on'],5,2), (int)substr($d['verified_on'],8,2), (int)substr($d['verified_on'],0,4))) return new WP_Error('kb_verified_date_invalid', 'Укажите дату проверки в формате ГГГГ-ММ-ДД.');
+        if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $d['verified_on']) || !checkdate((int)substr($d['verified_on'],5,2), (int)substr($d['verified_on'],8,2), (int)substr($d['verified_on'],0,4)) || $d['verified_on'] > current_time('Y-m-d')) return new WP_Error('kb_verified_date_invalid', 'Укажите дату проверки в формате ГГГГ-ММ-ДД.');
         if (!is_array($d['sources']) || count($d['sources']) < 2) return new WP_Error('kb_sources_missing', 'Нужно указать минимум два источника в sources_json.');
         if (!is_array($d['screenshots']) || count($d['screenshots']) < 1) return new WP_Error('kb_screenshots_missing', 'Для mixed-формата нужен минимум один скриншот с подтверждённым происхождением.');
         foreach ($d['sources'] as $source) {
@@ -216,6 +216,8 @@ final class KSEF_Knowledge_Base {
                 if (!$origin || !in_array(wp_parse_url($origin, PHP_URL_SCHEME), array('http','https'), true) || $note === '') return new WP_Error('kb_screenshot_origin_missing', 'Для стороннего скриншота укажите исходный URL и пояснение о лицензии/разрешении.');
             }
             if (empty($shot['alt'])) return new WP_Error('kb_screenshot_alt_missing', 'Для каждого скриншота заполните alt.');
+            $marker = (string)($shot['marker'] ?? '');
+            if ($marker === '' || substr_count($d['article_html'], $marker) !== 1) return new WP_Error('kb_screenshot_marker_missing', 'Для каждого скриншота укажите уникальный marker и вставьте его ровно один раз в article_html.');
         }
         return true;
     }
@@ -267,7 +269,8 @@ final class KSEF_Knowledge_Base {
             $image = wp_get_attachment_image(absint($shot['media_id']), 'large', false, array('alt' => $shot['alt'], 'loading' => 'lazy'));
             if ($image) {
                 $caption = !empty($shot['caption']) ? '<figcaption>' . esc_html($shot['caption']) . '</figcaption>' : '';
-                $content .= "\n<figure class=\"wp-block-image size-large\">" . $image . $caption . "</figure>\n";
+                $figure = '<figure class="wp-block-image size-large">' . $image . $caption . '</figure>';
+                $content = str_replace((string)$shot['marker'], $figure, $content);
             }
         }
         if (trim(wp_strip_all_tags($row->faq_html)) !== '') $content .= "\n<h2>Частые вопросы</h2>\n" . $row->faq_html;
@@ -301,6 +304,14 @@ final class KSEF_Knowledge_Base {
         if (defined('RANK_MATH_VERSION')) {
             update_post_meta($post_id, 'rank_math_title', wp_slash($row->meta_title));
             update_post_meta($post_id, 'rank_math_description', wp_slash($row->meta_description));
+        }
+        if (defined('SEOPRESS_VERSION')) {
+            update_post_meta($post_id, '_seopress_titles_title', wp_slash($row->meta_title));
+            update_post_meta($post_id, '_seopress_titles_desc', wp_slash($row->meta_description));
+        }
+        if (defined('AIOSEO_VERSION')) {
+            update_post_meta($post_id, '_aioseo_title', wp_slash($row->meta_title));
+            update_post_meta($post_id, '_aioseo_description', wp_slash($row->meta_description));
         }
         $wpdb->update($wpdb->prefix . self::TABLE, array(
             'wp_post_id' => (int)$post_id, 'status' => 'published',
