@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.4
+ * Version: 0.8.5
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.4');
+define('KSEF_VERSION', '0.8.5');
 require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
@@ -49,6 +49,7 @@ final class Korotkov_SEO_Factory {
         KSEF_Frontend::register_hooks();
         add_action('plugins_loaded', array($this, 'maybe_upgrade'));
         add_action('admin_post_ksef_wordstat_fetch', array($this, 'handle_wordstat_fetch'));
+        add_action('rest_api_init', array($this, 'register_wordstat_test_route'));
     }
 
     /** Применяет изменения схемы БД и расписания после обновления плагина. */
@@ -609,6 +610,47 @@ final class Korotkov_SEO_Factory {
         $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}ksef_logs WHERE created_at < %s", gmdate('Y-m-d H:i:s', time() - 90 * DAY_IN_SECONDS)));
         KSEF_Publisher::process_pending();
         self::write_log('info', 'daily_tick', 'Ежедневное обслуживание выполнено.');
+    }
+
+    /**
+     * Административный тест Wordstat через REST API. Доступен только администраторам.
+     */
+    public function register_wordstat_test_route() {
+        register_rest_route('ksef/v1', '/wordstat-test', array(
+            'methods' => 'POST',
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+            'callback' => array($this, 'rest_wordstat_test'),
+            'args' => array(
+                'phrase' => array('required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field'),
+            ),
+        ));
+    }
+
+    public function rest_wordstat_test($request) {
+        $phrase = trim((string) $request->get_param('phrase'));
+        if ($phrase === '') {
+            return new WP_Error('ksef_invalid_phrase', 'Укажите поисковую фразу.', array('status' => 400));
+        }
+        $client = new KSEF_Yandex_Client();
+        $result = $client->wordstat_top(array(
+            'phrase' => $phrase,
+            'numPhrases' => '50',
+            'regions' => array('225'),
+            'devices' => array('DEVICE_ALL'),
+        ));
+        if (is_wp_error($result)) {
+            return new WP_Error($result->get_error_code(), $result->get_error_message(), array('status' => 502));
+        }
+        Korotkov_SEO_Factory::write_log('info', 'wordstat_manual_api_test', 'Выполнен ручной тест Wordstat API.', array('phrase' => $phrase));
+        return rest_ensure_response(array(
+            'success' => true,
+            'phrase' => $phrase,
+            'totalCount' => isset($result['totalCount']) ? (int) $result['totalCount'] : null,
+            'response' => $result,
+            'data_notice' => 'GetTop может возвращать архивную статистику, не новее 07.10.2026.',
+        ));
     }
 
     public function handle_wordstat_fetch() {
