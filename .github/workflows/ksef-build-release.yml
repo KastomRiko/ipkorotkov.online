@@ -3,7 +3,6 @@ name: Build Korotkov SEO Factory install ZIP
 on:
   push:
     branches:
-      - main
       - cleanup/remove-duplicate-plugin-copies
     paths:
       - 'korotkov-seo-factory/**'
