@@ -63,4 +63,5 @@ jobs:
           tag="ksef-v${PLUGIN_VERSION}-${safe_ref}-build-${RUN_NUMBER}"
           gh release create "$tag" "dist/korotkov-seo-factory-${PLUGIN_VERSION}.zip" dist/SHA256SUMS.txt \
             --title "Korotkov SEO Factory ${PLUGIN_VERSION} (${safe_ref}, build ${RUN_NUMBER})" \
-            --notes "Validated PHP syntax and built from commit ${GITHUB_SHA}. This release packages the plugin; it does not install it on the WordPress site and does not call Yandex APIs."
+            --notes "Validated PHP syntax and built from commit ${GITHUB_SHA}. This release packages the plugin; it does not call Yandex APIs."
+          gh release edit "$tag" --draft=false
