@@ -23,7 +23,7 @@ jobs:
           import base64, json, os, re, urllib.request
           base=os.environ["WP_URL"].rstrip("/")
           token=base64.b64encode((os.environ["WP_USER"]+":"+os.environ["WP_APP_PASSWORD"].replace(" ","")).encode()).decode()
-          bad=re.compile(r"как\\s+(настроить|установить|подключить)|инструкция|пошагов|что такое|почему не работает|руководство|обзор",re.I)
+          bad=re.compile(r"как\s+(настроить|установить|подключить|исправить)|инструкция|пошагов|что\s+такое|почему\s+не\s+работает|руководство|обзор",re.I)
           page=1
           total=0
           flagged=[]
