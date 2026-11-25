@@ -28,7 +28,7 @@ jobs:
           total=0
           flagged=[]
           while True:
-              req=urllib.request.Request(base+f"/wp-json/wp/v2/pages?parent=92&status=publish&per_page=100&page={page}&_fields=id,slug,link,title",headers={"Authorization":"Basic "+token,"Accept":"application/json"})
+              req=urllib.request.Request(base+f"/wp-json/wp/v2/pages?parent=92&status=publish&per_page=100&page={page}&_fields=id,slug,link,title,yoast_head_json",headers={"Authorization":"Basic "+token,"Accept":"application/json"})
               try:
                   with urllib.request.urlopen(req,timeout=60) as r: rows=json.load(r)
               except Exception as e:
@@ -36,9 +36,15 @@ jobs:
               if not rows: break
               total+=len(rows)
               for row in rows:
-                  title=row.get("title",{}).get("rendered","")
-                  if bad.search(title):
-                      flagged.append({"id":row["id"],"title":title,"slug":row["slug"],"link":row["link"]})
+                  yoast=row.get("yoast_head_json") or {}
+                  fields={
+                      "page_title": row.get("title",{}).get("rendered",""),
+                      "yoast_title": yoast.get("title",""),
+                      "yoast_description": yoast.get("description",""),
+                  }
+                  for field,value in fields.items():
+                      if value and bad.search(value):
+                          flagged.append({"id":row["id"],"field":field,"value":value,"slug":row["slug"],"link":row["link"]})
               if len(rows)<100: break
               page+=1
           print("PUBLISHED_SERVICE_PAGES:",total)
