@@ -144,7 +144,7 @@ jobs:
               f'<li><a href="{link}">{title}</a></li>' for title, link in links
           ) + '</ul>'
 
-          append_section(92, "<!-- KOROTKOV_SERVICES_BATCH_20261125_2 -->", catalog_html)
-          append_section(775, "<!-- KOROTKOV_SITEMAP_BATCH_20261125_2 -->", sitemap_html)
+          append_section(92, "<!-- KOROTKOV_SERVICES_BATCH_20261125_3 -->", catalog_html)
+          append_section(775, "<!-- KOROTKOV_SITEMAP_BATCH_20261125_3 -->", sitemap_html)
           print(f"SUMMARY: created={created} updated={updated} indexed={len(links)}")
           PY
