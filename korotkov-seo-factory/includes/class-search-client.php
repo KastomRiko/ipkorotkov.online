@@ -44,10 +44,6 @@ final class KSEF_Search_Client {
             return new WP_Error('ksef_automation_disabled', 'Автоматические запросы Search API отключены в настройках плагина.');
         }
 
-        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
-            return new WP_Error('ksef_billing_not_verified', 'Платные запросы заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
-        }
-
         $reservation = $this->reserve_search_slot();
         if (is_wp_error($reservation)) {
             return $reservation;

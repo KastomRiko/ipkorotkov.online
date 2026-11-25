@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov SEO Factory
  * Description: Основа системы исследования поисковых запросов, кластеризации и контролируемой SEO-публикации.
- * Version: 0.8.0
+ * Version: 0.8.6
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Korotkov
@@ -13,7 +13,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KSEF_VERSION', '0.8.0');
+define('KSEF_VERSION', '0.8.6');
+require_once __DIR__ . '/includes/class-lock.php';
 require_once __DIR__ . '/includes/class-util.php';
 require_once __DIR__ . '/includes/class-yandex-client.php';
 require_once __DIR__ . '/includes/class-search-client.php';
@@ -22,6 +23,7 @@ require_once __DIR__ . '/includes/class-qwen-exchange.php';
 require_once __DIR__ . '/includes/class-clusterer.php';
 require_once __DIR__ . '/includes/class-publisher.php';
 require_once __DIR__ . '/includes/class-frontend.php';
+require_once __DIR__ . '/includes/class-title-audit.php';
 define('KSEF_OPTION', 'ksef_settings');
 
 final class Korotkov_SEO_Factory {
@@ -38,23 +40,27 @@ final class Korotkov_SEO_Factory {
         add_action('admin_menu', array($this, 'admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('ksef_daily_tick', array($this, 'daily_tick'));
-        add_action('ksef_queue_tick', array('KSEF_Queue', 'process_one'));
+        add_action('ksef_queue_tick', array('KSEF_Queue', 'process_batch'));
+        add_action('ksef_queue_immediate_tick', array('KSEF_Queue', 'process_batch'));
         add_filter('cron_schedules', array($this, 'cron_schedules'));
         add_action('admin_post_ksef_enqueue_phrases', array($this, 'handle_enqueue_phrases'));
         KSEF_Qwen_Exchange::register_hooks();
         KSEF_Clusterer::register_hooks();
         KSEF_Publisher::register_hooks();
         KSEF_Frontend::register_hooks();
+        KSEF_Title_Audit::register_hooks();
         add_action('plugins_loaded', array($this, 'maybe_upgrade'));
         add_action('admin_post_ksef_wordstat_fetch', array($this, 'handle_wordstat_fetch'));
+        add_action('rest_api_init', array($this, 'register_wordstat_test_route'));
     }
 
     /** Применяет изменения схемы БД и расписания после обновления плагина. */
     public function maybe_upgrade() {
         if (get_option('ksef_db_version') === KSEF_VERSION) return;
         self::create_tables();
+        wp_clear_scheduled_hook('ksef_queue_tick');
         if (!wp_next_scheduled('ksef_queue_tick')) {
-            wp_schedule_event(time() + 600, 'ksef_five_minutes', 'ksef_queue_tick');
+            wp_schedule_event(time() + 60, 'ksef_one_minute', 'ksef_queue_tick');
         }
         if (!wp_next_scheduled('ksef_daily_tick')) {
             wp_schedule_event(time() + 300, 'daily', 'ksef_daily_tick');
@@ -206,7 +212,7 @@ final class Korotkov_SEO_Factory {
         }
 
         if (!wp_next_scheduled('ksef_queue_tick')) {
-            wp_schedule_event(time() + 600, 'ksef_five_minutes', 'ksef_queue_tick');
+            wp_schedule_event(time() + 60, 'ksef_one_minute', 'ksef_queue_tick');
         }
 
         if (!wp_next_scheduled('ksef_daily_tick')) {
@@ -229,6 +235,12 @@ final class Korotkov_SEO_Factory {
             'search_interval' => 2,
             'budget_total' => 4000,
             'budget_stop' => 3800,
+            'billing_reported_cost' => '',
+            'billing_checked_at' => 0,
+            'billing_grant_consumed' => '',
+            'billing_grant_credit' => '',
+            'billing_credit' => '',
+            'billing_grant_end_utc' => '',
             'automation_enabled' => 0,
             'folder_id' => '',
             'api_key' => '',
@@ -257,8 +269,8 @@ final class Korotkov_SEO_Factory {
     }
 
     public function cron_schedules($schedules) {
-        if (!isset($schedules['ksef_five_minutes'])) {
-            $schedules['ksef_five_minutes'] = array('interval' => 300, 'display' => 'Korotkov SEO Factory: каждые 5 минут');
+        if (!isset($schedules['ksef_one_minute'])) {
+            $schedules['ksef_one_minute'] = array('interval' => 60, 'display' => 'Korotkov SEO Factory: каждую минуту');
         }
         return $schedules;
     }
@@ -272,8 +284,21 @@ final class Korotkov_SEO_Factory {
             self::write_log('warning', 'queue_enqueue_failed', $result->get_error_message());
             $redirect = add_query_arg('ksef_queue_result', 'error', admin_url('admin.php?page=korotkov-seo-factory'));
         } else {
-            self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
-            $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
+            if (!empty($result['failed'])) {
+                self::write_log('warning', 'queue_enqueue_partial_failure', 'Не все фразы удалось атомарно добавить в очередь.', $result);
+                $redirect = add_query_arg(array(
+                    'ksef_queue_result' => 'partial',
+                    'ksef_queue_count' => absint($result['added']),
+                    'ksef_queue_failed' => absint($result['failed']),
+                ), admin_url('admin.php?page=korotkov-seo-factory'));
+            } else {
+                self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
+                $settings = get_option(KSEF_OPTION, self::default_settings());
+                if (!empty($result['added']) && !empty($settings['automation_enabled']) && !wp_next_scheduled('ksef_queue_immediate_tick')) {
+                    wp_schedule_single_event(time() + 5, 'ksef_queue_immediate_tick');
+                }
+                $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
+            }
         }
         wp_safe_redirect($redirect);
         exit;
@@ -297,6 +322,40 @@ final class Korotkov_SEO_Factory {
         $clean['search_interval'] = isset($input['search_interval']) ? min(60, max(2, absint($input['search_interval']))) : 2;
         $clean['budget_total'] = 4000;
         $clean['budget_stop'] = 3800;
+        // Ручная сверка всех финансовых показателей. Галочка обновляет timestamp только
+        // если заполнены все поля; обычное сохранение настроек не продлевает срок.
+        $billing_fields = array('billing_reported_cost', 'billing_grant_consumed', 'billing_grant_credit', 'billing_credit');
+        if (!empty($input['billing_refresh_confirm'])) {
+            $valid = true;
+            foreach ($billing_fields as $field) {
+                $value = isset($input[$field]) ? trim((string) $input[$field]) : '';
+                if ($value === '' || !is_numeric($value) || (float) $value < 0) {
+                    $valid = false;
+                    break;
+                }
+                $clean[$field] = number_format((float) $value, 2, '.', '');
+            }
+            $end_utc = isset($input['billing_grant_end_utc']) ? trim((string) $input['billing_grant_end_utc']) : '';
+            $end_ts = $end_utc !== '' ? strtotime($end_utc) : false;
+            if (!$end_ts || !preg_match('/^202[0-9]-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/', $end_utc)) {
+                $valid = false;
+            }
+            if ($valid) {
+                $clean['billing_grant_end_utc'] = $end_utc;
+                $clean['billing_checked_at'] = time();
+            } else {
+                foreach ($billing_fields as $field) $clean[$field] = '';
+                $clean['billing_grant_end_utc'] = '';
+                $clean['billing_checked_at'] = 0;
+                self::write_log('warning', 'billing_confirmation_invalid', 'Сверка Billing не принята: заполните все суммы и точное время окончания гранта в UTC.');
+            }
+        } else {
+            foreach ($billing_fields as $field) {
+                $clean[$field] = isset($old[$field]) ? $old[$field] : '';
+            }
+            $clean['billing_grant_end_utc'] = isset($old['billing_grant_end_utc']) ? $old['billing_grant_end_utc'] : '';
+            $clean['billing_checked_at'] = isset($old['billing_checked_at']) ? (int) $old['billing_checked_at'] : 0;
+        }
         $clean['automation_enabled'] = !empty($input['automation_enabled']) ? 1 : 0;
         $clean['auto_create'] = !empty($input['auto_create']) ? 1 : 0;
         $clean['publish_status'] = (isset($input['publish_status']) && $input['publish_status'] === 'publish') ? 'publish' : 'draft';
@@ -338,7 +397,8 @@ final class Korotkov_SEO_Factory {
         <div class="wrap">
             <h1>Korotkov SEO Factory</h1>
             <p>Управление исследованием запросов и ограничениями API. Регион исследования — вся Россия.</p>
-            <div class="notice notice-warning inline"><p><strong>Безопасный режим.</strong> Платные запросы заблокированы, пока в wp-config.php не задан KSEF_BILLING_VERIFIED. Wordstat запускается только вручную кнопкой. Страницы создаются как черновики, если в настройках не выбрано иное.</p></div>
+            <div class="notice notice-warning inline"><p><strong>Ограничение Wordstat:</strong> по уведомлению Яндекса статистика API недоступна за даты после 7 октября 2026 года. GetTop продолжает отвечать, но данные являются архивными и не отражают текущую частотность. Для актуального анализа конкурентов используй Search API.</p></div>
+            <div class="notice notice-info inline"><p><strong>Режим Wordstat:</strong> ручная сверка Billing отключена по решению администратора. Перед каждым запросом действует внутренний предел оценочных расходов 3 800 ₽, дневной лимит и интервал. Это не проверка фактического баланса Yandex Cloud и не гарантия отсутствия списаний с лицевого счёта. Wordstat запускается вручную; данные GetTop могут быть архивными.</p></div>
             <form method="post" action="options.php">
                 <?php settings_fields('ksef_settings_group'); ?>
                 <h2>Исследование и ограничения</h2>
@@ -361,11 +421,21 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Общий бюджет</th>
-                        <td><strong>4 000 ₽</strong><p class="description">Бюджет зафиксирован. Перед включением платных запросов потребуется проверить покрытие бонусами каждого метода и фактический тариф.</p></td>
+                        <td><strong>4 000 ₽</strong><p class="description">Внутренний предел оценочных расходов — 3 800 ₽. Он считается по журналу запросов плагина и не сверяется с фактическим Billing Yandex Cloud.</p></td>
                     </tr>
                     <tr>
-                        <th scope="row">Порог остановки</th>
-                        <td><strong>3 800 ₽</strong><p class="description">Оставшиеся 200 ₽ — резерв. Порог будет применяться после подключения подтверждённого учёта расходов.</p></td>
+                        <th scope="row">Сверка гранта и Billing</th>
+                        <td>
+                            <p><label>Billing cost (до кредитов), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_reported_cost]" value="<?php echo esc_attr($settings['billing_reported_cost'] ?? ''); ?>"></label></p>
+                            <p><label>Grant consumedAmount из записи гранта, ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_consumed]" value="<?php echo esc_attr($settings['billing_grant_consumed'] ?? ''); ?>"></label></p>
+                            <p><label>monetary_grant_credit из Billing (положительное число), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_credit]" value="<?php echo esc_attr($settings['billing_grant_credit'] ?? ''); ?>"></label></p>
+                            <p><label>credit из CSV (сумма кредитов/скидок, положительное число), ₽<br><input type="number" min="0" step="0.01" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_credit]" value="<?php echo esc_attr($settings['billing_credit'] ?? ''); ?>"></label></p>
+                            <p><label>Окончание гранта (точное время UTC, формат 2027-01-19T21:59:59Z)<br><input type="text" class="regular-text" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_grant_end_utc]" value="<?php echo esc_attr($settings['billing_grant_end_utc'] ?? ''); ?>" placeholder="2027-01-19T21:59:59Z"></label></p>
+                            <label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[billing_refresh_confirm]" value="1"> Я только что сверил все пять значений с актуальными данными Billing и гранта</label>
+                            <p class="description">Поля оставлены для справки и больше не участвуют в разрешении запросов. Фактические расходы и покрытие грантом автоматически не проверяются.</p>
+                            <p class="description"><strong>Порог остановки: 3 800 ₽.</strong> Учитываются только локальные оценочные стоимости, записанные плагином.</p>
+                            <p class="description">Последняя сверка: <?php echo !empty($settings['billing_checked_at']) ? esc_html(date_i18n('d.m.Y H:i', (int) $settings['billing_checked_at'])) : 'не выполнялась'; ?></p>
+                        </td>
                     </tr>
                     <tr>
                         <th scope="row">Folder ID Yandex Cloud</th>
@@ -397,7 +467,7 @@ final class Korotkov_SEO_Factory {
                     </tr>
                     <tr>
                         <th scope="row">Автоматическое исследование</th>
-                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении обрабатывается не более одного задания за 5 минут. Для реальных платных запросов дополнительно требуется KSEF_BILLING_VERIFIED=true в wp-config.php после проверки тарифа и покрытия бонусами. Wordstat и публикация этим переключателем не запускаются.</p></td>
+                        <td><label><input type="checkbox" name="<?php echo esc_attr(KSEF_OPTION); ?>[automation_enabled]" value="1" <?php checked(!empty($settings['automation_enabled'])); ?>> Разрешить обработку очереди Search API</label><p class="description">По умолчанию выключено. При включении очередь запускается сразу после добавления фраз и далее каждую минуту: до 5 заданий за один запуск с интервалом не менее 2 секунд. Search API остаётся под собственными ограничениями клиента; Wordstat и публикация этим переключателем не запускаются.</p></td>
                     </tr>
                 </table>
                 <?php submit_button('Сохранить настройки'); ?>
@@ -412,7 +482,15 @@ final class Korotkov_SEO_Factory {
                 <?php submit_button('Добавить фразы в очередь', 'secondary', 'submit', false); ?>
             </form>
             <?php if (isset($_GET['ksef_queue_result'])) : ?>
-                <div class="notice notice-info inline"><p><?php echo esc_html($_GET['ksef_queue_result'] === 'added' ? 'Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) : 'Не удалось добавить фразы. Проверь журнал.'); ?></p></div>
+                <div class="notice notice-<?php echo esc_attr($_GET['ksef_queue_result'] === 'partial' || $_GET['ksef_queue_result'] === 'error' ? 'warning' : 'info'); ?> inline"><p><?php
+                    if ($_GET['ksef_queue_result'] === 'added') {
+                        echo esc_html('Добавлено новых фраз: ' . absint($_GET['ksef_queue_count'] ?? 0));
+                    } elseif ($_GET['ksef_queue_result'] === 'partial') {
+                        echo esc_html('Добавлено фраз: ' . absint($_GET['ksef_queue_count'] ?? 0) . '. Не удалось добавить: ' . absint($_GET['ksef_queue_failed'] ?? 0) . '. Подробности — в журнале.');
+                    } else {
+                        echo esc_html('Не удалось добавить фразы. Проверь журнал.');
+                    }
+                ?></p></div>
             <?php endif; ?>
             <p><strong>Состояние очереди:</strong> <?php if ($queue_counts) : foreach ($queue_counts as $count) : echo esc_html($count->status . ': ' . $count->total . ' · '); endforeach; else : ?>пока пуста<?php endif; ?></p>
             <hr>
@@ -469,7 +547,7 @@ final class Korotkov_SEO_Factory {
                 <?php wp_nonce_field('ksef_qwen_import'); ?>
                 <input type="file" name="ksef_qwen_csv" accept=".csv,text/csv" required>
                 <?php submit_button('Импортировать CSV из Qwen', 'secondary', 'submit', false); ?>
-                <p class="description">Лимит файла — 1 МБ, до 30 кластеров. Обязательны SEO-поля и article_html (не менее 500 слов). Проверяются дубли H1/meta title, URL-slug и близость текста к другим материалам. При ошибках материал получает blocked_review; прошедший проверки — ready_for_publish. Создание и публикация страниц WordPress пока отключены.</p>
+                <p class="description">Лимит файла — 1 МБ, до 30 кластеров. Обязательны SEO-поля и article_html (не менее 500 слов). Проверяются дубли H1/meta title, URL-slug и близость текста к другим материалам. При ошибках материал получает blocked_review; прошедший проверки — ready_for_publish. Страницы WordPress создаются разделом «Страницы WordPress» ниже: вручную или автоматически, если это включено в настройках.</p>
             </form>
             <?php
             $qwen_notice = get_transient('ksef_qwen_notice_' . get_current_user_id());
@@ -509,6 +587,7 @@ final class Korotkov_SEO_Factory {
             <?php endif; ?>
             <h2>Страницы WordPress</h2>
             <?php KSEF_Publisher::render_admin_section(); ?>
+            <?php KSEF_Title_Audit::render(); ?>
             <h2>Wordstat по фразам</h2>
             <?php $this->render_wordstat_section(); ?>
             <h2>Search API</h2>
@@ -536,6 +615,47 @@ final class Korotkov_SEO_Factory {
         self::write_log('info', 'daily_tick', 'Ежедневное обслуживание выполнено.');
     }
 
+    /**
+     * Административный тест Wordstat через REST API. Доступен только администраторам.
+     */
+    public function register_wordstat_test_route() {
+        register_rest_route('ksef/v1', '/wordstat-test', array(
+            'methods' => 'POST',
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+            'callback' => array($this, 'rest_wordstat_test'),
+            'args' => array(
+                'phrase' => array('required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field'),
+            ),
+        ));
+    }
+
+    public function rest_wordstat_test($request) {
+        $phrase = trim((string) $request->get_param('phrase'));
+        if ($phrase === '') {
+            return new WP_Error('ksef_invalid_phrase', 'Укажите поисковую фразу.', array('status' => 400));
+        }
+        $client = new KSEF_Yandex_Client();
+        $result = $client->wordstat_top(array(
+            'phrase' => $phrase,
+            'numPhrases' => '50',
+            'regions' => array('225'),
+            'devices' => array('DEVICE_ALL'),
+        ));
+        if (is_wp_error($result)) {
+            return new WP_Error($result->get_error_code(), $result->get_error_message(), array('status' => 502));
+        }
+        Korotkov_SEO_Factory::write_log('info', 'wordstat_manual_api_test', 'Выполнен ручной тест Wordstat API.', array('phrase' => $phrase));
+        return rest_ensure_response(array(
+            'success' => true,
+            'phrase' => $phrase,
+            'totalCount' => isset($result['totalCount']) ? (int) $result['totalCount'] : null,
+            'response' => $result,
+            'data_notice' => 'GetTop может возвращать архивную статистику, не новее 07.10.2026.',
+        ));
+    }
+
     public function handle_wordstat_fetch() {
         if (!current_user_can('manage_options')) wp_die('Недостаточно прав.');
         check_admin_referer('ksef_wordstat_fetch');
@@ -558,7 +678,7 @@ final class Korotkov_SEO_Factory {
                 set_transient($key, array('status' => 'error', 'message' => $result->get_error_message()), 60);
             } else {
                 $wpdb->update($table, array('wordstat_data' => wp_json_encode($result)), array('id' => $keyword_id), array('%s'), array('%d'));
-                set_transient($key, array('status' => 'success', 'message' => 'Wordstat сохранён. Показов за 30 дней: ' . (int) ($result['totalCount'] ?? 0) . '.'), 60);
+                set_transient($key, array('status' => 'success', 'message' => 'Архивная статистика Wordstat сохранена (данные не новее 07.10.2026). Значение за доступный период: ' . (int) ($result['totalCount'] ?? 0) . '.'), 60);
             }
         }
         wp_safe_redirect(admin_url('admin.php?page=korotkov-seo-factory'));
@@ -577,15 +697,15 @@ final class Korotkov_SEO_Factory {
             echo '<p>Сначала добавьте фразы в очередь.</p>';
             return;
         }
-        echo '<p>Запрос выполняется вручную, по одной фразе (метод GetTop, вся Россия, 30 дней). Результат кэшируется на 30 дней и используется для выбора головной фразы кластера.</p>';
-        echo '<table class="widefat striped"><thead><tr><th>Фраза</th><th>Показов (30 дн.)</th><th></th></tr></thead><tbody>';
+        echo '<p>Запрос выполняется вручную, по одной фразе (GetTop, вся Россия). Важно: API не содержит статистики после 07.10.2026; результат архивный, а не текущая частотность. Ответ кэшируется на 30 дней.</p>';
+        echo '<table class="widefat striped"><thead><tr><th>Фраза</th><th>Архивные показы (до 07.10.2026)</th><th></th></tr></thead><tbody>';
         foreach ($rows as $r) {
             $ws = $r->wordstat_data ? json_decode($r->wordstat_data, true) : null;
             echo '<tr><td>' . esc_html($r->source_phrase) . '</td><td>' . ($ws && isset($ws['totalCount']) ? esc_html(number_format_i18n((int) $ws['totalCount'])) : '—') . '</td><td>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline">';
             echo '<input type="hidden" name="action" value="ksef_wordstat_fetch"><input type="hidden" name="keyword_id" value="' . (int) $r->id . '">';
             wp_nonce_field('ksef_wordstat_fetch');
-            submit_button($ws ? 'Обновить' : 'Запросить', 'secondary small', 'submit', false);
+            submit_button($ws ? 'Повторить архивный запрос' : 'Запросить архив', 'secondary small', 'submit', false);
             echo '</form></td></tr>';
         }
         echo '</tbody></table>';

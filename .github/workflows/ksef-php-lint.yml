@@ -1,24 +1,28 @@
-name: PHP syntax check
+name: PHP syntax check — Korotkov SEO Factory
 
 on:
   pull_request:
     branches:
       - design/portfolio-refresh
+      - fix/ksef-0.8.1-atomic-billing
+      - fix/ksef-wordstat-gettop-billing-rate
     paths:
-      - 'dveri/korotkov-seo-factory-0.8.0 (1)/korotkov-seo-factory/**/*.php'
+      - 'korotkov-seo-factory/**/*.php'
       - '.github/workflows/ksef-php-lint.yml'
   push:
     branches:
       - fix/ksef-0.8.1-atomic-billing
+      - fix/ksef-wordstat-gettop-billing-rate
+      - cleanup/remove-duplicate-plugin-copies
     paths:
-      - 'dveri/korotkov-seo-factory-0.8.0 (1)/korotkov-seo-factory/**/*.php'
+      - 'korotkov-seo-factory/**/*.php'
       - '.github/workflows/ksef-php-lint.yml'
 
 jobs:
   php-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -27,7 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          plugin_dir='dveri/korotkov-seo-factory-0.8.0 (1)/korotkov-seo-factory'
+          plugin_dir='korotkov-seo-factory'
           find "$plugin_dir" -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do
             echo "Checking: $file"
             php -l "$file"

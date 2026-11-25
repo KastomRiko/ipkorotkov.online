@@ -5,8 +5,8 @@
 if (!defined('ABSPATH')) { exit; }
 
 final class KSEF_Util {
-    /** Оценка стоимости одного синхронного запроса Search API, ₽ (ориентир, не подтверждённое списание). */
-    const SEARCH_COST_ESTIMATE = 0.4;
+    /** Консервативный резерв одного дневного синхронного Search API запроса, ₽ (488 ₽ / 1000; не фактическое списание). */
+    const SEARCH_COST_ESTIMATE = 0.488;
 
     /**
      * Русский заголовок -> латинский slug (ГОСТ 7.79 «система Б», упрощённо).
@@ -77,21 +77,27 @@ final class KSEF_Util {
     }
 
     /**
-     * Накопленные оценочные расходы (₽) по таблице api_usage.
+     * Локальный предохранитель бюджета без ручной сверки Billing.
+     * Суммирует все зарезервированные оценки запросов и учитывает стоимость
+     * следующего запроса до его отправки. Это внутренний лимит, не баланс Yandex.
      */
-    public static function spent_estimate() {
+    public static function check_budget($next_cost = 0.0) {
         global $wpdb;
-        return (float) $wpdb->get_var("SELECT COALESCE(SUM(estimated_cost), 0) FROM {$wpdb->prefix}ksef_api_usage");
-    }
-
-    /**
-     * WP_Error, если порог остановки бюджета достигнут; иначе true.
-     */
-    public static function check_budget() {
-        $settings = get_option(KSEF_OPTION, Korotkov_SEO_Factory::default_settings());
-        $stop = isset($settings['budget_stop']) ? (float) $settings['budget_stop'] : 3800.0;
-        if (self::spent_estimate() >= $stop) {
-            return new WP_Error('ksef_budget_stop', 'Достигнут порог остановки бюджета; платные запросы отключены.');
+        $table = $wpdb->prefix . 'ksef_api_usage';
+        $used = $wpdb->get_var("SELECT COALESCE(SUM(estimated_cost), 0) FROM {$table}");
+        if ($wpdb->last_error !== '') {
+            return new WP_Error('ksef_budget_read_failed', 'Не удалось прочитать локальный учёт расходов; запрос не отправлен.');
+        }
+        $used = max(0, (float) $used);
+        $next_cost = max(0, (float) $next_cost);
+        $stop = 3800.0;
+        if (($used + $next_cost) >= $stop) {
+            return new WP_Error(
+                'ksef_local_budget_stop',
+                'Достигнут внутренний предел оценочных расходов: ' .
+                number_format_i18n($used, 2) . ' ₽ + следующий запрос ' .
+                number_format_i18n($next_cost, 2) . ' ₽. Порог остановки — 3 800 ₽.'
+            );
         }
         return true;
     }
