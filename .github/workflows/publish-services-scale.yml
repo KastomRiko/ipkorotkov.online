@@ -81,7 +81,7 @@ jobs:
           WP_URL: https://ipkorotkov.online
           WP_USER: ${{ secrets.KWC_WP_USERNAME }}
           WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
-          QUEUE_FILE: ${{ inputs.queue_file }}
+          QUEUE_FILE: ${{ inputs.queue_file || 'content/services-queue-15000.json' }}
           CHUNK_INDEX: ${{ matrix.chunk }}
         run: |
           set -euo pipefail
