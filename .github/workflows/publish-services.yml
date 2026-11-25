@@ -70,7 +70,7 @@ jobs:
               import re, html
               content = service["content"]
               faq_match = re.search(r'<h2>Частые вопросы</h2>(.*?)(?=<h2>|</article>)', content, re.S)
-              faq_pairs = re.findall(r'<h3>(.*?)</h3>\\s*<p>(.*?)</p>', faq_match.group(1), re.S) if faq_match else []
+              faq_pairs = re.findall(r'<h3>(.*?)</h3>\s*<p>(.*?)</p>', faq_match.group(1), re.S) if faq_match else []
               def plain(value):
                   return html.unescape(re.sub(r'<[^>]+>', '', value)).strip()
               faq_schema = {
