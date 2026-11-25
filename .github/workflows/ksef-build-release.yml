@@ -1,0 +1,62 @@
+name: Build Korotkov SEO Factory install ZIP
+
+on:
+  push:
+    branches:
+      - main
+      - cleanup/remove-duplicate-plugin-copies
+    paths:
+      - 'korotkov-seo-factory/**'
+      - '.github/workflows/ksef-build-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout plugin source from triggering branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Validate plugin and PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f korotkov-seo-factory/korotkov-seo-factory.php
+          version="$(sed -n 's/^ *\* Version: *\([0-9][0-9.]*\).*/\1/p' korotkov-seo-factory/korotkov-seo-factory.php | head -n1)"
+          test -n "$version"
+          echo "PLUGIN_VERSION=$version" >> "$GITHUB_ENV"
+          find korotkov-seo-factory -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Build installable ZIP and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          zip -qr "dist/korotkov-seo-factory-${PLUGIN_VERSION}.zip" korotkov-seo-factory
+          sha256sum "dist/korotkov-seo-factory-${PLUGIN_VERSION}.zip" | tee dist/SHA256SUMS.txt
+          unzip -l "dist/korotkov-seo-factory-${PLUGIN_VERSION}.zip"
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: korotkov-seo-factory-${{ env.PLUGIN_VERSION }}
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Publish GitHub release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REF_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          safe_ref="${REF_NAME//\//-}"
+          tag="ksef-v${PLUGIN_VERSION}-${safe_ref}-build-${RUN_NUMBER}"
+          gh release create "$tag" "dist/korotkov-seo-factory-${PLUGIN_VERSION}.zip" dist/SHA256SUMS.txt \
+            --title "Korotkov SEO Factory ${PLUGIN_VERSION} (${safe_ref}, build ${RUN_NUMBER})" \
+            --notes "Validated PHP syntax and built from commit ${GITHUB_SHA}. This release packages the plugin; it does not install it on the WordPress site and does not call Yandex APIs."
