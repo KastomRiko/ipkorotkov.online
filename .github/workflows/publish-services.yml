@@ -60,8 +60,8 @@ jobs:
 
           batch = json.loads(Path("content/services-batch.json").read_text(encoding="utf-8"))
           services = batch.get("services", [])
-          if not isinstance(services, list) or not services or len(services) > 20:
-              raise SystemExit("Batch must contain 1–20 services.")
+          if not isinstance(services, list) or not services or len(services) > 100:
+              raise SystemExit("Batch must contain 1–100 services.")
           seen_slugs = set()
           required = ("title", "slug", "focus_keyword", "seo_title", "seo_description", "description", "content")
           for item in services:
