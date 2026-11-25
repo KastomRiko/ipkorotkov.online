@@ -1,0 +1,802 @@
+{
+  "plan_id": "20261125-remote-it-services-100",
+  "purpose": "Кандидатный перечень новых коммерческих страниц удалённых IT-услуг. Это не публикационный пакет: до публикации нужно сверить пересечения с уже существующими страницами и подготовить уникальный контент.",
+  "count": 112,
+  "groups": [
+    "Серверы и администрирование",
+    "Сайты и CMS",
+    "Программирование и Python",
+    "Базы данных и данные",
+    "Интеграции и автоматизация",
+    "Безопасность и сети",
+    "Почта, домены и DNS",
+    "Интернет-магазины",
+    "Аналитика и поддержка"
+  ],
+  "services": [
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Linux-сервера под веб-проекты",
+      "slug": "nastrojka-linux-servera-pod-veb-proekty",
+      "focus_keyword": "настройка Linux сервера",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Ubuntu Server для удалённой работы",
+      "slug": "nastrojka-ubuntu-server-udalennaya-rabota",
+      "focus_keyword": "настройка Ubuntu Server",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Debian Server и системных служб",
+      "slug": "nastrojka-debian-server-sluzhby",
+      "focus_keyword": "настройка Debian Server",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Windows Server и ролей сервера",
+      "slug": "nastrojka-windows-server-rolej",
+      "focus_keyword": "настройка Windows Server",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Active Directory и домена Windows",
+      "slug": "nastrojka-active-directory-domena",
+      "focus_keyword": "настройка Active Directory",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка групповых политик Windows (GPO)",
+      "slug": "nastrojka-gruppovyh-politik-gpo",
+      "focus_keyword": "настройка групповых политик",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка файлового сервера и общих папок",
+      "slug": "nastrojka-fajlovogo-servera",
+      "focus_keyword": "настройка файлового сервера",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка удалённого рабочего стола RDP",
+      "slug": "nastrojka-udalennogo-rabochego-stola-rdp",
+      "focus_keyword": "настройка RDP",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка VPN между офисами и удалёнными сотрудниками",
+      "slug": "nastrojka-vpn-mezhdu-ofisami",
+      "focus_keyword": "настройка VPN между офисами",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка WireGuard на сервере и устройствах",
+      "slug": "nastrojka-wireguard-servera",
+      "focus_keyword": "настройка WireGuard",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка виртуализации Proxmox VE",
+      "slug": "nastrojka-proxmox-ve",
+      "focus_keyword": "настройка Proxmox",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Создание и настройка виртуальных машин KVM",
+      "slug": "sozdanie-virtualnyh-mashin-kvm",
+      "focus_keyword": "создание виртуальной машины KVM",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка Samba и сетевых папок Linux",
+      "slug": "nastrojka-samba-linux",
+      "focus_keyword": "настройка Samba",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка NFS-хранилища в Linux",
+      "slug": "nastrojka-nfs-hranilishcha-linux",
+      "focus_keyword": "настройка NFS",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка журналирования и ротации логов Linux",
+      "slug": "nastrojka-logov-linux-logrotate",
+      "focus_keyword": "настройка логов Linux",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Поиск и устранение ошибок загрузки Linux-сервера",
+      "slug": "ispravlenie-oshibok-zagruzki-linux",
+      "focus_keyword": "восстановление загрузки Linux",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка системных служб systemd",
+      "slug": "nastrojka-systemd-sluzhb",
+      "focus_keyword": "настройка systemd",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка почтового сервера на VPS",
+      "slug": "nastrojka-pochtovogo-servera-vps",
+      "focus_keyword": "настройка почтового сервера",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Настройка S3-совместимого объектного хранилища",
+      "slug": "nastrojka-s3-hranilishcha",
+      "focus_keyword": "настройка S3 хранилища",
+      "status": "candidate"
+    },
+    {
+      "category": "Серверы и администрирование",
+      "title": "Перенос сайта и сервисов между VPS",
+      "slug": "perenos-sajtov-mezhdu-vps",
+      "focus_keyword": "перенос сайта между VPS",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Создание сайта на WordPress под ключ",
+      "slug": "sozdanie-sajta-wordpress-pod-klyuch",
+      "focus_keyword": "создание сайта на WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Создание корпоративного сайта на WordPress",
+      "slug": "sozdanie-korporativnogo-sajta-wordpress",
+      "focus_keyword": "корпоративный сайт WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Создание сайта-каталога товаров и услуг",
+      "slug": "sozdanie-sajta-kataloga-tovarov-uslug",
+      "focus_keyword": "создание сайта каталога",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Разработка посадочной страницы для услуги",
+      "slug": "razrabotka-posadochnoj-stranicy-uslugi",
+      "focus_keyword": "разработка посадочной страницы",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Доработка темы WordPress под дизайн сайта",
+      "slug": "dorabotka-temy-wordpress-dizajn",
+      "focus_keyword": "доработка темы WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Разработка блока или виджета для WordPress",
+      "slug": "razrabotka-bloka-vidzheta-wordpress",
+      "focus_keyword": "разработка виджета WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Разработка кастомного типа записей и таксономий WordPress",
+      "slug": "custom-post-types-wordpress",
+      "focus_keyword": "создание типов записей WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка мультиязычного сайта WordPress",
+      "slug": "nastrojka-multiyazychnogo-wordpress",
+      "focus_keyword": "мультиязычный WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка личного кабинета пользователя на сайте",
+      "slug": "nastrojka-lichnogo-kabineta-sajta",
+      "focus_keyword": "личный кабинет на сайте",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка регистрации и авторизации на WordPress",
+      "slug": "nastrojka-registracii-avtorizacii-wordpress",
+      "focus_keyword": "регистрация на WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Исправление ошибок HTML, CSS и JavaScript на сайте",
+      "slug": "ispravlenie-oshibok-html-css-js",
+      "focus_keyword": "исправление ошибок CSS JavaScript",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Адаптация сайта WordPress для мобильных устройств",
+      "slug": "adaptaciya-wordpress-dlya-mobilnyh",
+      "focus_keyword": "адаптация сайта под мобильные",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка кеширования сайта и браузерного кеша",
+      "slug": "nastrojka-keshirovaniya-sajta",
+      "focus_keyword": "настройка кеширования сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Оптимизация Core Web Vitals и скорости загрузки",
+      "slug": "optimizaciya-core-web-vitals",
+      "focus_keyword": "оптимизация Core Web Vitals",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Исправление ошибок после обновления WordPress",
+      "slug": "ispravlenie-oshibok-posle-obnovleniya-wordpress",
+      "focus_keyword": "ошибки после обновления WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка staging-среды для разработки сайта",
+      "slug": "nastrojka-staging-sredy-sajta",
+      "focus_keyword": "настройка staging сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка мультимедийной библиотеки и изображений WordPress",
+      "slug": "nastrojka-mediabiblioteki-wordpress",
+      "focus_keyword": "настройка медиа WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка форм обратной связи и защиты от спама",
+      "slug": "nastrojka-form-obratnoj-svyazi-antispam",
+      "focus_keyword": "настройка форм обратной связи",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Разработка REST API для сайта WordPress",
+      "slug": "razrabotka-rest-api-wordpress",
+      "focus_keyword": "разработка REST API WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Сайты и CMS",
+      "title": "Настройка перенаправлений и структуры URL сайта",
+      "slug": "nastrojka-redirektov-url-sajta",
+      "focus_keyword": "настройка редиректов сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка Telegram-бота для приёма заявок",
+      "slug": "telegram-bot-priem-zayavok",
+      "focus_keyword": "разработка Telegram бота заявок",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка Telegram-бота с базой данных",
+      "slug": "telegram-bot-baza-dannyh",
+      "focus_keyword": "Telegram бот с базой данных",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка Python-скрипта для регулярных задач",
+      "slug": "razrabotka-python-skripta-regulyarnye-zadachi",
+      "focus_keyword": "разработка Python скрипта",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка парсера данных с сайта по техническому заданию",
+      "slug": "razrabotka-parsera-dannyh-po-tz",
+      "focus_keyword": "разработка парсера данных",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Автоматизация обработки Excel на Python",
+      "slug": "avtomatizaciya-excel-python",
+      "focus_keyword": "автоматизация Excel Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Автоматизация обработки PDF-документов на Python",
+      "slug": "obrabotka-pdf-python-avtomatizaciya",
+      "focus_keyword": "обработка PDF Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка скрипта для обработки CSV и XML",
+      "slug": "skript-obrabotki-csv-xml",
+      "focus_keyword": "обработка CSV XML скрипт",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка API на FastAPI для веб-проекта",
+      "slug": "razrabotka-api-fastapi",
+      "focus_keyword": "разработка API FastAPI",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка backend на Flask",
+      "slug": "razrabotka-backend-flask",
+      "focus_keyword": "разработка backend Flask",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка небольшого веб-приложения на Python",
+      "slug": "veb-prilozhenie-python-razrabotka",
+      "focus_keyword": "разработка веб приложения Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка скрипта для обмена файлами между системами",
+      "slug": "skript-obmena-fajlami-sistem",
+      "focus_keyword": "автоматизация обмена файлами",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Интеграция Python-скрипта с внешним API",
+      "slug": "integraciya-python-skripta-api",
+      "focus_keyword": "интеграция Python API",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка планировщика задач и фоновых процессов Python",
+      "slug": "planirovshchik-zadach-python",
+      "focus_keyword": "планировщик задач Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка парсера XML-фидов и прайс-листов",
+      "slug": "parser-xml-fidov-prajs-listov",
+      "focus_keyword": "парсер XML прайс листов",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Автоматизация отправки отчётов по электронной почте",
+      "slug": "avtootpravka-otchetov-email",
+      "focus_keyword": "автоматизация отправки отчётов",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка генератора документов Word и PDF",
+      "slug": "generator-dokumentov-word-pdf",
+      "focus_keyword": "генератор документов Word PDF",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка программы для сравнения файлов и данных",
+      "slug": "programma-sravneniya-fajlov-dannyh",
+      "focus_keyword": "программа сравнения файлов",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Разработка настольной программы на Python",
+      "slug": "razrabotka-nastolnoj-programmy-python",
+      "focus_keyword": "разработка программы Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Программирование и Python",
+      "title": "Исправление ошибок и доработка Python-программы",
+      "slug": "ispravlenie-oshibok-python-programmy",
+      "focus_keyword": "исправление ошибок Python",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Проектирование структуры базы данных PostgreSQL",
+      "slug": "proektirovanie-bazy-postgresql",
+      "focus_keyword": "проектирование базы PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка пользователей и прав доступа PostgreSQL",
+      "slug": "postgresql-polzovateli-prava",
+      "focus_keyword": "настройка прав PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Оптимизация медленных SQL-запросов PostgreSQL",
+      "slug": "optimizaciya-sql-zaprosov-postgresql",
+      "focus_keyword": "оптимизация SQL PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка автоматической очистки и обслуживания PostgreSQL",
+      "slug": "obsluzhivanie-postgresql-avtoochistka",
+      "focus_keyword": "обслуживание PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Перенос базы данных PostgreSQL на новый сервер",
+      "slug": "perenos-bazy-postgresql-server",
+      "focus_keyword": "перенос PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка подключения приложения к PostgreSQL",
+      "slug": "podklyuchenie-prilozheniya-postgresql",
+      "focus_keyword": "подключение к PostgreSQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка MongoDB для веб-приложения",
+      "slug": "nastrojka-mongodb-veb-prilozhenie",
+      "focus_keyword": "настройка MongoDB",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка SQLite для локального приложения",
+      "slug": "nastrojka-sqlite-prilozheniya",
+      "focus_keyword": "настройка SQLite",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Перенос данных между Excel и SQL-базой",
+      "slug": "perenos-dannyh-excel-sql",
+      "focus_keyword": "перенос Excel в SQL",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Очистка, нормализация и объединение баз данных",
+      "slug": "ochistka-normalizaciya-baz-dannyh",
+      "focus_keyword": "очистка базы данных",
+      "status": "candidate"
+    },
+    {
+      "category": "Базы данных и данные",
+      "title": "Настройка Redis для кеширования приложения",
+      "slug": "nastrojka-redis-prilozheniya",
+      "focus_keyword": "настройка Redis",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Интеграция сайта с внешней CRM-системой",
+      "slug": "integraciya-sajta-vneshnyaya-crm",
+      "focus_keyword": "интеграция сайта с CRM",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Интеграция сайта с платёжным сервисом",
+      "slug": "integraciya-sajta-platezhnyj-servis",
+      "focus_keyword": "интеграция сайта с оплатой",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Интеграция сайта с сервисом доставки",
+      "slug": "integraciya-sajta-dostavka",
+      "focus_keyword": "интеграция сайта с доставкой",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Настройка вебхуков между онлайн-сервисами",
+      "slug": "nastrojka-vebhukov-servisy",
+      "focus_keyword": "настройка вебхуков",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Автоматизация обмена данными между сайтом и таблицами",
+      "slug": "avtoobmen-sajt-tablicy",
+      "focus_keyword": "автоматизация обмена данными",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Интеграция интернет-магазина с учётной системой",
+      "slug": "integraciya-magazina-uchetnaya-sistema",
+      "focus_keyword": "интеграция магазина с учётной системой",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Настройка автоматической выгрузки данных по расписанию",
+      "slug": "avtomaticheskaya-vygruzka-dannyh-raspisanie",
+      "focus_keyword": "автоматическая выгрузка данных",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Настройка уведомлений о заказах в Telegram",
+      "slug": "uvedomleniya-o-zakazah-telegram",
+      "focus_keyword": "уведомления о заказах Telegram",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Автоматизация обработки заявок с сайта",
+      "slug": "avtomatizaciya-obrabotki-zayavok-sajta",
+      "focus_keyword": "автоматизация заявок сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Интеграции и автоматизация",
+      "title": "Настройка интеграции через Make или n8n",
+      "slug": "integraciya-make-n8n",
+      "focus_keyword": "настройка интеграции n8n Make",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Аудит безопасности сайта WordPress",
+      "slug": "audit-bezopasnosti-wordpress",
+      "focus_keyword": "аудит безопасности WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка двухфакторной авторизации WordPress",
+      "slug": "dvuhfaktornaya-avtorizaciya-wordpress",
+      "focus_keyword": "двухфакторная авторизация WordPress",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка firewall на Windows Server",
+      "slug": "firewall-windows-server-nastrojka",
+      "focus_keyword": "настройка firewall Windows Server",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка сетевого firewall на Linux",
+      "slug": "setevoj-firewall-linux-nastrojka",
+      "focus_keyword": "настройка firewall Linux",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка защиты SSH от перебора паролей",
+      "slug": "zashchita-ssh-ot-podbora",
+      "focus_keyword": "защита SSH от перебора",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Проверка сайта на вредоносные перенаправления",
+      "slug": "proverka-sajta-vredonosnye-redirects",
+      "focus_keyword": "проверка сайта на редиректы",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка SSL-сертификата для поддомена",
+      "slug": "ssl-sertifikat-poddomen",
+      "focus_keyword": "SSL сертификат поддомена",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка безопасных прав доступа к файлам сайта",
+      "slug": "prava-dostupa-fajly-sajta",
+      "focus_keyword": "права доступа к файлам сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Настройка DNSSEC для домена",
+      "slug": "nastrojka-dnssec-domena",
+      "focus_keyword": "настройка DNSSEC",
+      "status": "candidate"
+    },
+    {
+      "category": "Безопасность и сети",
+      "title": "Диагностика сетевых проблем и потери соединения",
+      "slug": "diagnostika-setevyh-problem",
+      "focus_keyword": "диагностика сетевых проблем",
+      "status": "candidate"
+    },
+    {
+      "category": "Почта, домены и DNS",
+      "title": "Перенос корпоративной почты на другой сервис",
+      "slug": "perenos-korporativnoj-pochty",
+      "focus_keyword": "перенос корпоративной почты",
+      "status": "candidate"
+    },
+    {
+      "category": "Почта, домены и DNS",
+      "title": "Настройка почтовых ящиков на домене",
+      "slug": "nastrojka-pochtovyh-yashchikov-domen",
+      "focus_keyword": "настройка почтовых ящиков домен",
+      "status": "candidate"
+    },
+    {
+      "category": "Почта, домены и DNS",
+      "title": "Исправление проблем отправки писем с сайта",
+      "slug": "ispravlenie-otpravki-pisem-sajta",
+      "focus_keyword": "исправление отправки писем сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Почта, домены и DNS",
+      "title": "Настройка почтового клиента Outlook",
+      "slug": "nastrojka-outlook-pochtovogo-klienta",
+      "focus_keyword": "настройка Outlook",
+      "status": "candidate"
+    },
+    {
+      "category": "Почта, домены и DNS",
+      "title": "Настройка DNS-записей для поддомена и сервиса",
+      "slug": "dns-zapisi-poddomen-servis",
+      "focus_keyword": "настройка DNS поддомена",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка вариативных товаров WooCommerce",
+      "slug": "nastrojka-variativnyh-tovarov-woocommerce",
+      "focus_keyword": "вариативные товары WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка купонов, скидок и акций WooCommerce",
+      "slug": "kupony-skidki-akcii-woocommerce",
+      "focus_keyword": "настройка скидок WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка писем и уведомлений WooCommerce",
+      "slug": "pisma-uvedomleniya-woocommerce",
+      "focus_keyword": "письма WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка статусов и обработки заказов WooCommerce",
+      "slug": "statusy-obrabotka-zakazov-woocommerce",
+      "focus_keyword": "обработка заказов WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка фильтров и поиска товаров WooCommerce",
+      "slug": "filtry-poisk-tovarov-woocommerce",
+      "focus_keyword": "фильтры WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка импорта каталога товаров WooCommerce",
+      "slug": "import-kataloga-tovarov-woocommerce",
+      "focus_keyword": "импорт каталога WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Интернет-магазины",
+      "title": "Настройка экспорта заказов WooCommerce в Excel",
+      "slug": "eksport-zakazov-woocommerce-excel",
+      "focus_keyword": "экспорт заказов WooCommerce",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка Яндекс Метрики и целей на сайте",
+      "slug": "nastrojka-metriki-celej-sajta",
+      "focus_keyword": "настройка Яндекс Метрики и целей",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка Google Analytics 4 и событий",
+      "slug": "nastrojka-google-analytics-4-sobytiya",
+      "focus_keyword": "настройка Google Analytics 4",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка отслеживания отправки форм и заявок",
+      "slug": "otslezhivanie-form-zayavok",
+      "focus_keyword": "отслеживание заявок сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка отчётов по посещаемости сайта",
+      "slug": "otchety-poseshchaemost-sajta",
+      "focus_keyword": "отчёты посещаемости сайта",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Удалённая настройка компьютера Windows",
+      "slug": "udalennaya-nastrojka-kompyutera-windows",
+      "focus_keyword": "удалённая настройка Windows",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Удалённая установка и настройка программ Windows",
+      "slug": "udalennaya-ustanovka-programm-windows",
+      "focus_keyword": "удалённая установка программ",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка резервного копирования рабочих файлов ПК",
+      "slug": "rezervnoe-kopirovanie-fajlov-pk",
+      "focus_keyword": "резервное копирование файлов ПК",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Удалённая диагностика ошибок Windows",
+      "slug": "udalennaya-diagnostika-oshibok-windows",
+      "focus_keyword": "диагностика ошибок Windows",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Настройка синхронизации файлов между компьютерами",
+      "slug": "sinhronizaciya-fajlov-mezhdu-kompyuterami",
+      "focus_keyword": "синхронизация файлов компьютеров",
+      "status": "candidate"
+    },
+    {
+      "category": "Аналитика и поддержка",
+      "title": "Удалённая настройка принтера и сетевого сканирования",
+      "slug": "udalennaya-nastrojka-printera-skanirovaniya",
+      "focus_keyword": "настройка принтера удалённо",
+      "status": "candidate"
+    }
+  ]
+}
