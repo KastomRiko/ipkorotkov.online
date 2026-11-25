@@ -1,0 +1,39 @@
+name: Diagnose live SEO Factory Search API
+on:
+  push:
+    branches: [design/portfolio-refresh]
+    paths:
+      - '.github/workflows/ksef-live-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read live WordPress plugin files (no external API calls)
+        env:
+          KWC_TOKEN: ${{ secrets.KWC_API_TOKEN }}
+          WP_USER: ${{ secrets.KWC_WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.KWC_WP_APP_PASSWORD }}
+          KWC_BASE_URL: https://ipkorotkov.online
+        run: |
+          set -euo pipefail
+          WP_APP_PASSWORD="${WP_APP_PASSWORD// /}"
+          auth=(--user "$WP_USER:$WP_APP_PASSWORD" --header "X-KWC-Token: $KWC_TOKEN")
+          curl -fsS "${auth[@]}" "$KWC_BASE_URL/wp-json/kwc/v1/status" | jq '{product,version,wordpress,php,capabilities,write_operations}'
+          read_file() {
+            local path="$1"
+            curl -fsS "${auth[@]}" --get --data-urlencode "path=$path" "$KWC_BASE_URL/wp-json/kwc/v1/read"
+          }
+          MAIN="$(read_file 'plugins/korotkov-seo-factory/korotkov-seo-factory.php')"
+          SEARCH="$(read_file 'plugins/korotkov-seo-factory/includes/class-search-client.php')"
+          QUEUE="$(read_file 'plugins/korotkov-seo-factory/includes/class-queue.php')"
+          echo "=== LIVE SEO FACTORY VERSION ==="
+          printf '%s' "$MAIN" | jq -r '.content' | grep -m1 -E 'Plugin Name:|Version:|KSEF_VERSION'
+          echo "=== LIVE SEARCH CLIENT GUARDS / REQUEST FLOW ==="
+          printf '%s' "$SEARCH" | jq -r '.content' | grep -nE 'KSEF_BILLING_VERIFIED|check_budget|DAILY_LIMIT|MIN_INTERVAL|function search|wp_remote_post|search_http_|rawData|reserve_search_slot|automation_enabled' | head -80
+          echo "=== LIVE QUEUE GUARDS / SEARCH INVOCATION ==="
+          printf '%s' "$QUEUE" | jq -r '.content' | grep -nE 'KSEF_BILLING_VERIFIED|check_budget|automation_enabled|KSEF_Search_Client|serp_search|function process_one|function process' | head -100
