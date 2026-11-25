@@ -294,7 +294,7 @@ final class Korotkov_SEO_Factory {
             } else {
                 self::write_log('info', 'queue_enqueued', 'Фразы добавлены в очередь.', $result);
                 $settings = get_option(KSEF_OPTION, self::default_settings());
-                if (!empty($result['added']) && !empty($settings['automation_enabled']) && defined('KSEF_BILLING_VERIFIED') && KSEF_BILLING_VERIFIED === true && !wp_next_scheduled('ksef_queue_immediate_tick')) {
+                if (!empty($result['added']) && !empty($settings['automation_enabled']) && !wp_next_scheduled('ksef_queue_immediate_tick')) {
                     wp_schedule_single_event(time() + 5, 'ksef_queue_immediate_tick');
                 }
                 $redirect = add_query_arg(array('ksef_queue_result' => 'added', 'ksef_queue_count' => absint($result['added'])), admin_url('admin.php?page=korotkov-seo-factory'));
