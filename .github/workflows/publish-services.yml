@@ -59,7 +59,24 @@ jobs:
                   raise
 
           batch = json.loads(Path("content/services-batch.json").read_text(encoding="utf-8"))
-          services = batch["services"]
+          services = batch.get("services", [])
+          if not isinstance(services, list) or not services or len(services) > 20:
+              raise SystemExit("Batch must contain 1–20 services.")
+          seen_slugs = set()
+          required = ("title", "slug", "focus_keyword", "seo_title", "seo_description", "description", "content")
+          for item in services:
+              missing = [key for key in required if not str(item.get(key, "")).strip()]
+              if missing:
+                  raise SystemExit(f"Service {item.get('slug', '<unknown>')} missing: {', '.join(missing)}")
+              if item["slug"] in seen_slugs:
+                  raise SystemExit(f"Duplicate slug inside batch: {item['slug']}")
+              seen_slugs.add(item["slug"])
+              words = len(__import__("re").sub(r"<[^>]+>", " ", item["content"]).split())
+              if words < 250:
+                  raise SystemExit(f"Content too short for {item['slug']}: {words} words")
+              if "Частые вопросы" not in item["content"]:
+                  raise SystemExit(f"FAQ section missing for {item['slug']}")
+          batch_tag = __import__("re").sub(r"[^A-Za-z0-9_-]", "_", batch.get("batch_id", "batch"))
           created = updated = 0
           links = []
 
@@ -125,17 +142,27 @@ jobs:
               if meta.get("_yoast_wpseo_title") != service["seo_title"] or meta.get("_yoast_wpseo_metadesc") != service["seo_description"]:
                   print(f"SEO_META_CHECK: Yoast fields were not confirmed by REST for {slug}; verify in SEO plugin UI.")
 
-          def append_section(page_id, marker, html):
+          def append_section(page_id, marker, markup, expected_links):
               page = request(f"/wp-json/wp/v2/pages/{page_id}?context=edit")
-              content = page.get("content") or {}
-              raw = content.get("raw") if isinstance(content, dict) else content
+              page_content = page.get("content") or {}
+              raw = page_content.get("raw") if isinstance(page_content, dict) else page_content
               raw = raw or ""
-              if marker in raw:
-                  print(f"INDEX_ALREADY_UPDATED: page {page_id}")
+              def links_present(value):
+                  return all(f'href="{link}"' in value for _, link in expected_links)
+              if marker in raw and links_present(raw):
+                  print(f"INDEX_ALREADY_UPDATED_AND_LINKS_VERIFIED: page {page_id}")
                   return
-              updated_content = raw.rstrip() + "\n\n" + marker + "\n" + html + "\n"
+              actual_marker = marker if marker not in raw else marker.replace("-->", "_LINKFIX -->")
+              updated_content = raw.rstrip() + "\n\n" + actual_marker + "\n" + markup + "\n"
               request(f"/wp-json/wp/v2/pages/{page_id}", "POST", {"content": updated_content})
-              print(f"INDEX_UPDATED: page {page_id}")
+              verify_page = request(f"/wp-json/wp/v2/pages/{page_id}?context=edit")
+              verify_content = verify_page.get("content") or {}
+              verify_raw = verify_content.get("raw") if isinstance(verify_content, dict) else verify_content
+              verify_raw = verify_raw or ""
+              missing_links = [link for _, link in expected_links if f'href="{link}"' not in verify_raw]
+              if missing_links:
+                  raise RuntimeError(f"Index page {page_id}: WordPress did not preserve {len(missing_links)} expected anchor links.")
+              print(f"INDEX_UPDATED_AND_LINKS_VERIFIED: page {page_id} | links={len(expected_links)}")
 
           catalog_html = '<section class="korotkov-new-services"><h2>Дополнительные услуги программиста</h2><ul>' + "".join(
               f'<li><a href="{link}">{title}</a></li>' for title, link in links
@@ -144,7 +171,7 @@ jobs:
               f'<li><a href="{link}">{title}</a></li>' for title, link in links
           ) + '</ul>'
 
-          append_section(92, "<!-- KOROTKOV_SERVICES_BATCH_20261125_3 -->", catalog_html)
-          append_section(775, "<!-- KOROTKOV_SITEMAP_BATCH_20261125_3 -->", sitemap_html)
-          print(f"SUMMARY: created={created} updated={updated} indexed={len(links)}")
+          append_section(92, f"<!-- KOROTKOV_SERVICES_{batch_tag} -->", catalog_html, links)
+          append_section(775, f"<!-- KOROTKOV_SITEMAP_{batch_tag} -->", sitemap_html, links)
+          print(f"SUMMARY: created={created} updated={updated} indexed={len(links)} batch={batch.get('batch_id')}")
           PY
