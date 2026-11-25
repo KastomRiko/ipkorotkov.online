@@ -133,6 +133,7 @@ final class KSEF_Knowledge_Base {
         $headers = fgetcsv($fh, 0, ',');
         if (!$headers) { fclose($fh); self::redirect_notice('error', 'CSV пустой.'); }
         $headers = array_map('trim', $headers);
+        $headers[0] = preg_replace('/^\\xEF\\xBB\\xBF/', '', $headers[0]);
         $required = array('kb_id','title','slug','category','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json');
         if ($headers !== $required) { fclose($fh); self::redirect_notice('error', 'Неверные заголовки CSV. Сначала скачайте актуальный шаблон из панели.'); }
 
@@ -280,6 +281,8 @@ final class KSEF_Knowledge_Base {
         update_post_meta($post_id, '_ksef_meta_description', wp_slash($row->meta_description));
         update_post_meta($post_id, '_ksef_kb_sources', wp_slash(wp_json_encode($data['sources'], JSON_UNESCAPED_UNICODE)));
         update_post_meta($post_id, '_ksef_kb_screenshots', wp_slash(wp_json_encode($data['screenshots'], JSON_UNESCAPED_UNICODE)));
+        $faq_items = KSEF_Util::parse_faq($row->faq_html);
+        if ($faq_items) update_post_meta($post_id, '_ksef_faq', wp_slash(wp_json_encode($faq_items, JSON_UNESCAPED_UNICODE)));
         if (defined('WPSEO_VERSION')) {
             update_post_meta($post_id, '_yoast_wpseo_title', wp_slash($row->meta_title));
             update_post_meta($post_id, '_yoast_wpseo_metadesc', wp_slash($row->meta_description));
