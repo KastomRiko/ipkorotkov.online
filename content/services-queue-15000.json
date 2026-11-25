@@ -1,0 +1,211 @@
+{
+  "batch_id": "20261125-short-services-40",
+  "contact_phone": "+7-964-151-93-62",
+  "services": [
+    {
+      "title": "Настройка Active Directory и домена Windows",
+      "slug": "nastrojka-active-directory-domena-windows",
+      "description": "Настрою домен Active Directory, подключение компьютеров и централизованное управление учётными записями."
+    },
+    {
+      "title": "Настройка групповых политик GPO Windows",
+      "slug": "nastrojka-gruppovyh-politik-gpo-windows",
+      "description": "Настрою групповые политики для ограничений, параметров безопасности и рабочих станций организации."
+    },
+    {
+      "title": "Настройка удалённого рабочего стола RDP",
+      "slug": "nastrojka-udalennogo-rabochego-stola-rdp",
+      "description": "Настрою безопасное подключение по RDP к компьютеру или серверу Windows."
+    },
+    {
+      "title": "Настройка VPN WireGuard для удалённого доступа",
+      "slug": "nastrojka-vpn-wireguard-udalennogo-dostupa",
+      "description": "Разверну WireGuard для защищённого удалённого доступа сотрудников к рабочей сети."
+    },
+    {
+      "title": "Настройка AmneziaWG на VPS",
+      "slug": "nastrojka-amneziawg-vps",
+      "description": "Установлю AmneziaWG на VPS, настрою конфигурацию и проверю подключение клиентов."
+    },
+    {
+      "title": "Настройка VLESS Reality на сервере",
+      "slug": "nastrojka-vless-reality-server",
+      "description": "Настрою сервер VLESS Reality, параметры подключения и проверку доступности сервиса."
+    },
+    {
+      "title": "Настройка Proxmox VE и виртуальных машин",
+      "slug": "nastrojka-proxmox-ve-virtualnyh-mashin",
+      "description": "Установлю Proxmox VE, настрою хранилище, сеть и создание виртуальных машин."
+    },
+    {
+      "title": "Настройка резервного копирования Proxmox",
+      "slug": "nastrojka-rezervnogo-kopirovaniya-proxmox",
+      "description": "Настрою расписание резервного копирования виртуальных машин и проверку восстановления Proxmox."
+    },
+    {
+      "title": "Настройка Nginx Proxy Manager",
+      "slug": "nastrojka-nginx-proxy-manager",
+      "description": "Установлю Nginx Proxy Manager, настрою проксирование доменов и SSL-сертификаты."
+    },
+    {
+      "title": "Настройка Apache VirtualHost",
+      "slug": "nastrojka-apache-virtualhost",
+      "description": "Настрою VirtualHost Apache для размещения нескольких сайтов на одном сервере."
+    },
+    {
+      "title": "Настройка HTTPS и SSL-сертификата Let's Encrypt",
+      "slug": "nastrojka-https-ssl-lets-encrypt",
+      "description": "Подключу HTTPS, выпущу SSL-сертификат Let's Encrypt и проверю автоматическое продление."
+    },
+    {
+      "title": "Настройка DNS-записей домена",
+      "slug": "nastrojka-dns-zapisej-domena",
+      "description": "Настрою A, AAAA, CNAME, MX и TXT записи для корректной работы домена."
+    },
+    {
+      "title": "Настройка SPF DKIM DMARC для почты",
+      "slug": "nastrojka-spf-dkim-dmarc-pochty",
+      "description": "Настрою SPF, DKIM и DMARC для повышения доставляемости корпоративной электронной почты."
+    },
+    {
+      "title": "Настройка почтового сервера SMTP",
+      "slug": "nastrojka-pochtovogo-servera-smtp",
+      "description": "Настрою SMTP-отправку сайта или приложения, проверю авторизацию и доставку писем."
+    },
+    {
+      "title": "Настройка Cloudflare для сайта",
+      "slug": "nastrojka-cloudflare-dlya-sajta",
+      "description": "Подключу домен к Cloudflare, настрою DNS, SSL и базовые правила защиты."
+    },
+    {
+      "title": "Настройка PostgreSQL на VPS",
+      "slug": "nastrojka-postgresql-vps",
+      "description": "Установлю PostgreSQL на VPS, создам базу данных и настрою удалённый доступ."
+    },
+    {
+      "title": "Оптимизация PostgreSQL и запросов",
+      "slug": "optimizaciya-postgresql-zaprosov",
+      "description": "Проверю настройки PostgreSQL, медленные запросы, индексы и использование ресурсов сервера."
+    },
+    {
+      "title": "Настройка резервного копирования PostgreSQL",
+      "slug": "nastrojka-rezervnogo-kopirovaniya-postgresql",
+      "description": "Настрою регулярные резервные копии PostgreSQL и проверю процедуру восстановления базы."
+    },
+    {
+      "title": "Настройка Redis для веб-приложения",
+      "slug": "nastrojka-redis-veb-prilozheniya",
+      "description": "Установлю Redis и настрою подключение приложения для кеширования и хранения данных."
+    },
+    {
+      "title": "Настройка MongoDB на сервере",
+      "slug": "nastrojka-mongodb-server",
+      "description": "Установлю MongoDB, настрою пользователя, права доступа и сетевую защиту сервера."
+    },
+    {
+      "title": "Развёртывание приложения FastAPI на VPS",
+      "slug": "razvertyvanie-fastapi-vps",
+      "description": "Разверну приложение FastAPI на VPS, настрою Python-окружение, запуск и Nginx."
+    },
+    {
+      "title": "Развёртывание приложения Flask на сервере",
+      "slug": "razvertyvanie-flask-server",
+      "description": "Разверну Flask-приложение на сервере, настрою Gunicorn, Nginx и системную службу."
+    },
+    {
+      "title": "Развёртывание Node.js приложения на VPS",
+      "slug": "razvertyvanie-nodejs-prilozheniya-vps",
+      "description": "Разверну Node.js приложение на VPS, настрою npm, процесс запуска и обратный прокси."
+    },
+    {
+      "title": "Настройка PM2 для Node.js",
+      "slug": "nastrojka-pm2-nodejs",
+      "description": "Настрою PM2 для автоматического запуска, перезапуска и контроля Node.js приложений."
+    },
+    {
+      "title": "Настройка Python virtualenv на сервере",
+      "slug": "nastrojka-python-virtualenv-server",
+      "description": "Настрою виртуальное окружение Python, зависимости проекта и отдельный запуск приложения."
+    },
+    {
+      "title": "Автоматизация обработки Excel на Python",
+      "slug": "avtomatizaciya-obrabotki-excel-python",
+      "description": "Создам Python-скрипт для обработки Excel, объединения таблиц и автоматического формирования отчётов."
+    },
+    {
+      "title": "Конвертация CSV XML JSON на Python",
+      "slug": "konvertaciya-csv-xml-json-python",
+      "description": "Настрою преобразование CSV, XML и JSON файлов с проверкой структуры и данных."
+    },
+    {
+      "title": "Интеграция сайта с внешним REST API",
+      "slug": "integraciya-sajta-vneshnim-rest-api",
+      "description": "Подключу сайт к внешнему REST API, настрою обмен данными и обработку ответов."
+    },
+    {
+      "title": "Разработка webhook-интеграции",
+      "slug": "razrabotka-webhook-integracii",
+      "description": "Настрою webhook для передачи событий между сайтом, CRM и внешними сервисами."
+    },
+    {
+      "title": "Интеграция Telegram-бота с CRM",
+      "slug": "integraciya-telegram-bota-crm",
+      "description": "Подключу Telegram-бота к CRM для передачи заявок, сообщений и статусов клиентов."
+    },
+    {
+      "title": "Настройка WooCommerce доставки",
+      "slug": "nastrojka-woocommerce-dostavki",
+      "description": "Настрою способы доставки WooCommerce, зоны, тарифы и отображение вариантов при оформлении заказа."
+    },
+    {
+      "title": "Настройка оплаты в WooCommerce",
+      "slug": "nastrojka-oplaty-woocommerce",
+      "description": "Подключу платёжный модуль WooCommerce и проверю сценарии оплаты и уведомления заказов."
+    },
+    {
+      "title": "Исправление ошибок WordPress после обновления",
+      "slug": "ispravlenie-oshibok-wordpress-posle-obnovleniya",
+      "description": "Найду причину ошибок WordPress после обновления темы, плагинов или версии PHP."
+    },
+    {
+      "title": "Перенос сайта WordPress на другой хостинг",
+      "slug": "perenos-wordpress-na-drugoj-hosting",
+      "description": "Перенесу WordPress на новый хостинг, проверю базу данных, домен и работу сайта."
+    },
+    {
+      "title": "Настройка WordPress staging-среды",
+      "slug": "nastrojka-wordpress-staging-sredy",
+      "description": "Создам тестовую копию WordPress для безопасной проверки обновлений и изменений сайта."
+    },
+    {
+      "title": "Очистка WordPress от вредоносного кода",
+      "slug": "ochistka-wordpress-vredonosnogo-koda",
+      "description": "Проверю файлы WordPress, удалю обнаруженный вредоносный код и закрою известные уязвимости."
+    },
+    {
+      "title": "Настройка защиты админ-панели WordPress",
+      "slug": "zashchita-admin-paneli-wordpress",
+      "description": "Усилю защиту входа WordPress, настрою ограничения доступа и дополнительные меры безопасности."
+    },
+    {
+      "title": "Ускорение загрузки сайта на WordPress",
+      "slug": "uskorenie-zagruzki-sajta-wordpress",
+      "description": "Проверю скорость WordPress, выявлю узкие места и настрою кеширование и оптимизацию."
+    },
+    {
+      "title": "Настройка кеширования Nginx FastCGI",
+      "slug": "nastrojka-keshirovaniya-nginx-fastcgi",
+      "description": "Настрою FastCGI cache в Nginx для ускорения динамических страниц сайта."
+    },
+    {
+      "title": "Настройка Uptime Kuma для проверки доступности",
+      "slug": "nastrojka-uptime-kuma-monitoring",
+      "description": "Установлю Uptime Kuma, добавлю проверки сайтов и настрою уведомления о недоступности."
+    },
+    {
+      "title": "Настройка автоматического обновления сертификатов SSL",
+      "slug": "avtomaticheskoe-obnovlenie-ssl-sertifikatov",
+      "description": "Настрою автоматическое продление SSL-сертификатов и проверку корректной работы HTTPS."
+    }
+  ]
+}
