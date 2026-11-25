@@ -2,11 +2,6 @@ name: Deploy Korotkov Dark theme to WordPress
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - design/portfolio-refresh
-    paths:
-      - 'wp-content/themes/korotkov-dark/**'
 
 permissions:
   contents: read
