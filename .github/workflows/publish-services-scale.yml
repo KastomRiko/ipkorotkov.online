@@ -58,13 +58,13 @@ jobs:
               if slug in seen:
                   raise SystemExit(f"Duplicate slug: {slug}")
               seen.add(slug)
-          chunks = (len(services) + 99) // 100
+          chunks = (len(services) + 199) // 200
           matrix = {"chunk": list(range(chunks))}
           import json as j
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("matrix=" + j.dumps(matrix) + "\n")
               f.write(f"chunks={chunks}\n")
-          print(f"Validated {len(services)} services in {chunks} chunks of up to 100.")
+          print(f"Validated {len(services)} services in {chunks} chunks of up to 200.")
           PY
 
   publish:
@@ -116,7 +116,7 @@ jobs:
           queue = json.loads(Path(os.environ["QUEUE_FILE"]).read_text(encoding="utf-8"))
           services = queue["services"]
           chunk = int(os.environ["CHUNK_INDEX"])
-          part = services[chunk * 100:(chunk + 1) * 100]
+          part = services[chunk * 200:(chunk + 1) * 200]
           created = updated = 0
           for n, service in enumerate(part, 1):
               slug = service["slug"]
