@@ -14,8 +14,10 @@
 
 Столбцы должны идти строго в таком порядке:
 
-`kb_id,title,slug,category,meta_title,meta_description,article_html,faq_html,sources_json,screenshots_json`
+`kb_id,title,slug,category,tested_versions,verified_on,meta_title,meta_description,article_html,faq_html,sources_json,screenshots_json`
 
+- `tested_versions`: точные версии/редакции, которые действительно проверены.
+- `verified_on`: дата фактической проверки в формате `ГГГГ-ММ-ДД`.
 - `article_html`: самостоятельная инструкция на русском языке; минимум 700 слов вместе с FAQ.
 - `faq_html`: HTML-блок вопросов и ответов.
 - `sources_json`: JSON-массив минимум из двух объектов `{"title":"Название источника","url":"https://..." }`.
