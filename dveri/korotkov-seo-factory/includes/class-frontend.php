@@ -42,7 +42,7 @@ final class KSEF_Frontend {
 
         if (!is_singular()) return;
         $id = get_queried_object_id();
-        if (!$id || !get_post_meta($id, '_ksef_cluster_id', true)) return;
+        if (!$id || (!get_post_meta($id, '_ksef_cluster_id', true) && !get_post_meta($id, '_ksef_kb_id', true))) return;
 
         if (!self::other_seo_plugin_active()) {
             $desc = trim(self::post_meta('_ksef_meta_description'));
