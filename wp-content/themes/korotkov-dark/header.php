@@ -1,6 +1,6 @@
 <!doctype html>
 <html <?php language_attributes(); ?>>
-<head><meta charset="<?php bloginfo('charset'); ?>"><meta name="viewport" content="width=device-width, initial-scale=1"><?php wp_head(); ?></head>
+<head><meta charset="<?php bloginfo('charset'); ?>"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" type="image/png" sizes="512x512" href="<?php echo esc_url(get_site_icon_url(512)); ?>"><?php wp_head(); ?></head>
 <body <?php body_class(); ?>><?php wp_body_open(); ?>
 <a class="screen-reader-text" href="#content">Перейти к содержимому</a>
 <header class="kd-header"><div class="kd-wrap kd-headrow">
