@@ -33,6 +33,8 @@ final class KSEF_Knowledge_Base {
             title text NOT NULL,
             slug varchar(190) NOT NULL,
             category varchar(100) NOT NULL DEFAULT '',
+            tested_versions varchar(255) NOT NULL DEFAULT '',
+            verified_on date NULL,
             status varchar(24) NOT NULL DEFAULT 'planned',
             meta_title varchar(255) NOT NULL DEFAULT '',
             meta_description text NULL,
@@ -112,7 +114,7 @@ final class KSEF_Knowledge_Base {
         header('Content-Disposition: attachment; filename=ipkorotkov-knowledge-base.csv');
         $out = fopen('php://output', 'w');
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, array('kb_id','title','slug','category','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json'));
+        fputcsv($out, array('kb_id','title','slug','category','tested_versions','verified_on','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json'));
         foreach ($rows as $row) {
             fputcsv($out, array((int)$row['id'], $row['title'], $row['slug'], $row['category'], '', '', '', '', '[]', '[]'));
         }
@@ -134,7 +136,7 @@ final class KSEF_Knowledge_Base {
         if (!$headers) { fclose($fh); self::redirect_notice('error', 'CSV пустой.'); }
         $headers = array_map('trim', $headers);
         $headers[0] = preg_replace('/^\\xEF\\xBB\\xBF/', '', $headers[0]);
-        $required = array('kb_id','title','slug','category','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json');
+        $required = array('kb_id','title','slug','category','tested_versions','verified_on','meta_title','meta_description','article_html','faq_html','sources_json','screenshots_json');
         if ($headers !== $required) { fclose($fh); self::redirect_notice('error', 'Неверные заголовки CSV. Сначала скачайте актуальный шаблон из панели.'); }
 
         $updated = 0; $blocked = 0; $errors = array();
@@ -155,6 +157,7 @@ final class KSEF_Knowledge_Base {
             global $wpdb;
             $wpdb->update($wpdb->prefix . self::TABLE, array(
                 'title' => $clean['title'], 'slug' => $clean['slug'], 'category' => $clean['category'],
+                'tested_versions' => $clean['tested_versions'], 'verified_on' => $clean['verified_on'],
                 'meta_title' => $clean['meta_title'], 'meta_description' => $clean['meta_description'],
                 'article_html' => $clean['article_html'], 'faq_html' => $clean['faq_html'],
                 'sources_json' => wp_json_encode($clean['sources'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
@@ -177,6 +180,8 @@ final class KSEF_Knowledge_Base {
             'title' => sanitize_text_field($d['title']),
             'slug' => sanitize_title($d['slug']),
             'category' => sanitize_text_field($d['category']),
+            'tested_versions' => sanitize_text_field($d['tested_versions']),
+            'verified_on' => sanitize_text_field($d['verified_on']),
             'meta_title' => sanitize_text_field($d['meta_title']),
             'meta_description' => sanitize_text_field($d['meta_description']),
             'article_html' => wp_kses_post($d['article_html']),
@@ -187,11 +192,12 @@ final class KSEF_Knowledge_Base {
     }
 
     private static function validate($d) {
-        foreach (array('title','slug','category','meta_title','meta_description','article_html') as $key) {
+        foreach (array('title','slug','category','tested_versions','verified_on','meta_title','meta_description','article_html') as $key) {
             if (empty($d[$key])) return new WP_Error('kb_missing_' . $key, 'Не заполнено обязательное поле: ' . $key);
         }
         preg_match_all('/[\p{L}\p{N}]+/u', wp_strip_all_tags($d['article_html'] . ' ' . $d['faq_html']), $m);
         if (count($m[0]) < self::MIN_WORDS) return new WP_Error('kb_too_short', 'Статья короче ' . self::MIN_WORDS . ' слов.');
+        if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $d['verified_on']) || !checkdate((int)substr($d['verified_on'],5,2), (int)substr($d['verified_on'],8,2), (int)substr($d['verified_on'],0,4))) return new WP_Error('kb_verified_date_invalid', 'Укажите дату проверки в формате ГГГГ-ММ-ДД.');
         if (!is_array($d['sources']) || count($d['sources']) < 2) return new WP_Error('kb_sources_missing', 'Нужно указать минимум два источника в sources_json.');
         if (!is_array($d['screenshots']) || count($d['screenshots']) < 1) return new WP_Error('kb_screenshots_missing', 'Для mixed-формата нужен минимум один скриншот с подтверждённым происхождением.');
         foreach ($d['sources'] as $source) {
@@ -213,7 +219,7 @@ final class KSEF_Knowledge_Base {
     private static function save_blocked($id, $d, $error) {
         global $wpdb;
         $wpdb->update($wpdb->prefix . self::TABLE, array(
-            'title' => $d['title'], 'meta_title' => $d['meta_title'], 'meta_description' => $d['meta_description'],
+            'title' => $d['title'], 'tested_versions' => $d['tested_versions'], 'verified_on' => $d['verified_on'], 'meta_title' => $d['meta_title'], 'meta_description' => $d['meta_description'],
             'article_html' => $d['article_html'], 'faq_html' => $d['faq_html'],
             'status' => 'blocked', 'last_error' => sanitize_text_field($error), 'updated_at' => current_time('mysql', true),
         ), array('id' => $id));
@@ -240,6 +246,7 @@ final class KSEF_Knowledge_Base {
         global $wpdb;
         $data = array(
             'title' => $row->title, 'slug' => $row->slug, 'category' => $row->category,
+            'tested_versions' => $row->tested_versions, 'verified_on' => $row->verified_on,
             'meta_title' => $row->meta_title, 'meta_description' => $row->meta_description,
             'article_html' => $row->article_html, 'faq_html' => $row->faq_html,
             'sources' => json_decode($row->sources_json, true), 'screenshots' => json_decode($row->screenshots_json, true),
@@ -251,7 +258,7 @@ final class KSEF_Knowledge_Base {
         $same = get_page_by_title($row->title, OBJECT, array('post','page'));
         if ($same) return new WP_Error('kb_title_taken', 'Запись с таким заголовком уже существует #' . $same->ID . '.');
 
-        $content = $row->article_html;
+        $content = '<p><strong>Проверено:</strong> ' . esc_html($row->verified_on) . '. <strong>Версии:</strong> ' . esc_html($row->tested_versions) . '.</p>' . "\\n" . $row->article_html;
         foreach ($data['screenshots'] as $shot) {
             $image = wp_get_attachment_image(absint($shot['media_id']), 'large', false, array('alt' => $shot['alt'], 'loading' => 'lazy'));
             if ($image) {
