@@ -77,14 +77,10 @@ final class KSEF_Yandex_Client {
             return $cached;
         }
 
-        if (!defined('KSEF_BILLING_VERIFIED') || KSEF_BILLING_VERIFIED !== true) {
-            return new WP_Error('ksef_billing_not_verified', 'Платные запросы Wordstat заблокированы до проверки покрытия бонусами и тарифа Yandex Cloud.');
-        }
-
         $limit = isset($this->settings['daily_wordstat_limit']) ? absint($this->settings['daily_wordstat_limit']) : 20;
         $interval = isset($this->settings['wordstat_interval']) ? max(5, absint($this->settings['wordstat_interval'])) : 5;
 
-        $reservation = $this->reserve_request('wordstat', $limit, $interval);
+        $reservation = $this->reserve_request('wordstat', $limit, $interval, $estimated_cost_per_call);
         if (is_wp_error($reservation)) {
             return $reservation;
         }
@@ -146,7 +142,7 @@ final class KSEF_Yandex_Client {
         }
     }
 
-    private function reserve_request($service, $daily_limit, $interval) {
+    private function reserve_request($service, $daily_limit, $interval, $next_cost = 0.0) {
         if ($this->is_circuit_open()) {
             return new WP_Error('ksef_circuit_open', 'Очередь API временно остановлена после ограничения или ошибки.');
         }
@@ -159,7 +155,7 @@ final class KSEF_Yandex_Client {
             return new WP_Error('ksef_request_busy', 'Другой запрос Wordstat уже выполняется. Повторите позже.');
         }
 
-        $budget = KSEF_Util::check_budget();
+        $budget = KSEF_Util::check_budget($next_cost);
         if (is_wp_error($budget)) {
             KSEF_Lock::release($lock);
             return $budget;
