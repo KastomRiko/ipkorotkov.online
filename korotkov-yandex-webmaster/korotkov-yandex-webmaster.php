@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov Yandex Webmaster
  * Description: Безопасная read-only интеграция с API Яндекс.Вебмастера: проверка OAuth и список подтверждённых сайтов.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Korotkov
  * Requires PHP: 8.1
  */
@@ -127,11 +127,27 @@ final class Korotkov_Yandex_Webmaster {
         $items = [];
         foreach (($hosts['hosts'] ?? []) as $host) {
             if (!is_array($host)) continue;
+            $host_id = (string) ($host['host_id'] ?? '');
+            $summary = $host_id !== '' ? self::api('/v4/user/' . $user_id . '/hosts/' . rawurlencode($host_id) . '/summary', $token) : new WP_Error('kyw_missing_host', 'Не указан host_id.');
+            $summary_data = null;
+            $summary_error = '';
+            if (is_wp_error($summary)) {
+                $summary_error = $summary->get_error_message();
+            } else {
+                $summary_data = [
+                    'sqi' => isset($summary['sqi']) ? (int) $summary['sqi'] : null,
+                    'searchable_pages_count' => isset($summary['searchable_pages_count']) ? (int) $summary['searchable_pages_count'] : null,
+                    'excluded_pages_count' => isset($summary['excluded_pages_count']) ? (int) $summary['excluded_pages_count'] : null,
+                    'site_problems' => is_array($summary['site_problems'] ?? null) ? $summary['site_problems'] : [],
+                ];
+            }
             $items[] = [
-                'host_id' => sanitize_text_field((string) ($host['host_id'] ?? '')),
+                'host_id' => sanitize_text_field($host_id),
                 'ascii_host_url' => esc_url_raw((string) ($host['ascii_host_url'] ?? '')),
                 'verified' => !empty($host['verified']),
                 'permissions' => sanitize_text_field((string) ($host['permission'] ?? '')),
+                'summary' => $summary_data,
+                'summary_error' => $summary_error,
             ];
         }
         return [
@@ -211,9 +227,15 @@ final class Korotkov_Yandex_Webmaster {
                 if (empty($data['hosts'])) {
                     echo '<p>API доступен, но список сайтов пуст.</p>';
                 } else {
-                    echo '<table class="widefat striped"><thead><tr><th>Адрес</th><th>Подтверждение</th><th>Права</th></tr></thead><tbody>';
+                    echo '<table class="widefat striped"><thead><tr><th>Адрес</th><th>Подтверждение</th><th>ИКС</th><th>Страниц в поиске</th><th>Исключено</th><th>Проблемы</th></tr></thead><tbody>';
                     foreach ($data['hosts'] as $host) {
-                        echo '<tr><td>' . esc_html($host['ascii_host_url']) . '</td><td>' . (!empty($host['verified']) ? 'Подтверждён' : 'Не подтверждён') . '</td><td>' . esc_html($host['permissions']) . '</td></tr>';
+                        $summary = is_array($host['summary'] ?? null) ? $host['summary'] : [];
+                        $problems = [];
+                        foreach (($summary['site_problems'] ?? []) as $severity => $count) {
+                            $problems[] = sanitize_text_field((string) $severity) . ': ' . (int) $count;
+                        }
+                        $stats = !empty($host['summary_error']) ? esc_html($host['summary_error']) : '';
+                        echo '<tr><td>' . esc_html($host['ascii_host_url']) . '</td><td>' . (!empty($host['verified']) ? 'Подтверждён' : 'Не подтверждён') . '</td><td>' . esc_html(isset($summary['sqi']) ? (string) $summary['sqi'] : '—') . '</td><td>' . esc_html(isset($summary['searchable_pages_count']) ? number_format_i18n($summary['searchable_pages_count']) : '—') . '</td><td>' . esc_html(isset($summary['excluded_pages_count']) ? number_format_i18n($summary['excluded_pages_count']) : '—') . '</td><td>' . esc_html($stats !== '' ? $stats : (empty($problems) ? 'Нет данных о проблемах' : implode('; ', $problems))) . '</td></tr>';
                     }
                     echo '</tbody></table>';
                 }
