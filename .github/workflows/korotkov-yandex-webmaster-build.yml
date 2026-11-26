@@ -1,0 +1,38 @@
+name: Korotkov Yandex Webmaster — build plugin ZIP
+
+on:
+  push:
+    branches: [design/portfolio-refresh]
+    paths:
+      - 'korotkov-yandex-webmaster/**'
+      - '.github/workflows/korotkov-yandex-webmaster-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PHP syntax
+        run: php -l korotkov-yandex-webmaster/korotkov-yandex-webmaster.php
+
+      - name: Build installable plugin
+        run: |
+          mkdir -p build/korotkov-yandex-webmaster
+          cp korotkov-yandex-webmaster/korotkov-yandex-webmaster.php build/korotkov-yandex-webmaster/
+          cp korotkov-yandex-webmaster/README.md build/korotkov-yandex-webmaster/readme.txt
+          cd build
+          zip -r korotkov-yandex-webmaster.zip korotkov-yandex-webmaster
+
+      - name: Publish ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: korotkov-yandex-webmaster
+          path: build/korotkov-yandex-webmaster.zip
+          if-no-files-found: error
+          retention-days: 30
