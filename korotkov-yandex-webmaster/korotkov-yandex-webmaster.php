@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Korotkov Yandex Webmaster
  * Description: Безопасная read-only интеграция с API Яндекс.Вебмастера: проверка OAuth и список подтверждённых сайтов.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Korotkov
  * Requires PHP: 8.1
  */
@@ -20,6 +20,7 @@ final class Korotkov_Yandex_Webmaster {
         add_action('admin_post_kyw_test', [__CLASS__, 'test']);
         add_action('rest_api_init', [__CLASS__, 'register_token_route']);
         add_action('rest_api_init', [__CLASS__, 'register_status_route']);
+        add_action('rest_api_init', [__CLASS__, 'register_content_audit_route']);
     }
 
     public static function menu(): void {
@@ -73,6 +74,78 @@ final class Korotkov_Yandex_Webmaster {
                     'user_id' => $result['user_id'],
                     'hosts' => $result['hosts'],
                     'checked_at' => $result['checked_at'],
+                ], 200);
+            },
+        ]);
+    }
+
+    public static function register_content_audit_route(): void {
+        register_rest_route('kyw/v1', '/content-audit', [
+            'methods' => 'GET',
+            'permission_callback' => static function () {
+                return current_user_can('manage_options');
+            },
+            'callback' => static function () {
+                $query = new WP_Query([
+                    'post_type' => 'page',
+                    'post_status' => 'publish',
+                    'post_parent' => 92,
+                    'posts_per_page' => 2000,
+                    'orderby' => 'ID',
+                    'order' => 'ASC',
+                    'no_found_rows' => false,
+                    'fields' => 'all',
+                ]);
+                $buckets = ['under_100' => 0, '100_299' => 0, '300_499' => 0, '500_plus' => 0];
+                $short = [];
+                $title_counts = [];
+                $noindex_count = 0;
+                $rows = [];
+                foreach ($query->posts as $post) {
+                    $plain = wp_strip_all_tags(strip_shortcodes((string) $post->post_content));
+                    preg_match_all('/[\\p{L}\\p{N}]+/u', $plain, $matches);
+                    $words = count($matches[0]);
+                    if ($words < 100) $buckets['under_100']++;
+                    elseif ($words < 300) $buckets['100_299']++;
+                    elseif ($words < 500) $buckets['300_499']++;
+                    else $buckets['500_plus']++;
+                    $seo_title = (string) get_post_meta($post->ID, '_yoast_wpseo_title', true);
+                    $robots_noindex = (string) get_post_meta($post->ID, '_yoast_wpseo_meta-robots-noindex', true);
+                    if ($robots_noindex === '1') $noindex_count++;
+                    $title_key = mb_strtolower(trim($seo_title !== '' ? $seo_title : get_the_title($post)), 'UTF-8');
+                    $title_counts[$title_key] = ($title_counts[$title_key] ?? 0) + 1;
+                    $rows[] = [
+                        'id' => (int) $post->ID,
+                        'title' => get_the_title($post),
+                        'slug' => $post->post_name,
+                        'words' => $words,
+                        'seo_title' => $seo_title,
+                        'noindex' => $robots_noindex === '1',
+                        'date' => $post->post_date,
+                        'modified' => $post->post_modified,
+                    ];
+                }
+                foreach ($rows as $row) {
+                    if ($row['words'] < 500) $short[] = $row;
+                }
+                usort($short, static function ($a, $b) { return $a['words'] <=> $b['words']; });
+                $duplicates = [];
+                foreach ($title_counts as $title => $count) {
+                    if ($count > 1) $duplicates[] = ['title' => $title, 'count' => $count];
+                }
+                usort($duplicates, static function ($a, $b) { return $b['count'] <=> $a['count']; });
+                return new WP_REST_Response([
+                    'total_service_pages' => count($rows),
+                    'word_buckets' => $buckets,
+                    'existing_noindex' => $noindex_count,
+                    'short_pages_count' => count($short),
+                    'short_pages' => array_slice($short, 0, 150),
+                    'duplicate_seo_titles' => array_slice($duplicates, 0, 100),
+                    'generated_dates' => [
+                        'first' => $rows ? $rows[0]['date'] : null,
+                        'last' => $rows ? $rows[count($rows) - 1]['date'] : null,
+                    ],
+                    'checked_at' => current_time('mysql'),
                 ], 200);
             },
         ]);
