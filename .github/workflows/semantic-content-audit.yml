@@ -1,0 +1,192 @@
+name: Semantic SEO audit — services and pages
+
+on:
+  push:
+    branches: [design/portfolio-refresh]
+    paths:
+      - '.github/workflows/semantic-content-audit.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '31 5 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: semantic-content-audit
+  cancel-in-progress: false
+
+jobs:
+  crawl-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/portfolio-refresh
+
+      - name: Crawl published URLs and audit SEO meaning
+        run: |
+          python - <<'PY'
+          import csv, html, itertools, re, time, unicodedata, urllib.parse, urllib.request
+          import xml.etree.ElementTree as ET
+          from collections import defaultdict
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          BASE = "https://ipkorotkov.online/"
+          UA = "Korotkov-Semantic-SEO-Audit/1.0 (+https://ipkorotkov.online/)"
+          MAX_URLS = 1600
+          ERRORS = []
+
+          def fetch(url):
+              req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xml"})
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  return response.read(), response.headers.get_content_charset() or "utf-8"
+
+          def tag_name(tag):
+              return tag.rsplit("}", 1)[-1].lower()
+
+          def sitemap_urls(url, seen=None):
+              seen = seen or set()
+              if url in seen: return []
+              seen.add(url)
+              try:
+                  raw, _ = fetch(url)
+                  root = ET.fromstring(raw)
+                  kind = tag_name(root.tag)
+                  found = []
+                  for node in root:
+                      loc = next((c.text.strip() for c in node if tag_name(c.tag) == "loc" and c.text), "")
+                      if not loc: continue
+                      if kind == "sitemapindex": found.extend(sitemap_urls(loc, seen))
+                      elif kind == "urlset": found.append(loc)
+                  return found
+              except Exception as e:
+                  ERRORS.append(("sitemap", url, str(e)[:200]))
+                  return []
+
+          class PageParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.title, self.h1, self.text = [], [], []
+                  self.description = self.robots = self.canonical = ""
+                  self.in_title = False
+                  self.h1_depth = 0
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs); tag = tag.lower()
+                  if tag == "title": self.in_title = True
+                  if tag == "h1": self.h1_depth += 1
+                  if tag == "meta":
+                      name = (a.get("name") or "").lower()
+                      if name == "description": self.description = a.get("content", "")
+                      if name == "robots": self.robots = a.get("content", "")
+                  if tag == "link" and "canonical" in (a.get("rel") or "").lower().split():
+                      self.canonical = a.get("href", "")
+              def handle_endtag(self, tag):
+                  tag = tag.lower()
+                  if tag == "title": self.in_title = False
+                  if tag == "h1" and self.h1_depth: self.h1_depth -= 1
+              def handle_data(self, data):
+                  value = data.strip()
+                  if not value: return
+                  if self.in_title: self.title.append(value)
+                  if self.h1_depth: self.h1.append(value)
+                  self.text.append(value)
+
+          def clean(s):
+              s = html.unescape(s or "").replace("ё", "е").replace("Ё", "Е")
+              s = unicodedata.normalize("NFKC", s).lower()
+              s = re.sub(r"https?://\S+", " ", s)
+              s = re.sub(r"[^a-zа-я0-9]+", " ", s)
+              return re.sub(r"\s+", " ", s).strip()
+
+          STOP = set("и в во на с со по для от до из к ко о об при про под над без или а но не что как это услуги услуга специалист специалиста профессиональный профессиональная онлайн удаленно удалённо".split())
+          def tokens(s):
+              return {w for w in clean(s).split() if len(w) > 2 and w not in STOP}
+          def similarity(a, b):
+              aa, bb = tokens(a), tokens(b)
+              return len(aa & bb) / len(aa | bb) if aa and bb else 0.0
+
+          urls = list(dict.fromkeys(sitemap_urls(urllib.parse.urljoin(BASE, "sitemap_index.xml"))))
+          urls = [u for u in urls if urllib.parse.urlparse(u).netloc == urllib.parse.urlparse(BASE).netloc][:MAX_URLS]
+          if not urls: raise SystemExit("Не удалось получить URL из sitemap_index.xml.")
+
+          rows = []
+          for i, url in enumerate(urls, 1):
+              try:
+                  raw, enc = fetch(url)
+                  p = PageParser(); p.feed(raw.decode(enc, "replace"))
+                  text_content = " ".join(p.text)
+                  rows.append({
+                      "url": url, "title": " ".join(p.title).strip(), "h1": " ".join(p.h1).strip(),
+                      "description": p.description, "robots": p.robots, "canonical": p.canonical,
+                      "words": len(re.findall(r"[а-яА-Яa-zA-Z0-9]+", text_content))
+                  })
+              except Exception as e:
+                  ERRORS.append(("page", url, str(e)[:200]))
+              if i % 50 == 0: print(f"Checked {i}/{len(urls)} URLs")
+              time.sleep(0.12)
+
+          issues = []
+          title_map = defaultdict(list)
+          for row in rows:
+              title_map[clean(row["title"])].append(row)
+              t, h = clean(row["title"]), clean(row["h1"])
+              if not row["title"]: issues.append(("missing_title", row["url"], "", "Нет HTML title"))
+              if not row["h1"]: issues.append(("missing_h1", row["url"], row["title"], "Нет H1"))
+              if "noindex" in row["robots"].lower(): issues.append(("noindex", row["url"], row["title"], row["robots"]))
+              if row["words"] < 500 and "/services/" in row["url"]:
+                  issues.append(("service_under_500_words", row["url"], row["title"], f"{row['words']} слов по видимому тексту"))
+              help_terms = ("компьютерная помощь", "помощь с компьютером", "удаленная компьютерная помощь")
+              if "помощь специалиста" in t and any(x in t or x in h for x in help_terms):
+                  issues.append(("semantic_help_redundancy", row["url"], row["title"], "«Помощь специалиста» дублирует смысл компьютерной помощи"))
+              if t and h and similarity(row["title"], row["h1"]) >= 0.80:
+                  issues.append(("title_h1_near_duplicate_review", row["url"], row["title"], f"Title и H1 близки по смыслу: {similarity(row['title'], row['h1']):.2f}"))
+
+          for norm, group in title_map.items():
+              if norm and len(group) > 1:
+                  for row in group:
+                      issues.append(("duplicate_title", row["url"], row["title"], "Одинаковый Title: " + " | ".join(x["url"] for x in group[:6])))
+
+          pairs = []
+          for a, b in itertools.combinations([r for r in rows if r["title"]], 2):
+              score = similarity(a["title"], b["title"])
+              if score >= 0.72: pairs.append((score, a, b))
+          for score, a, b in sorted(pairs, key=lambda x: x[0], reverse=True)[:150]:
+              issues.append(("possible_semantic_cannibalization_review", a["url"], a["title"], f"Похожий Title ({score:.2f}): {b['url']} — {b['title']}"))
+
+          Path("reports").mkdir(exist_ok=True)
+          with open("reports/semantic-seo-audit.csv", "w", newline="", encoding="utf-8-sig") as f:
+              writer = csv.DictWriter(f, fieldnames=["url","title","h1","description","robots","canonical","words"])
+              writer.writeheader(); writer.writerows(rows)
+          counts = defaultdict(int)
+          for kind, *_ in issues: counts[kind] += 1
+          with open("reports/semantic-seo-audit.md", "w", encoding="utf-8") as f:
+              f.write("# Семантический SEO-аудит ipkorotkov.online\n\n")
+              f.write(f"- Проверено URL: **{len(rows)}** из {len(urls)} найденных в sitemap\n")
+              f.write(f"- Замечаний и кандидатов на проверку: **{len(issues)}**\n")
+              f.write("- Похожие Title — только кандидаты для ручной проверки, не автоматическая команда объединять страницы.\n")
+              f.write("- Wordstat: официальная документация сообщает об отсутствии статистики после 07.10.2026; частотность не считается актуальной.\n\n")
+              f.write("## Сводка\n\n")
+              for kind, count in sorted(counts.items()): f.write(f"- {kind}: {count}\n")
+              f.write("\n## Замечания\n\n")
+              for kind, url, title, note in issues: f.write(f"- **{kind}** — [{title or url}]({url}): {note}\n")
+              if ERRORS:
+                  f.write("\n## Ошибки обхода\n\n")
+                  for kind, url, error in ERRORS[:100]: f.write(f"- {kind}: {url} — {error}\n")
+          print(f"Audit complete: {len(rows)} pages, {len(issues)} issues, {len(ERRORS)} fetch errors.")
+          print("Issue summary:", dict(counts))
+          PY
+
+      - name: Commit audit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/semantic-seo-audit.md reports/semantic-seo-audit.csv
+          if git diff --cached --quiet; then
+            echo "No report changes."
+          else
+            git commit -m "Add latest semantic SEO audit report"
+            git push origin HEAD:design/portfolio-refresh
+          fi
