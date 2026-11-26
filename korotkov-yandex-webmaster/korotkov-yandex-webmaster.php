@@ -102,8 +102,11 @@ final class Korotkov_Yandex_Webmaster {
         $body = json_decode((string) wp_remote_retrieve_body($response), true);
         if ($status < 200 || $status >= 300) {
             $message = 'Яндекс.Вебмастер вернул HTTP ' . $status . '.';
-            if (is_array($body) && !empty($body['message'])) {
-                $message .= ' ' . sanitize_text_field((string) $body['message']);
+            if (is_array($body)) {
+                $api_code = $body['error_code'] ?? '';
+                $api_message = $body['error_message'] ?? ($body['message'] ?? '');
+                if ($api_code !== '') $message .= ' [' . sanitize_key((string) $api_code) . ']';
+                if ($api_message !== '') $message .= ' ' . sanitize_text_field((string) $api_message);
             }
             return new WP_Error('kyw_api_error', $message, ['status' => $status]);
         }
