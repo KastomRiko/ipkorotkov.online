@@ -93,7 +93,7 @@ final class Korotkov_Yandex_Webmaster {
             'timeout' => 20,
             'redirection' => 0,
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'OAuth ' . $token,
                 'Accept' => 'application/json',
             ],
         ]);
