@@ -1,6 +1,6 @@
 # Korotkov Yandex Webmaster
 
-Версия: 1.0.0
+Версия: 1.1.0
 
 Read-only интеграция WordPress с официальным API Яндекс.Вебмастера.
 
@@ -16,6 +16,7 @@ Read-only интеграция WordPress с официальным API Янде�
 
 - GET /v4/user — доступность OAuth-токена и user_id.
 - GET /v4/user/{user_id}/hosts — список сайтов аккаунта, URL, подтверждение и права.
+- GET /v4/user/{user_id}/hosts/{host_id}/summary — ИКС, количество страниц в поиске и исключённых страниц, группировка проблем.
 
 ## Безопасность и ограничения
 
