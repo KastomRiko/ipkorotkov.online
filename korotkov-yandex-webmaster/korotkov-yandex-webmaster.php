@@ -19,6 +19,7 @@ final class Korotkov_Yandex_Webmaster {
         add_action('admin_post_kyw_save', [__CLASS__, 'save']);
         add_action('admin_post_kyw_test', [__CLASS__, 'test']);
         add_action('rest_api_init', [__CLASS__, 'register_token_route']);
+        add_action('rest_api_init', [__CLASS__, 'register_status_route']);
     }
 
     public static function menu(): void {
@@ -53,6 +54,27 @@ final class Korotkov_Yandex_Webmaster {
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
             ],
+        ]);
+    }
+
+    public static function register_status_route(): void {
+        register_rest_route('kyw/v1', '/status', [
+            'methods' => 'GET',
+            'permission_callback' => static function () {
+                return current_user_can('manage_options');
+            },
+            'callback' => static function () {
+                $result = self::inspect(self::token());
+                if (is_wp_error($result)) {
+                    return new WP_Error('kyw_api_check_failed', $result->get_error_message(), ['status' => 502]);
+                }
+                return new WP_REST_Response([
+                    'connected' => true,
+                    'user_id' => $result['user_id'],
+                    'hosts' => $result['hosts'],
+                    'checked_at' => $result['checked_at'],
+                ], 200);
+            },
         ]);
     }
 
