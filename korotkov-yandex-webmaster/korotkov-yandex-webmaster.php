@@ -18,6 +18,7 @@ final class Korotkov_Yandex_Webmaster {
         add_action('admin_menu', [__CLASS__, 'menu']);
         add_action('admin_post_kyw_save', [__CLASS__, 'save']);
         add_action('admin_post_kyw_test', [__CLASS__, 'test']);
+        add_action('rest_api_init', [__CLASS__, 'register_token_route']);
     }
 
     public static function menu(): void {
@@ -28,6 +29,31 @@ final class Korotkov_Yandex_Webmaster {
             self::PAGE,
             [__CLASS__, 'render']
         );
+    }
+
+    public static function register_token_route(): void {
+        register_rest_route('kyw/v1', '/token', [
+            'methods' => 'POST',
+            'permission_callback' => static function () {
+                return current_user_can('manage_options');
+            },
+            'callback' => static function (WP_REST_Request $request) {
+                $token = trim((string) $request->get_param('token'));
+                if (strlen($token) < 20 || strlen($token) > 4096) {
+                    return new WP_Error('kyw_token_invalid', 'Токен имеет недопустимую длину.', ['status' => 400]);
+                }
+                update_option(self::OPTION, $token, false);
+                delete_transient('kyw_last_result');
+                return new WP_REST_Response(['saved' => true], 200);
+            },
+            'args' => [
+                'token' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+            ],
+        ]);
     }
 
     private static function token(): string {
