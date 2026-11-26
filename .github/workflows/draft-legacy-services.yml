@@ -1,6 +1,8 @@
 name: Draft legacy service pages
 
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   push:
     branches: [main]
     paths:
@@ -9,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 concurrency:
   group: draft-legacy-services
@@ -158,3 +161,15 @@ jobs:
               output.write(summary)
           print(summary)
           PY
+
+      - name: Disable this one-shot workflow after successful verification
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --request PUT \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/draft-legacy-services.yml/disable"
+          echo "One-shot workflow disabled after successful completion."
