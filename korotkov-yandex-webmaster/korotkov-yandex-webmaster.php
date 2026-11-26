@@ -150,7 +150,7 @@ final class Korotkov_Yandex_Webmaster {
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         echo '<input type="hidden" name="action" value="kyw_test">';
         wp_nonce_field('kyw_test');
-        submit_button('Проверить доступ к API', 'secondary', 'submit', false, !$stored);
+        submit_button('Проверить доступ к API', 'secondary', 'submit', false, ['disabled' => !$stored]);
         echo '</form>';
         if (is_array($result)) {
             if (!empty($result['ok']) && !empty($result['data'])) {
